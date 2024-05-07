@@ -1,0 +1,32 @@
+[tool.poetry]
+name = "ct-django"
+version = "0.1.0"
+description = "Code and files for the Connecting Threads project."
+authors = ["Jason Heppler <jason.heppler@gmail.com>"]
+license = "MIT"
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+django = "^5.0.6"
+django-htmx = "^1.17.3"
+django-environ = "^0.11.2"
+django-tailwind = "^3.8.0"
+django-allauth = "^0.62.1"
+psycopg2 = "^2.9.9"
+wagtail = "^6.1"
+django-taggit = "^5.0.1"
+taggit-selectize = "^2.11.0"
+
+
+[tool.poetry.group.dev.dependencies]
+black = "^24.4.2"
+djhtml = "^3.0.6"
+pre-commit = "^3.7.0"
+django-debug-toolbar = "^4.3.0"
+pytest-django = "^4.8.0"
+pylint-django = "^2.5.5"
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
