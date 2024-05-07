@@ -17,6 +17,7 @@ psycopg2 = "^2.9.9"
 wagtail = "^6.1"
 django-taggit = "^5.0.1"
 taggit-selectize = "^2.11.0"
+python-dotenv = "^1.0.1"
 
 
 [tool.poetry.group.dev.dependencies]
