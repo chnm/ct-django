@@ -1,35 +1,44 @@
-{% load static %}
+{% load static tailwind_tags i18n %}
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{% block title %}Connecting Threads{% endblock %}</title>
-    {% block css %}
-    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-    {% endblock css %}
-  </head>
-  <body>
-    <header>
-      <h1>Welcome to Your Website</h1>
-      <nav>
-        <ul>
-          <li><a href="">Home</a></li>
-          <li><a href="">About</a></li>
-        </ul>
-      </nav>
-    </header>
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>{% block title %}Connecting Threads{% endblock %}</title>
+        {% tailwind_css %}
+        {% block css %}
+            <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+        {% endblock css %}
+    </head>
+    <body class="bg-gray-100">
+<!-- Navigation bar -->
+        <nav class="bg-gray-100 border-b-2 border-red-600 py-6">
+            <div class="container mx-auto flex justify-between items-center px-4">
+        <!-- Logo -->
+                <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14">
+        <!-- Navigation links -->
+                <ul class="flex space-x-6 text-gray-800">
+                    <li><a href="#" class="hover:text-red-600">About</a></li>
+                    <li><a href="#" class="hover:text-red-600">People</a></li>
+                    <li><a href="#" class="hover:text-red-600">Pilot</a></li>
+                </ul>
+            </div>
+        </nav>
+        <div class="container mx-auto py-8">
 
-    <main>{% block content %} {% endblock content %}</main>
+            <main>{% block content %} {% endblock content %}</main>
+        </div>
 
-    <footer>
-      <p>&copy; {% now "Y" %} Your Website. All rights reserved.</p>
-    </footer>
+        <footer class="bg-red-600 text-white py-4">
+            <div class="container mx-auto text-center">
+                &copy; 2024 Your Website Name. All rights reserved.
+            </div>
+        </footer>
 
-    {% block js %}
-    <script src="{% static 'js/ct.js' %}"></script>
-    {% endblock js %}
-    {% block extrajs %}{% endblock extrajs %}
+        {% block js %}
+            <script src="{% static 'js/ct.js' %}"></script>
+        {% endblock js %}
+        {% block extrajs %}{% endblock extrajs %}
 
-  </body>
+    </body>
 </html>
