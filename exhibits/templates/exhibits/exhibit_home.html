@@ -1,21 +1,21 @@
-{% extends "base.html" %} 
+{% extends "base.html" %}
 {% load static %}
-{% load wagtailcore_tags wagtailimages_tags %} 
+{% load wagtailcore_tags wagtailimages_tags %}
 {% block body_class %}template-homepage{% endblock %}
 
 {% block content %}
-<div>
-  <h1>{{ page.title }}</h1>
-  {% image page.image fill-480x320 %}
-  <p>{{ page.hero_text }}</p>
-  {% if page.hero_cta_link %}
-  <a href="{% pageurl page.hero_cta_link %}">
-    {% firstof page.hero_cta page.hero_cta_link.title %}
-  </a>
-  {% endif %}
-</div>
+  <div>
+    <h1>{{ page.title }}</h1>
+    {% image page.image fill-480x320 %}
+    <p>{{ page.hero_text }}</p>
+    {% if page.hero_cta_link %}
+      <a href="{% pageurl page.hero_cta_link %}">
+        {% firstof page.hero_cta page.hero_cta_link.title %}
+      </a>
+    {% endif %}
+  </div>
 
-{{ page.body|richtext }} 
+  {{ page.body|richtext }}
 
   {% for item in page.gallery_images.all %}
     <div style="float: inline-start; margin: 10px">
@@ -24,56 +24,43 @@
     </div>
   {% endfor %}
 
-{% if page.image_comparisons.all %}
-{% for comparison in page.image_comparisons.all %}
-    {% image comparison.first_image original as img1 %}
-    {% image comparison.second_image original as img2 %}
-    <div class="image-comparison">
-        <div class="container">
-            <!-- Images to compare -->
-            <div class="image-container">
-              <img class="image-before slider-image image-1" src="{{ img1.url }}" alt="Image 1">
-              <img class="image-after slider-image image-2" src="{{ img2.url }}" alt="Image 2">
-            </div>
-            <!-- Slider input element -->
-            <input type="range" min="0" max="100" value="{{ comparison.slider_value }}" aria-label="Percentage of before photo shown" class="slider">
-            <!-- Slider line and handle -->
-            <div class="slider-line" aria-hidden="true"></div>
-            <div class="slider-button" aria-hidden="true">
-                <svg xmlns="http://www.w3.org/2000/svg" width="30" height="30" fill="currentColor"
-                    viewBox="0 0 256 256">
-                    <rect width="256" height="256" fill="none"></rect>
-                    <line x1="128" y1="40" x2="128" y2="216" fill="none" stroke="currentColor" stroke-linecap="round"
-                        stroke-linejoin="round" stroke-width="16"></line>
-                    <line x1="96" y1="128" x2="16" y2="128" fill="none" stroke="currentColor" stroke-linecap="round"
-                        stroke-linejoin="round" stroke-width="16"></line>
-                    <polyline points="48 160 16 128 48 96" fill="none" stroke="currentColor" stroke-linecap="round"
-                        stroke-linejoin="round" stroke-width="16"></polyline>
-                    <line x1="160" y1="128" x2="240" y2="128" fill="none" stroke="currentColor" stroke-linecap="round"
-                        stroke-linejoin="round" stroke-width="16"></line>
-                    <polyline points="208 96 240 128 208 160" fill="none" stroke="currentColor" stroke-linecap="round"
-                        stroke-linejoin="round" stroke-width="16"></polyline>
-                </svg>
-            </div>
+  {% if page.image_comparisons.all %}
+    {% for comparison in page.image_comparisons.all %}
+      {% image comparison.first_image original as img1 %}
+      {% image comparison.second_image original as img2 %}
+      <div class="image-comparison">
+        <img-comparison-slider class="slider-with-animated-handle">
+          <img slot="first" width="100%" src="{{ img1.url }}">
+          <img slot="second" width="100%" src="{{ img2.url }}">
+          <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
+            <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
+          </svg>
+          </img-comparison-slider>
         </div>
-    </div>
-{% endfor %}
-{% endif %}
+    {% endfor %}
+  {% endif %}
 
-{% with tags=page.tags.all %}
+  {% with tags=page.tags.all %}
     {% if tags %}
-        <div class="tags">
-            <h3>Tags</h3>
-            {% for tag in tags %}
-                <a href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
-            {% endfor %}
-        </div>
+      <div class="tags">
+        <h3>Tags</h3>
+        {% for tag in tags %}
+          <a href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
+        {% endfor %}
+      </div>
     {% endif %}
-{% endwith %}
+  {% endwith %}
 
-{% if page.image_comparisons.all %}
-<h3>image slider test</h3>
-    <script src="{% static 'js/slider.js' %}"></script>
-{% endif %}
+  {% if page.image_comparisons.all %}
+    <h3>image slider test</h3>
+    <script
+      defer
+      src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"
+    ></script>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css"
+    />
+  {% endif %}
 
 {% endblock content %}
