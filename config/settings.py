@@ -48,6 +48,8 @@ INSTALLED_APPS = [
     "wagtail",
     "modelcluster",
     "taggit",
+    "tailwind",
+    "theme",
     "exhibits",
 ]
 
@@ -130,6 +132,8 @@ TIME_ZONE = "UTC"
 USE_I18N = True
 
 USE_TZ = True
+
+TAILWIND_APP_NAME = "theme"
 
 
 # Static files (CSS, JavaScript, Images)
