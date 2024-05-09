@@ -1,0 +1,35 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Connecting Threads{% endblock %}</title>
+    {% block css %}
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    {% endblock css %}
+  </head>
+  <body>
+    <header>
+      <h1>Welcome to Your Website</h1>
+      <nav>
+        <ul>
+          <li><a href="">Home</a></li>
+          <li><a href="">About</a></li>
+        </ul>
+      </nav>
+    </header>
+
+    <main>{% block content %} {% endblock content %}</main>
+
+    <footer>
+      <p>&copy; {% now "Y" %} Your Website. All rights reserved.</p>
+    </footer>
+
+    {% block js %}
+    <script src="{% static 'js/ct.js' %}"></script>
+    {% endblock js %}
+    {% block extrajs %}{% endblock extrajs %}
+
+  </body>
+</html>
