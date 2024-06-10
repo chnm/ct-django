@@ -34,6 +34,10 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    "django.contrib.sites",
+    "allauth",
+    "allauth.account",
+    "allauth.socialaccount",
     "material",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
@@ -84,6 +88,18 @@ TEMPLATES = [
         },
     },
 ]
+
+AUTHENTICATION_BACKENDS = (
+    "django.contrib.auth.backends.ModelBackend",  # this is the default backend
+    "allauth.account.auth_backends.AuthenticationBackend",
+)
+
+# ALLAUTH configuration
+ACCOUNT_AUTHENTICATION_METHOD = "username"  # or 'email', or 'username_email'
+ACCOUNT_EMAIL_REQUIRED = True
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # or 'optional', 'none'
+ACCOUNT_LOGOUT_REDIRECT_URL = "/"  # URL to redirect to after logging out
+LOGIN_REDIRECT_URL = "/"  # URL to redirect to after logging in
 
 WSGI_APPLICATION = "config.wsgi.application"
 
