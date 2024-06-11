@@ -259,6 +259,20 @@ files = [
 ]
 
 [[package]]
+name = "diff-match-patch"
+version = "20230430"
+description = "Diff Match and Patch"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "diff-match-patch-20230430.tar.gz", hash = "sha256:953019cdb9c9d2c9e47b5b12bcff3cf4746fc4598eb406076fa1fc27e6a1f15c"},
+    {file = "diff_match_patch-20230430-py3-none-any.whl", hash = "sha256:dce43505fb7b1b317de7195579388df0746d90db07015ed47a85e5e44930ef93"},
+]
+
+[package.extras]
+dev = ["attribution (==1.6.2)", "black (==23.3.0)", "flit (==3.8.0)", "mypy (==1.2.0)", "ufmt (==2.1.0)", "usort (==1.0.6)"]
+
+[[package]]
 name = "dill"
 version = "0.3.8"
 description = "serialize all of Python"
@@ -383,6 +397,31 @@ files = [
 [package.dependencies]
 asgiref = ">=3.6"
 Django = ">=3.2"
+
+[[package]]
+name = "django-import-export"
+version = "4.0.7"
+description = "Django application and library for importing and exporting data with included admin integration."
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "django_import_export-4.0.7-py3-none-any.whl", hash = "sha256:173d165b85774a3f8327b58af89ed2d6d95547f668dba39b8c9eceb8870d32a4"},
+    {file = "django_import_export-4.0.7.tar.gz", hash = "sha256:63f0c8add728aafc82bcb7c53ec9f66528a9556c4786ef28f5f8b8eb662a7021"},
+]
+
+[package.dependencies]
+diff-match-patch = "*"
+Django = ">=3.2"
+tablib = "3.5.0"
+
+[package.extras]
+all = ["tablib[all] (==3.5.0)"]
+cli = ["tablib[cli]"]
+ods = ["tablib[ods]"]
+pandas = ["tablib[pandas]"]
+xls = ["tablib[xls] (==3.5.0)"]
+xlsx = ["tablib[xlsx] (==3.5.0)"]
+yaml = ["tablib[yaml] (==3.5.0)"]
 
 [[package]]
 name = "django-modelcluster"
@@ -1181,6 +1220,27 @@ dev = ["build", "hatch"]
 doc = ["sphinx"]
 
 [[package]]
+name = "tablib"
+version = "3.5.0"
+description = "Format agnostic tabular data library (XLS, JSON, YAML, CSV, etc.)"
+optional = false
+python-versions = ">=3.8"
+files = [
+    {file = "tablib-3.5.0-py3-none-any.whl", hash = "sha256:9821caa9eca6062ff7299fa645e737aecff982e6b2b42046928a6413c8dabfd9"},
+    {file = "tablib-3.5.0.tar.gz", hash = "sha256:f6661dfc45e1d4f51fa8a6239f9c8349380859a5bfaa73280645f046d6c96e33"},
+]
+
+[package.extras]
+all = ["markuppy", "odfpy", "openpyxl (>=2.6.0)", "pandas", "pyyaml", "tabulate", "xlrd", "xlwt"]
+cli = ["tabulate"]
+html = ["markuppy"]
+ods = ["odfpy"]
+pandas = ["pandas"]
+xls = ["xlrd", "xlwt"]
+xlsx = ["openpyxl (>=2.6.0)"]
+yaml = ["pyyaml"]
+
+[[package]]
 name = "taggit-selectize"
 version = "2.11.0"
 description = "django-taggit + selectize.js"
@@ -1326,4 +1386,4 @@ wand = ["Wand (>=0.6,<1.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "cfa861c307e131642bb9377ee52c2833e15b44cb3e4cc250bfb7a19102cb3009"
+content-hash = "b69b945cc4a1388d7bad0222ee6503ac29fb8dd8efe56dac4ec2695360bca3d4"

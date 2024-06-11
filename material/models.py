@@ -1,21 +1,41 @@
 from django.db import models
-from taggit.managers import TaggableManager
 
 
 class Area(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(max_length=50, unique=True)
 
     def __str__(self) -> str:
-        return self.name
+        return str(self.name)
 
 
 class Place(models.Model):
-    city = models.CharField(max_length=100)
-    country = models.CharField(max_length=100)
-    area = models.ForeignKey(Area, on_delete=models.CASCADE, related_name="places")
+    id = models.AutoField(primary_key=True)
+    city = models.CharField(max_length=765, blank=True, null=True, unique=True)
+    country = models.CharField(max_length=765, blank=True, null=True, unique=True)
+    area = models.ForeignKey(
+        Area, on_delete=models.CASCADE, related_name="places", blank=True, null=True
+    )
 
     def __str__(self) -> str:
         return f"{self.city}, {self.country}"
+
+    class Meta:
+        unique_together = (
+            "city",
+            "area",
+        )
+
+
+class Subject(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(max_length=350, unique=True)
+
+    def __str__(self) -> str:
+        return str(self.name)
+
+    def natural_key(self):
+        return self.name
 
 
 class TextileRecord(models.Model):
@@ -25,41 +45,69 @@ class TextileRecord(models.Model):
         ("Gingham", "Gingham"),
     ]
 
-    year = models.IntegerField()
-    associated_textile = models.CharField(max_length=50, choices=TEXTILE_CHOICES)
-    terminology_specific_info = models.TextField()
-    production_consumption_distribution = models.TextField()
-    summary_other = models.TextField()
-    summary_for_publication = models.TextField()
-    transcription = models.TextField()
-    quantitative_data = models.BooleanField()
+    id = models.AutoField(primary_key=True)
+    year = models.IntegerField(blank=True, null=True)
+    associated_textile = models.CharField(
+        blank=True, null=True, max_length=50, choices=TEXTILE_CHOICES
+    )
+    terminology_specific_info = models.TextField(blank=True, null=True)
+    production_consumption_distribution = models.TextField(blank=True, null=True)
+    summary_other = models.TextField(blank=True, null=True)
+    summary_for_publication = models.TextField(blank=True, null=True)
+    transcription = models.TextField(blank=True, null=True)
+    quantitative_data = models.BooleanField(blank=True, null=True)
     quantitative_excerpt = models.TextField(blank=True, null=True)
-    currency = models.CharField(max_length=50)
-    associated_name = models.CharField(max_length=100)
-    primary_subjects = TaggableManager(through="material.TaggedTextileRecord")
-    secondary_subjects = TaggableManager(related_name="secondary_subjects")
+    currency = models.CharField(blank=True, null=True, max_length=50)
+    associated_name = models.CharField(blank=True, null=True, max_length=765)
+    primary_subjects = models.ManyToManyField(
+        Subject,
+        related_name="primary_subject_records",
+        blank=True,
+    )
+    secondary_subjects = models.ManyToManyField(
+        Subject,
+        related_name="secondary_subject_records",
+        blank=True,
+    )
     from_area = models.ForeignKey(
-        Area, on_delete=models.CASCADE, related_name="from_textile_records"
+        Area,
+        on_delete=models.CASCADE,
+        related_name="from_textile_records",
+        blank=True,
+        null=True,
     )
     from_place = models.ForeignKey(
-        Place, on_delete=models.CASCADE, related_name="from_textile_records"
+        Place,
+        on_delete=models.CASCADE,
+        related_name="from_textile_records",
+        blank=True,
+        null=True,
     )
     to_area = models.ForeignKey(
-        Area, on_delete=models.CASCADE, related_name="to_textile_records"
+        Area,
+        on_delete=models.CASCADE,
+        related_name="to_textile_records",
+        blank=True,
+        null=True,
     )
     to_place = models.ForeignKey(
-        Place, on_delete=models.CASCADE, related_name="to_textile_records"
+        Place,
+        on_delete=models.CASCADE,
+        related_name="to_textile_records",
+        blank=True,
+        null=True,
     )
-    source_type = models.CharField(max_length=100)
-    description_of_source = models.TextField()
-    producer_other = models.TextField()
-    source_reference = models.CharField(max_length=100)
+    source_type = models.CharField(max_length=765, blank=True, null=True)
+    description_of_source = models.TextField(blank=True, null=True)
+    producer_other = models.TextField(blank=True, null=True)
+    source_reference = models.CharField(blank=True, null=True, max_length=765)
 
     def __str__(self) -> str:
         return f"{self.year} - {self.associated_textile}"
 
 
 class Image(models.Model):
+    id = models.AutoField(primary_key=True)
     textile_record = models.ForeignKey(
         TextileRecord, on_delete=models.CASCADE, related_name="images"
     )
