@@ -19,6 +19,7 @@ django-taggit = "^5.0.1"
 taggit-selectize = "^2.11.0"
 python-dotenv = "^1.0.1"
 django-modelcluster = "^6.3"
+django-import-export = "^4.0.7"
 
 
 [tool.poetry.group.dev.dependencies]
