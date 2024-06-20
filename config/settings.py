@@ -20,10 +20,10 @@ env = environ.FileAwareEnv(DEBUG=(bool, False))
 DEBUG = env("DEBUG")
 
 # Update this existing value
-SECRET_KEY = env("DJANGO_SECRET_KEY")
+SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure meayau2fu^q2$7e4e&s41gsc12umxc2jopbaq^@$0xjd0twpb2")
 
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS")
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS")
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['localhost'])
+CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=['http://localhost'])
 
 # Application definition
 
@@ -111,7 +111,7 @@ WSGI_APPLICATION = "config.wsgi.application"
 DATABASES = {
     "default": {
         "ENGINE": "django.db.backends.sqlite3",
-        "NAME": BASE_DIR / "db.sqlite3",
+        "NAME": env("SQLITE_PATH", default=BASE_DIR / "db.sqlite3"),
         # "HOST": env("DB_HOST", default="localhost"),
         # "PORT": env("DB_PORT", default="5432"),
         # "NAME": env("DB_NAME", default="postgres"),
