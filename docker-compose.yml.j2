@@ -1,0 +1,28 @@
+# this is a Jinja2 template file used during the Ansible deployment
+# environment specific configuration can be found in our Ansble scripts
+
+services:
+  app:
+    image: ghcr.io/{{ template.git.package.image_name }}:{{ template.git.package.tag }}
+    container_name: {{ template.name }}_app
+    ports:
+      - "{{ template.env.host_app_port }}:8000"
+    environment:
+      - DEBUG={{ template.env.debug_flag }}
+      - DJANGO_SECRET_KEY={{ template.env.secret_key }}
+      - DJANGO_ALLOWED_HOSTS={{ template.env.allowed_hosts }}
+      - DJANGO_CSRF_TRUSTED_ORIGINS={{ template.env.trusted_origins }}
+      - SQLITE_PATH={{ template.env.sqlite_path }}
+    volumes:
+      - dj-sqlite:/db
+    command: >
+      sh -c "
+        poetry run python manage.py migrate &&
+        poetry run python manage.py runserver 0.0.0.0:8000
+      "
+
+# external volumes managed and defined by ansible
+volumes:
+  dj-sqlite:
+    name: "{{ template.name }}_db-vol"
+    external: true
