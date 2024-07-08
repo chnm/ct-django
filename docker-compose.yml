@@ -1,0 +1,23 @@
+services:
+  app:
+    build: .
+    image: "rrchnm/ct-django"
+    container_name: "ct-app"
+    ports:
+      - "8000:8000"
+    environment:
+      - DEBUG=True
+      - DJANGO_SECRET_KEY=thisisnotasecretkey
+      - DJANGO_ALLOWED_HOSTS=localhost
+      - DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost
+      - SQLITE_PATH=/db/db.sqlite3
+    volumes:
+      - dj-sqlite:/db
+    command: >
+      sh -c "
+        poetry run python manage.py migrate &&
+        poetry run python manage.py runserver 0.0.0.0:8000
+      "
+
+volumes:
+  dj-sqlite:
