@@ -31,7 +31,7 @@
           </div>
           <div class="inline-flex items-center justify-center">
             <div class="flex flex-shrink-0 items-center">
-              <img class="h-24 w-auto" src="{% static "/img/logo.png" %}" alt="Connecting Threads">
+              <a href="{% url 'index' %}"><img class="h-24 w-auto" src="{% static "/img/logo.png" %}" alt="Connecting Threads"></a>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
               <div class="flex space-x-4">
@@ -39,13 +39,16 @@
                 <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">People</a>
                 <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Contact</a>
                 <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Conference</a>
+                <span class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">|</span>
+                <a href="/admin/" class="rounded-md px-3 py-2 text-base font-medium text-blue-700 hover:underline">Admin</a>
+                <a href="/database/" class="rounded-md px-3 py-2 text-base font-medium text-blue-700 hover:underline">Database</a>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-          {# mobile menu, show/hide based on menu state #}
+      {# mobile menu, show/hide based on menu state #}
       <div class="sm:hidden" id="mobile-menu">
         <div class="space-y-1 px-2 pb-3 pt-2">
           <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Pilot</a>
