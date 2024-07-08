@@ -6,7 +6,7 @@ from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
-from material.views import index
+from material.views import database, index
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -15,4 +15,5 @@ urlpatterns = [
     path("documents/", include(wagtaildocs_urls)),
     path("pages/", include(wagtail_urls)),
     path("", index, name="index"),
+    path("database/", database, name="database"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
