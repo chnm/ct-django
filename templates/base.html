@@ -1,44 +1,86 @@
 {% load static tailwind_tags i18n %}
 <!doctype html>
 <html lang="en">
-    <head>
-        <meta charset="UTF-8" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>{% block title %}Connecting Threads{% endblock %}</title>
-        {% tailwind_css %}
-        {% block css %}
-            <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-        {% endblock css %}
-    </head>
-    <body class="bg-gray-100">
-<!-- Navigation bar -->
-        <nav class="bg-gray-100 border-b-2 border-red-600 py-6">
-            <div class="container mx-auto flex justify-between items-center px-4">
-        <!-- Logo -->
-                <img src="{% static 'img/logo.png' %}" alt="Logo" class="h-14">
-        <!-- Navigation links -->
-                <ul class="flex space-x-6 text-gray-800">
-                    <li><a href="#" class="hover:text-red-600">About</a></li>
-                    <li><a href="#" class="hover:text-red-600">People</a></li>
-                    <li><a href="#" class="hover:text-red-600">Pilot</a></li>
-                </ul>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Connecting Threads{% endblock %}</title>
+    {% tailwind_css %}
+    {% block css %}
+      <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+    {% endblock css %}
+  </head>
+  <body class="bg-gray-100">
+    <nav class="bg-gray-100">
+      <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+        <div class="relative flex h-28 items-center justify-between">
+          <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
+                <!-- Mobile menu button-->
+            <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-red-500 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+              <span class="absolute -inset-0.5"></span>
+              <span class="sr-only">Open main menu</span>
+                  {# icon when menu is closed #}
+              <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
+              </svg>
+                  {# icon when menu is open #}
+              <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
+              </svg>
+            </button>
+          </div>
+          <div class="inline-flex items-center justify-center">
+            <div class="flex flex-shrink-0 items-center">
+              <img class="h-24 w-auto" src="{% static "/img/logo.png" %}" alt="Connecting Threads">
             </div>
-        </nav>
-        <div class="container mx-auto py-8">
-
-            <main>{% block content %} {% endblock content %}</main>
+            <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
+              <div class="flex space-x-4">
+                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Pilot</a>
+                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">People</a>
+                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Contact</a>
+                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Conference</a>
+              </div>
+            </div>
+          </div>
         </div>
+      </div>
 
-        <footer class="bg-red-600 text-white py-4">
-            <div class="container mx-auto text-center">
-                Connecting Threads
-            </div>
-        </footer>
+          {# mobile menu, show/hide based on menu state #}
+      <div class="sm:hidden" id="mobile-menu">
+        <div class="space-y-1 px-2 pb-3 pt-2">
+          <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Pilot</a>
+          <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">People</a>
+          <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Contact</a>
+          <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Conference</a>
+        </div>
+      </div>
+    </nav>
 
-        {% block js %}
-            <script src="{% static 'js/ct.js' %}"></script>
-        {% endblock js %}
-        {% block extrajs %}{% endblock extrajs %}
+    <div class="container mx-auto py-8">
+      <main>{% block content %} {% endblock content %}</main>
+    </div>
 
-    </body>
+    <footer class="pt-5 my-5 text-gray-500 border-t">
+      <div class="flex flex-wrap justify-center items-center">
+        <img src="{% static "/img/neh-logo.png" %}" alt="National Endowment for the Humanities" class="w-40 h-auto mx-4 mb-4">
+        <img src="{% static "/img/ukri-ahrc-square-logo.png" %}" alt="Arts and Humanities Research Council" class="w-20 h-auto mx-4 mb-4">
+        <img src="{% static "/img/rrchnm-logo.png" %}" alt="Roy Rosenzweig Center for History and New media" class="w-40 h-auto mx-4 mb-4">
+        <img src="{% static "/img/gmu-logo.png" %}" alt="George Mason University" class="w-20 h-auto mx-4 mb-4">
+        <img src="{% static "/img/edinburgh-logo.png" %}" alt="Edinburgh University" class="w-40 h-auto mx-4 mb-4">
+      </div>
+
+      <div class="container mx-auto px-4">
+        <p class="text-center">
+          Connecting Threads is generously funded in part by the <a href="https://www.neh.gov" class="text-gray-800 hover:underline">National Endowment for the Humanities</a> and the <a href="https://www.ukri.org/councils/ahrc/" class="text-gray-800 hover:underline">Arts and Humanities Research Council</a>, and developed by the <a href="https://rrchnm.org" class="text-gray-800 hover:underline">Roy Rosenzweig Center for History and New Media</a> at George Mason University.
+        </p>
+      </div>
+    </footer>
+
+
+    {% block js %}
+      <script src="{% static 'js/ct.js' %}"></script>
+    {% endblock js %}
+    {% block extrajs %}{% endblock extrajs %}
+
+  </body>
 </html>
