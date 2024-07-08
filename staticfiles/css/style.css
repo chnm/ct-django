@@ -1,0 +1,36 @@
+.custom-animated-handle {
+  transition: transform 0.2s;
+}
+
+.slider-with-animated-handle:hover .custom-animated-handle {
+  transform: scale(1.2);
+}
+
+/* Basic styling for carousel container and items */
+.carousel {
+  display: flex;
+  /* Ensure slides are in a row */
+  transition: transform 0.3s ease;
+  /* Smooth slide transition */
+}
+
+.carousel-item {
+  flex: 0 0 auto;
+  /* Prevent items from growing */
+  width: 100%;
+  /* Ensure items take full width of parent */
+}
+
+/* Navigation buttons */
+.carousel-prev-btn,
+.carousel-next-btn {
+  transition: opacity 0.3s ease;
+  /* Smooth opacity transition */
+}
+
+/* Overlay for navigation buttons */
+.carousel-prev-btn:hover,
+.carousel-next-btn:hover {
+  opacity: 100;
+  /* Show buttons on hover */
+}
