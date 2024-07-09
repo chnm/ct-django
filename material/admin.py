@@ -1,7 +1,18 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
-from material.models import Area, Image, Place, Subject, TextileRecord
+from material.models import (
+    ArchivalRecord,
+    Area,
+    Image,
+    NamedActor,
+    Place,
+    PlacesAlias,
+    Subject,
+    TextileAlias,
+    TextileRecord,
+    TextileType,
+)
 from material.resources import (
     AreaResource,
     ImageResource,
@@ -9,6 +20,30 @@ from material.resources import (
     SubjectResource,
     TextileRecordResource,
 )
+
+
+class TextileInline(admin.TabularInline):
+    model = TextileType
+
+
+class NamedActorsInline(admin.TabularInline):
+    model = NamedActor
+
+
+class ImagesInline(admin.TabularInline):
+    model = Image
+
+
+class PlacesAliasInline(admin.TabularInline):
+    model = PlacesAlias
+
+
+class TextileAliasInline(admin.TabularInline):
+    model = TextileAlias
+
+
+class ArchivalRecordInline(admin.TabularInline):
+    model = ArchivalRecord
 
 
 @admin.register(Area)
@@ -21,6 +56,7 @@ class AreaAdmin(admin.ModelAdmin):
 class PlaceAdmin(admin.ModelAdmin):
     resource_class = PlaceResource
     list_display = ["city", "country", "area"]
+    inlines = [PlacesAliasInline]
 
 
 @admin.register(Subject)
@@ -30,18 +66,22 @@ class SubjectAdmin(admin.ModelAdmin):
     search_fields = ["name"]
 
 
+@admin.register(TextileType)
+class TextileTypeAdmin(admin.ModelAdmin):
+    list_display = ["name", "description"]
+    inlines = [TextileAliasInline]
+
+
 @admin.register(TextileRecord)
 class TextileRecordAdmin(ImportExportModelAdmin):
     resource_class = TextileRecordResource
     list_display = [
         "id",
         "year",
-        "summary_other",
-        "associated_name",
-        "quantitative_data",
     ]
-    search_fields = ["year", "associated_textile", "summary_other", "associated_name"]
-    list_filter = ["quantitative_data", "primary_subjects", "secondary_subjects"]
+    search_fields = ["transcription", "summary_of_record"]
+    list_filter = ["year", "primary_subjects", "secondary_subjects"]
+    inlines = [TextileInline, NamedActorsInline, ImagesInline, ArchivalRecordInline]
 
 
 @admin.register(Image)
