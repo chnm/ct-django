@@ -48,13 +48,13 @@ class TextileRecord(models.Model):
 
     id = models.AutoField(primary_key=True)
     year = models.IntegerField(blank=True, null=True)
-    textile_specifications = models.CharField(blank=True, null=True)
+    textile_specifications = models.CharField(blank=True, null=True, max_length=255)
     circulation = models.CharField(
         blank=True, null=True, choices=CIRCULATION_CHOICES, max_length=2
     )
     summary_of_record = models.TextField(blank=True, null=True)
     transcription = models.TextField(blank=True, null=True)
-    keywords = TaggableManager(blank=True, null=True)
+    keywords = TaggableManager()
     price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
     currency = models.CharField(max_length=765, blank=True, null=True)
     primary_subjects = models.ManyToManyField(
@@ -99,21 +99,34 @@ class TextileRecord(models.Model):
     description_of_source = models.TextField(blank=True, null=True)
     record_creator = models.CharField(max_length=765, blank=True, null=True)
     source_reference = models.CharField(blank=True, null=True, max_length=765)
-    crosslinks = models.ManyToManyField(
-        "self", related_name="crosslinked_records", blank=True
-    )
+    crosslinks = models.ManyToManyField("self", blank=True)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
         return f"{self.year} - {self.associated_textile}"
 
 
-class Textile(models.Model):
+class TextileType(models.Model):
     # This model tracks the textiles that are associated with a TextileRecord. There can be multiple textiles associated with a single TextileRecord.
     id = models.AutoField(primary_key=True)
     textile_record = models.ForeignKey(
-        TextileRecord, on_delete=models.CASCADE, related_name="textiles"
+        TextileRecord, on_delete=models.CASCADE, related_name="textile_type"
     )
-    name = models.CharField(blank=True, null=True)
+    name = models.CharField(blank=True, null=True, max_length=255)
+    description = models.TextField(blank=True, null=True)
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+
+class TextileSubtype(models.Model):
+    id = models.AutoField(primary_key=True)
+    textile_record = models.ForeignKey(
+        TextileRecord, on_delete=models.CASCADE, related_name="textile_subtype"
+    )
+    name = models.CharField(blank=True, null=True, max_length=255)
     description = models.TextField(blank=True, null=True)
 
     def __str__(self) -> str:
@@ -126,7 +139,7 @@ class NamedActor(models.Model):
     textile_record = models.ForeignKey(
         TextileRecord, on_delete=models.CASCADE, related_name="named_actors"
     )
-    name = models.CharField(blank=True, null=True)
+    name = models.CharField(blank=True, null=True, max_length=500)
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -138,8 +151,11 @@ class Image(models.Model):
         TextileRecord, on_delete=models.CASCADE, related_name="images"
     )
     image = models.ImageField(upload_to="media/images/")
-    description = models.TextField(blank=True, null=True)
-    is_image_public = models.BooleanField(default=False)
+    description = models.CharField(blank=True, null=True, max_length=500)
+    caption = models.CharField(blank=True, null=True, max_length=500)
+    is_image_public = models.BooleanField(
+        default=False, help_text="Can this image be publicly viewable?"
+    )
     image_rights_documentation = models.FileField(
         upload_to="image_rights_documentation/", blank=True, null=True
     )

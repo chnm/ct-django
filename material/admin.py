@@ -7,8 +7,9 @@ from material.models import (
     NamedActor,
     Place,
     Subject,
-    Textile,
     TextileRecord,
+    TextileSubtype,
+    TextileType,
 )
 from material.resources import (
     AreaResource,
@@ -20,7 +21,11 @@ from material.resources import (
 
 
 class TextileInline(admin.TabularInline):
-    model = Textile
+    model = TextileType
+
+
+class TextileSubtypeInline(admin.TabularInline):
+    model = TextileSubtype
 
 
 class NamedActorsInline(admin.TabularInline):
@@ -56,13 +61,10 @@ class TextileRecordAdmin(ImportExportModelAdmin):
     list_display = [
         "id",
         "year",
-        "summary_other",
-        "associated_name",
-        "quantitative_data",
     ]
-    search_fields = ["year", "associated_textile", "summary_other", "associated_name"]
-    list_filter = ["quantitative_data", "primary_subjects", "secondary_subjects"]
-    inlines = [TextileInline, NamedActorsInline, ImagesInline]
+    search_fields = ["transcription", "summary_of_record"]
+    list_filter = ["year", "primary_subjects", "secondary_subjects"]
+    inlines = [TextileInline, TextileSubtypeInline, NamedActorsInline, ImagesInline]
 
 
 @admin.register(Image)
