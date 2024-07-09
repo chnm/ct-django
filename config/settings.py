@@ -20,14 +20,21 @@ env = environ.FileAwareEnv(DEBUG=(bool, False))
 DEBUG = env("DEBUG")
 
 # Update this existing value
-SECRET_KEY = env("DJANGO_SECRET_KEY", default="django-insecure meayau2fu^q2$7e4e&s41gsc12umxc2jopbaq^@$0xjd0twpb2")
+SECRET_KEY = env(
+    "DJANGO_SECRET_KEY",
+    default="django-insecure meayau2fu^q2$7e4e&s41gsc12umxc2jopbaq^@$0xjd0twpb2",
+)
 
-ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=['localhost'])
-CSRF_TRUSTED_ORIGINS = env.list("DJANGO_CSRF_TRUSTED_ORIGINS", default=['http://localhost'])
+ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
+CSRF_TRUSTED_ORIGINS = env.list(
+    "DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"]
+)
 
 # Application definition
 
 INSTALLED_APPS = [
+    "admin_interface",
+    "colorfield",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -94,6 +101,10 @@ AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",  # this is the default backend
     "allauth.account.auth_backends.AuthenticationBackend",
 )
+
+# django-admin-interface configuration
+X_FRAME_OPTIONS = "SAMEORIGIN"
+SILENCED_SYSTEM_CHECKS = ["security.W019"]
 
 # ALLAUTH configuration
 ACCOUNT_AUTHENTICATION_METHOD = "username"  # or 'email', or 'username_email'
