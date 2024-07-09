@@ -54,8 +54,8 @@ class TextileRecord(models.Model):
     )
     summary_of_record = models.TextField(blank=True, null=True)
     transcription = models.TextField(blank=True, null=True)
-    keywords = TaggableManager()
-    price = models.DecimalField(max_digits=10, decimal_places=2, blank=True, null=True)
+    keywords = TaggableManager(blank=True)
+    price = models.TextField(blank=True, null=True)
     currency = models.CharField(max_length=765, blank=True, null=True)
     primary_subjects = models.ManyToManyField(
         Subject,
@@ -110,24 +110,20 @@ class TextileRecord(models.Model):
 
 class TextileType(models.Model):
     # This model tracks the textiles that are associated with a TextileRecord. There can be multiple textiles associated with a single TextileRecord.
+    TYPE_CHOICES = [
+        ("pr", "Primary"),
+        ("se", "Secondary"),
+    ]
+
     id = models.AutoField(primary_key=True)
     textile_record = models.ForeignKey(
         TextileRecord, on_delete=models.CASCADE, related_name="textile_type"
     )
-    name = models.CharField(blank=True, null=True, max_length=255)
-    description = models.TextField(blank=True, null=True)
-
-    def __str__(self) -> str:
-        return f"{self.name}"
-
-
-class TextileSubtype(models.Model):
-    id = models.AutoField(primary_key=True)
-    textile_record = models.ForeignKey(
-        TextileRecord, on_delete=models.CASCADE, related_name="textile_subtype"
+    textile_type_selection = models.CharField(
+        blank=True, null=True, choices=TYPE_CHOICES, max_length=2
     )
     name = models.CharField(blank=True, null=True, max_length=255)
-    description = models.TextField(blank=True, null=True)
+    description = models.TextField(blank=True, null=True, verbose_name="Notes")
 
     def __str__(self) -> str:
         return f"{self.name}"
@@ -143,6 +139,54 @@ class NamedActor(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}"
+
+
+class PlacesAlias(models.Model):
+    id = models.AutoField(primary_key=True)
+    place = models.ForeignKey(
+        Place, on_delete=models.CASCADE, related_name="place_aliases"
+    )
+    alias = models.CharField(max_length=765, unique=True)
+
+    def __str__(self) -> str:
+        return f"{self.alias} for {self.place}"
+
+
+class TextileAlias(models.Model):
+    id = models.AutoField(primary_key=True)
+    textile_record = models.ForeignKey(
+        TextileType, on_delete=models.CASCADE, related_name="aliases"
+    )
+    alias = models.CharField(max_length=765, unique=True)
+
+    def __str__(self) -> str:
+        return f"{self.alias} for {self.textile_record}"
+
+    class Meta:
+        verbose_name_plural = "Textile Aliases"
+
+
+class ArchivalRecord(models.Model):
+    id = models.AutoField(primary_key=True)
+    textile_record = models.ForeignKey(
+        TextileRecord, on_delete=models.CASCADE, related_name="archival_records"
+    )
+    archival_reference = models.CharField(
+        blank=True,
+        null=True,
+        max_length=765,
+        help_text="The archival citation of a source.",
+    )
+    source_reference = models.CharField(
+        max_length=765,
+        blank=True,
+        null=True,
+        help_text="The bibliographic citation of a source.",
+    )
+    document = models.FileField(upload_to="media/records/")
+
+    def __str__(self) -> str:
+        return f"{self.archival_reference} for {self.textile_record}"
 
 
 class Image(models.Model):
