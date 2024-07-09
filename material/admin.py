@@ -1,7 +1,15 @@
 from django.contrib import admin
 from import_export.admin import ImportExportModelAdmin
 
-from material.models import Area, Image, Place, Subject, TextileRecord
+from material.models import (
+    Area,
+    Image,
+    NamedActor,
+    Place,
+    Subject,
+    Textile,
+    TextileRecord,
+)
 from material.resources import (
     AreaResource,
     ImageResource,
@@ -9,6 +17,18 @@ from material.resources import (
     SubjectResource,
     TextileRecordResource,
 )
+
+
+class TextileInline(admin.TabularInline):
+    model = Textile
+
+
+class NamedActorsInline(admin.TabularInline):
+    model = NamedActor
+
+
+class ImagesInline(admin.TabularInline):
+    model = Image
 
 
 @admin.register(Area)
@@ -42,6 +62,7 @@ class TextileRecordAdmin(ImportExportModelAdmin):
     ]
     search_fields = ["year", "associated_textile", "summary_other", "associated_name"]
     list_filter = ["quantitative_data", "primary_subjects", "secondary_subjects"]
+    inlines = [TextileInline, NamedActorsInline, ImagesInline]
 
 
 @admin.register(Image)
