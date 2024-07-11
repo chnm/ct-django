@@ -291,6 +291,18 @@ class TextileRecordResource(resources.ModelResource):
         if to_area_instance is not None:
             textile_instance.to_area = to_area_instance
 
+        # Handle the taggit tags separated by a semicolon
+        keywords = (
+            row.get("keywords").strip().split(";")
+            if row.get("keywords") is not None
+            else []
+        )
+        for keyword in keywords:
+            textile_instance.keywords.add(keyword)
+
+        # Save the instance
+        textile_instance.save()
+
         return super().before_import_row(row, **kwargs)
 
 

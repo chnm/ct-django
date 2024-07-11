@@ -1,0 +1,119 @@
+{% extends "base.html" %}
+{% load render_table from django_tables2 %}
+{% load filter_tags %}
+
+{% block content %}
+  <h1 class="text-2xl mb-4">Textile Records</h1>
+  <form method="get" class="mb-4">
+    {% if filter.form.year %}
+      <div class="mb-2">
+        <label class="block text-xs mb-1">
+          {{ filter.form.year.label }}
+        </label>
+        {{ filter.form.year }}
+      </div>
+    {% endif %}
+    <div class="grid grid-cols-3 gap-4">
+        {# Group together the dropdown fields of textile_type and textile_subtype #}
+      <div>
+        {% if filter.form.textile_type %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.textile_type.label }}
+            </label>
+            {{ filter.form.textile_type }}
+          </div>
+        {% endif %}
+        {% if filter.form.textile_subtype %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.textile_subtype.label }}
+            </label>
+            {{ filter.form.textile_subtype }}
+          </div>
+        {% endif %}
+      </div>
+
+        {# Group together the dropdown fields of subject_type and subject_subtype #}
+      <div>
+        {% if filter.form.subject_type %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.subject_type.label }}
+            </label>
+            {{ filter.form.subject_type }}
+          </div>
+        {% endif %}
+        {% if filter.form.subject_subtype %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.subject_subtype.label }}
+            </label>
+            {{ filter.form.subject_subtype }}
+          </div>
+        {% endif %}
+      </div>
+
+        {# Group together circulation and source_type #}
+      <div>
+        {% if filter.form.circulation %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.circulation.label }}
+            </label>
+            {{ filter.form.circulation }}
+          </div>
+        {% endif %}
+        {% if filter.form.source_type %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.source_type.label }}
+            </label>
+            {{ filter.form.source_type }}
+          </div>
+        {% endif %}
+      </div>
+
+        {# Group together origin_location and destination_location #}
+      <div>
+        {% if filter.form.origin_location %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.origin_location.label }}
+            </label>
+            {{ filter.form.origin_location }}
+          </div>
+        {% endif %}
+        {% if filter.form.destination_location %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.destination_location.label }}
+            </label>
+            {{ filter.form.destination_location }}
+          </div>
+        {% endif %}
+      </div>
+
+        {# Group together keywords and year #}
+      <div>
+        {% if filter.form.keywords %}
+          <div class="mb-2">
+            <label class="block text-xs mb-1">
+              {{ filter.form.keywords.label }}
+            </label>
+            <div class="max-h-40 overflow-y-auto border border-gray-300 rounded-md p-2">
+              {{ filter.form.keywords }}
+            </div>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+    <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-500 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+      Filter
+    </button>
+    <a href="{{ request.path }}"><button class="btn btn-secondary ml-4">Reset</button></a>
+  </form>
+  <div class="overflow-x-auto">
+    {% render_table table %}
+  </div>
+{% endblock content %}

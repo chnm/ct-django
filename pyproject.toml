@@ -22,6 +22,8 @@ django-modelcluster = "^6.3"
 django-import-export = "^4.0.7"
 django-admin-interface = "^0.28.8"
 geopy = "^2.4.1"
+django-tables2 = "^2.7.0"
+django-filter = "^24.2"
 
 
 [tool.poetry.group.dev.dependencies]
