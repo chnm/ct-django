@@ -21,6 +21,7 @@ python-dotenv = "^1.0.1"
 django-modelcluster = "^6.3"
 django-import-export = "^4.0.7"
 django-admin-interface = "^0.28.8"
+geopy = "^2.4.1"
 
 
 [tool.poetry.group.dev.dependencies]

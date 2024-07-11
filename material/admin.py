@@ -22,10 +22,6 @@ from material.resources import (
 )
 
 
-class TextileInline(admin.TabularInline):
-    model = TextileType
-
-
 class NamedActorsInline(admin.TabularInline):
     model = NamedActor
 
@@ -55,7 +51,7 @@ class AreaAdmin(admin.ModelAdmin):
 @admin.register(Place)
 class PlaceAdmin(admin.ModelAdmin):
     resource_class = PlaceResource
-    list_display = ["city", "country", "area"]
+    list_display = ["id", "city", "country", "area", "latitude", "longitude"]
     inlines = [PlacesAliasInline]
 
 
@@ -78,10 +74,15 @@ class TextileRecordAdmin(ImportExportModelAdmin):
     list_display = [
         "id",
         "year",
+        "price",
+        "currency",
+        "record_creator",
+        "source_reference",
     ]
     search_fields = ["transcription", "summary_of_record"]
     list_filter = ["year", "primary_subjects", "secondary_subjects"]
-    inlines = [TextileInline, NamedActorsInline, ImagesInline, ArchivalRecordInline]
+    inlines = [NamedActorsInline, ImagesInline, ArchivalRecordInline]
+    ordering = ["year"]
 
 
 @admin.register(Image)
