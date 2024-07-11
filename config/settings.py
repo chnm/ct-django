@@ -60,6 +60,8 @@ INSTALLED_APPS = [
     "import_export",
     "taggit",
     "tailwind",
+    "django_tables2",
+    "django_filters",
     "theme",
     "exhibits",
 ]
@@ -93,6 +95,7 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
+                "django.template.context_processors.request",
             ],
         },
     },

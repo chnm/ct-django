@@ -16,4 +16,5 @@ urlpatterns = [
     path("pages/", include(wagtail_urls)),
     path("", index, name="index"),
     path("database/", database, name="database"),
+    # path("textile-records/", textile_records_list, name="textile_records_list"),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

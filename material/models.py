@@ -12,6 +12,10 @@ class Area(models.Model):
         else:
             return "No area name provided"
 
+    class Meta:
+        # default sort by name
+        ordering = ["name"]
+
 
 class Place(models.Model):
     id = models.AutoField(primary_key=True)
@@ -58,6 +62,8 @@ class Place(models.Model):
             "city",
             "area",
         )
+        # default sort by name
+        ordering = ["city"]
 
 
 class Subject(models.Model):
@@ -144,6 +150,10 @@ class TextileRecord(models.Model):
     def __str__(self) -> str:
         return f"{self.year}"
 
+    class Meta:
+        # default sort by year
+        ordering = ["year"]
+
 
 class TextileType(models.Model):
     # This model tracks the textiles that are associated with a TextileRecord. There can be multiple textiles associated with a single TextileRecord.
@@ -161,6 +171,9 @@ class TextileType(models.Model):
 
     def __str__(self) -> str:
         return f"{self.name}"
+
+    class Meta:
+        ordering = ["name"]
 
 
 class NamedActor(models.Model):
