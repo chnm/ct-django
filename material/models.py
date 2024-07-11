@@ -4,22 +4,54 @@ from taggit.managers import TaggableManager
 
 class Area(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=50, unique=True)
+    name = models.CharField(max_length=255, unique=True, blank=True, null=True)
 
     def __str__(self) -> str:
-        return str(self.name)
+        if self.name is not None:
+            return str(self.name)
+        else:
+            return "No area name provided"
 
 
 class Place(models.Model):
     id = models.AutoField(primary_key=True)
     city = models.CharField(max_length=765, blank=True, null=True, unique=True)
-    country = models.CharField(max_length=765, blank=True, null=True, unique=True)
+    country = models.CharField(max_length=765, blank=True, null=True)
     area = models.ForeignKey(
         Area, on_delete=models.CASCADE, related_name="places", blank=True, null=True
     )
+    latitude = models.FloatField(blank=True, null=True)
+    longitude = models.FloatField(blank=True, null=True)
 
     def __str__(self) -> str:
-        return f"{self.city}, {self.country}"
+        if self.country is None:
+            return str(self.city)
+        elif self.city is None and self.country is None:
+            return "No place name provided"
+        else:
+            return f"{self.city}, {self.country}"
+
+    # Automatically derive the latitude/longitude from the available data.
+    def save(self, *args, **kwargs):
+        if self.city is not None and self.country is not None:
+            from geopy.geocoders import Nominatim
+
+            geolocator = Nominatim(user_agent="textiles")
+            location = geolocator.geocode(f"{self.city}, {self.country}")
+            if location is not None:
+                self.latitude = location.latitude
+                self.longitude = location.longitude
+        elif self.country is not None:
+            from geopy.geocoders import Nominatim
+
+            geolocator = Nominatim(user_agent="textiles")
+            location = geolocator.geocode(self.country)
+            if location is not None:
+                self.latitude = location.latitude
+                self.longitude = location.longitude
+        else:
+            pass
+        super(Place, self).save(*args, **kwargs)
 
     class Meta:
         unique_together = (
@@ -30,7 +62,7 @@ class Place(models.Model):
 
 class Subject(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=350, unique=True)
+    name = models.CharField(max_length=350, unique=True, null=True, blank=True)
 
     def __str__(self) -> str:
         return str(self.name)
@@ -48,6 +80,11 @@ class TextileRecord(models.Model):
 
     id = models.AutoField(primary_key=True)
     year = models.IntegerField(blank=True, null=True)
+    textile_types = models.ManyToManyField(
+        "TextileType",
+        related_name="textile_records",
+        blank=True,
+    )
     textile_specifications = models.CharField(blank=True, null=True, max_length=255)
     circulation = models.CharField(
         blank=True, null=True, choices=CIRCULATION_CHOICES, max_length=2
@@ -105,7 +142,7 @@ class TextileRecord(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return f"{self.year} - {self.associated_textile}"
+        return f"{self.year}"
 
 
 class TextileType(models.Model):
@@ -116,9 +153,6 @@ class TextileType(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)
-    textile_record = models.ForeignKey(
-        TextileRecord, on_delete=models.CASCADE, related_name="textile_type"
-    )
     textile_type_selection = models.CharField(
         blank=True, null=True, choices=TYPE_CHOICES, max_length=2
     )
