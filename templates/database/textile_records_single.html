@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% load render_table from django_tables2 %}
+
+{% block content %}
+    <h1 class="text-3xl mb-4">{{ item.year }}</h1>
+
+    <h2 class="text-xl mb-4">Summary</h2>
+    <div class="font-serif text-lg mb-4">
+        <p class="mb-2">{{ item.summary }}</p>
+    </div>
+
+    <h2 class="text-xl mb-4">Record Excerpt</h2>
+    <div class="font-serif text-lg mb-4">
+        <blockquote class="pl-4 border-l-2 border-red-200 italic">{{ item.transcription }}</blockquote>
+    </div>
+
+{# if images are attached, display them all #}
+    <h2 class="text-xl mb-4">Images</h2>
+    {% if item.images.all %}
+        <div class="grid grid-cols-2 gap-4">
+            {% for image in item.images.all %}
+                <figure>
+                    <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="w-full h-auto">
+                    <figcaption class="text-center text-sm">{{ image.caption }}</figcaption>
+                </figure>
+            {% endfor %}
+        </div>
+    {% else %}
+        <p>No images are available for this item.</p>
+    {% endif %}
+
+    <hr class="my-8">
+
+    <div class="bg-amber-50 p-3">
+        <h3 class="text-lg mb-4">Item Data</h3>
+        <div>
+            <p class="text-xs">Textile type: {{ item.textile_type }}</p>
+            <p class="text-xs">Textile sub-type: {{ item.textile_subtype }}</p>
+            <p class="text-xs">Subject type: {{ item.subject_type }}</p>
+            <p class="text-xs">Subject sub-type: {{ item.subject_subtype }}</p>
+        </div>
+        <div>
+            <p class="text-xs">Circulation: {{ item.circulation }}</p>
+            <p class="text-xs">Source type: {{ item.source_type }}</p>
+            <p class="text-xs">Year: {{ item.year }}</p>
+        </div>
+    </div>
+{% endblock content %}

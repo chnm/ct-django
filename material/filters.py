@@ -1,9 +1,10 @@
-from django.forms import CheckboxSelectMultiple, Select, TextInput
+from django.db.models import Q
+from django.forms import Select, TextInput
 from django_filters import (
+    CharFilter,
     ChoiceFilter,
     FilterSet,
     ModelChoiceFilter,
-    ModelMultipleChoiceFilter,
     NumberFilter,
 )
 from taggit.models import Tag
@@ -30,6 +31,12 @@ class TextileRecordFilter(FilterSet):
         lookup_expr="contains",
         widget=TextInput(attrs={"placeholder": "Year"}),
     )
+    # text_search = CharFilter(method="search_text", label="Search", widget=TextInput(attrs={"placeholder": "Search"}))
+    # def text_search_filter(self, queryset, name, value):
+    #     return queryset.filter(
+    #         Q(summary_of_record__icontains=value) |
+    #         Q(transcription__icontains=value)
+    #     )
     textile_type = ModelChoiceFilter(
         queryset=TextileType.objects.all(),
         field_name="textile_types",
@@ -59,11 +66,11 @@ class TextileRecordFilter(FilterSet):
         field_name="circulation",
         widget=Select(attrs={"placeholder": "Circulation"}),
     )
-    keywords = ModelMultipleChoiceFilter(
-        queryset=Tag.objects.all(),
-        widget=CheckboxSelectMultiple(),
-        field_name="keywords",
-    )
+    # keywords = ModelMultipleChoiceFilter(
+    #     queryset=Tag.objects.all(),
+    #     widget=CheckboxSelectMultiple(),
+    #     field_name="keywords",
+    # )
     origin_location = ModelChoiceFilter(
         queryset=Area.objects.all(),
         field_name="from_area",
@@ -89,7 +96,7 @@ class TextileRecordFilter(FilterSet):
             "textile_type",
             "textile_subtype",
             "circulation",
-            "keywords",
+            # "keywords",
             "origin_location",
             "destination_location",
             "source_type",

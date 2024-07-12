@@ -1,6 +1,6 @@
 from django.core.paginator import EmptyPage, Paginator
 from django.http import JsonResponse
-from django.shortcuts import render
+from django.shortcuts import get_object_or_404, render
 from django_filters.views import FilterView
 from django_tables2 import RequestConfig
 from taggit.models import Tag
@@ -24,3 +24,8 @@ def database(request):
         "database/textile_records_list.html",
         {"filter": filter, "table": table},
     )
+
+
+def textile_records_single(request, item_id):
+    item = get_object_or_404(TextileRecord, pk=item_id)
+    return render(request, "database/textile_records_single.html", {"item": item})

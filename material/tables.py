@@ -1,6 +1,8 @@
 import django_tables2 as tables
+from django.urls import reverse
 from django.utils.html import format_html
 from django.utils.safestring import mark_safe
+from django_tables2 import A, TemplateColumn
 
 from material.models import TextileRecord
 
@@ -10,41 +12,27 @@ class TextileRecordTable(tables.Table):
     textile_type = tables.Column(empty_values=(), verbose_name="Textile type")
     textile_subtype = tables.Column(empty_values=(), verbose_name="Textile subtype")
 
-    def render_summary_of_record(self, value):
-        return format_html(
-            '<details><summary>Summary</summary><div class="details-content"><p>{}</p></div></details>',
-            value,
-        )
-
-    def render_transcription(self, value):
-        return format_html(
-            '<details><summary>Transcription</summary><div class="details-content"><p>{}</p></div></details>',
-            value,
-        )
-
-    # def render_image(self, record):
-    #     first_image = record.images.first()
-    #     if first_image:
-    #         return mark_safe(f'<img src="{first_image.image.url}" width="100" height="100" />')
-    #     return 'No images attached'
-
     def render_image(self, record):
         images = list(record.images.all())
-        if not images:
-            return "No images attached"
 
-        # Always display the first image
-        html_output = mark_safe(
-            f'<img src="{images[0].image.url}" width="100" height="100" />'
+        # Generate the URL for the item's detail page
+        item_detail_url = reverse(
+            "textile_records_single", kwargs={"item_id": record.id}
         )
 
-        # If there are more images, add them in a details/summary format
-        if len(images) > 1:
-            for image in images[1:]:
-                html_output += format_html(
-                    '<details><summary>More Images</summary><div><img src="{}" width="100" height="100" /></div></details>',
-                    image.image.url,
-                )
+        if not images:
+            html_output = format_html(
+                'No images attached. <br/><a class="text-sm" href="{}">View item details</a>',
+                item_detail_url,
+            )
+            return html_output
+
+        # Always display the first image with a link to the item detail page
+        html_output = format_html(
+            '<img src="{}" width="100" height="100" /><br/><a class="text-sm" href="{}">View item details</a>',
+            images[0].image.url,
+            item_detail_url,
+        )
 
         return html_output
 
@@ -98,9 +86,7 @@ class TextileRecordTable(tables.Table):
             "circulation",
             "from_area",
             "to_area",
-            "keywords",
-            "summary_of_record",
-            "transcription",
+            # "keywords",
         ]
         empty_text = "No records match your filter."
         attrs = {

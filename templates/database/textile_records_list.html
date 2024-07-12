@@ -13,8 +13,9 @@
         {{ filter.form.year }}
       </div>
     {% endif %}
+
     <div class="grid grid-cols-3 gap-4">
-        {# Group together the dropdown fields of textile_type and textile_subtype #}
+      {# Group together the dropdown fields of textile_type and textile_subtype #}
       <div>
         {% if filter.form.textile_type %}
           <div class="mb-2">
@@ -115,12 +116,5 @@
   </form>
   <div class="overflow-x-auto">
     {% render_table table %}
-    {# modal view for data #}
-    <div id="modal" class="modal" style="display:none;">
-      <div class="modal-content">
-        <span class="close-button">&times;</span>
-        <p id="modal-text"></p>
-      </div>
-    </div>
   </div>
 {% endblock content %}
