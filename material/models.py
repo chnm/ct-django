@@ -241,14 +241,15 @@ class Image(models.Model):
     textile_record = models.ForeignKey(
         TextileRecord, on_delete=models.CASCADE, related_name="images"
     )
-    image = models.ImageField(upload_to="media/images/")
+    image = models.ImageField(upload_to="images/")
     description = models.CharField(blank=True, null=True, max_length=500)
     caption = models.CharField(blank=True, null=True, max_length=500)
+    alt_text = models.CharField(blank=True, null=True, max_length=500)
     is_image_public = models.BooleanField(
         default=False, help_text="Can this image be publicly viewable?"
     )
     image_rights_documentation = models.FileField(
-        upload_to="image_rights_documentation/", blank=True, null=True
+        upload_to="documentation/", blank=True, null=True
     )
 
     def __str__(self) -> str:
