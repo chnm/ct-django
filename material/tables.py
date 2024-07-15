@@ -84,6 +84,7 @@ class TextileRecordTable(tables.Table):
             "year",
             "source_type",
             "circulation",
+            "source_reference",
             "from_area",
             "to_area",
             # "keywords",

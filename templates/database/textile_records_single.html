@@ -6,12 +6,17 @@
 
     <h2 class="text-xl mb-4">Summary</h2>
     <div class="font-serif text-lg mb-4">
-        <p class="mb-2">{{ item.summary }}</p>
+        {% if item.summary %}
+            <p class="mb-2">{{ item.summary }}</p>
+        {% else  %}
+            <p class="mb-2">No summary is available for this item.</p>
+        {% endif %}
     </div>
 
     <h2 class="text-xl mb-4">Record Excerpt</h2>
     <div class="font-serif text-lg mb-4">
         <blockquote class="pl-4 border-l-2 border-red-200 italic">{{ item.transcription }}</blockquote>
+        <p class="text-sm text-right">Source: {{ item.source_reference }}</p>
     </div>
 
 {# if images are attached, display them all #}
@@ -31,18 +36,19 @@
 
     <hr class="my-8">
 
-    <div class="bg-amber-50 p-3">
+    <div class="bg-gray-50 p-3">
         <h3 class="text-lg mb-4">Item Data</h3>
         <div>
-            <p class="text-xs">Textile type: {{ item.textile_type }}</p>
-            <p class="text-xs">Textile sub-type: {{ item.textile_subtype }}</p>
-            <p class="text-xs">Subject type: {{ item.subject_type }}</p>
-            <p class="text-xs">Subject sub-type: {{ item.subject_subtype }}</p>
+            <p class="text-base">Textile type: {{ item.textile_type }}</p>
+            <p class="text-base">Textile sub-type: {{ item.textile_subtype }}</p>
+            <p class="text-base">Subject type: {{ item.subject_type }}</p>
+            <p class="text-base">Subject sub-type: {{ item.subject_subtype }}</p>
         </div>
         <div>
-            <p class="text-xs">Circulation: {{ item.circulation }}</p>
-            <p class="text-xs">Source type: {{ item.source_type }}</p>
-            <p class="text-xs">Year: {{ item.year }}</p>
+            <p class="text-base">Circulation: {{ item.circulation }}</p>
+            <p class="text-base">Source type: {{ item.source_type }}</p>
+            <p class="text-base">Year: {{ item.year }}</p>
+            <p class="text-base">Reference: {{ item.source_reference }}</p>
         </div>
     </div>
 {% endblock content %}

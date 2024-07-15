@@ -148,7 +148,7 @@ class TextileRecord(models.Model):
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self) -> str:
-        return f"{self.year}"
+        return f"Item ID {self.id}"
 
     class Meta:
         # default sort by year
