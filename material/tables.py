@@ -8,9 +8,34 @@ from material.models import TextileRecord
 
 
 class TextileRecordTable(tables.Table):
-    image = tables.Column(empty_values=(), verbose_name="Image")
-    textile_type = tables.Column(empty_values=(), verbose_name="Textile type")
-    textile_subtype = tables.Column(empty_values=(), verbose_name="Textile subtype")
+    image = tables.Column(empty_values=(), verbose_name="Image", orderable=False)
+    textile_type = tables.Column(
+        empty_values=(), verbose_name="Textile type", orderable=False
+    )
+    textile_subtype = tables.Column(
+        empty_values=(), verbose_name="Textile subtype", orderable=False
+    )
+    summary_of_record = tables.Column(
+        attrs={
+            "td": {
+                "style": "max-width: 250px; white-space: normal; word-wrap: break-word;"
+            }
+        }
+    )
+    transcription = tables.Column(
+        attrs={
+            "td": {
+                "style": "max-width: 250px; white-space: normal; word-wrap: break-word;"
+            }
+        }
+    )
+    source_reference = tables.Column(
+        attrs={
+            "td": {
+                "style": "max-width: 250px; white-space: normal; word-wrap: break-word;"
+            }
+        }
+    )
 
     def render_image(self, record):
         images = list(record.images.all())
