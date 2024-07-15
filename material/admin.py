@@ -80,7 +80,16 @@ class TextileRecordAdmin(ImportExportModelAdmin):
         "source_reference",
     ]
     search_fields = ["transcription", "summary_of_record"]
-    list_filter = ["year", "primary_subjects", "secondary_subjects"]
+    list_filter = [
+        "year",
+        "primary_subjects",
+        "secondary_subjects",
+        "textile_types",
+        "source_type",
+        "circulation",
+        "from_area",
+        "to_area",
+    ]
     inlines = [NamedActorsInline, ImagesInline, ArchivalRecordInline]
     ordering = ["year"]
 
