@@ -87,6 +87,8 @@ class TextileRecordTable(tables.Table):
             "source_reference",
             "from_area",
             "to_area",
+            "summary_of_record",
+            "transcription",
             # "keywords",
         ]
         empty_text = "No records match your filter."
