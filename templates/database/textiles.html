@@ -1,0 +1,30 @@
+{% extends "base.html" %}
+
+{% load render_table from django_tables2 %}
+{% load i18n %}
+{% load crispy_forms_tags %}
+
+{% block content %}
+    <h1>Textiles</h1>
+
+    {# Search form #}
+    <form method="get"
+          hx-get="{% url 'database' %}"
+          hx-target="div.table-container"
+          hx-swap="outerHTML"
+          hx-indicator=".progress"
+          class="form-inline">
+        {% crispy filter.form %}
+        <button type="submit" class="btn btn-primary" onclick="console.log('clicked')">Filter</button>
+    </form>
+
+    {# Progress indicator #}
+    <div class="progress">
+        <div class="indeterminate"></div>
+    </div>
+
+    {# Render the table #}
+    <div class="table-container">
+        {% render_table table %}
+    </div>
+{% endblock content %}
