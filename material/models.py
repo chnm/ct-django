@@ -4,7 +4,7 @@ from taggit.managers import TaggableManager
 
 class Area(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    name = models.CharField(max_length=255, unique=True, default="Unnamed Area")
 
     def __str__(self) -> str:
         if self.name is not None:
@@ -19,7 +19,7 @@ class Area(models.Model):
 
 class Place(models.Model):
     id = models.AutoField(primary_key=True)
-    city = models.CharField(max_length=765, blank=True, null=True, unique=True)
+    city = models.CharField(max_length=765, unique=True, default="Unnamed City")
     country = models.CharField(max_length=765, blank=True, null=True)
     area = models.ForeignKey(
         Area, on_delete=models.CASCADE, related_name="places", blank=True, null=True
