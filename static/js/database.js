@@ -1,3 +1,57 @@
+document.addEventListener("DOMContentLoaded", function () {
+  const primarySelect = document.querySelector("[data-primary-id]");
+  const secondarySelect = document.querySelector("[data-secondary-id]");
+
+  if (primarySelect && secondarySelect) {
+    primarySelect.addEventListener("change", function () {
+      const primaryValue = primarySelect.value;
+
+      if (primaryValue) {
+        fetch(`/get-secondary-textile-types/${primaryValue}/`)
+          .then((response) => response.json())
+          .then((data) => {
+            // Clear existing options
+            secondarySelect.innerHTML =
+              '<option value="">Select Secondary Textile Type</option>';
+
+            // Populate new options
+            data.forEach((item) => {
+              const option = document.createElement("option");
+              option.value = item.value;
+              option.textContent = item.name;
+              secondarySelect.appendChild(option);
+            });
+
+            // Enable the secondary select
+            secondarySelect.disabled = false;
+            secondarySelect.classList.remove(
+              "cursor-not-allowed",
+              "opacity-50",
+              "bg-gray-100",
+            );
+            secondarySelect.classList.add("bg-white");
+          })
+          .catch((error) => {
+            console.error("Error fetching secondary textile types:", error);
+          });
+      } else {
+        // Disable the secondary select if no primary type is selected
+        secondarySelect.innerHTML =
+          '<option value="">Select Secondary Textile Type</option>';
+        secondarySelect.disabled = true;
+        secondarySelect.classList.add(
+          "cursor-not-allowed",
+          "opacity-50",
+          "bg-gray-100",
+        );
+        secondarySelect.classList.remove("bg-white");
+      }
+    });
+  } else {
+    console.error("Primary or secondary select element not found");
+  }
+});
+
 function fuzzySearch(event) {
   const query = event.target.value;
   if (query.length < 2) {

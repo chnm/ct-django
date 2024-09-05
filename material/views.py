@@ -6,7 +6,7 @@ from django_tables2 import SingleTableMixin
 from taggit.models import Tag
 
 from material.filters import TextileFilter
-from material.models import TextileRecord
+from material.models import PrimaryTextileType, SecondaryTextileType, TextileRecord
 from material.tables import TextileTable
 
 
@@ -37,6 +37,25 @@ def record_details(request, record_id):
         "source_type": record.source_type,
     }
     return JsonResponse(data)
+
+
+def get_secondary_textile_types(request, primary_id):
+    try:
+        primary_textile_type = PrimaryTextileType.objects.get(id=primary_id)
+        # Fetch TextileRecord instances that have the selected PrimaryTextileType
+        textile_records = TextileRecord.objects.filter(
+            primary_textile_types=primary_textile_type
+        )
+        # Extract the related SecondaryTextileType instances
+        secondary_types = (
+            SecondaryTextileType.objects.filter(textile_records__in=textile_records)
+            .distinct()
+            .values("id", "name")
+        )
+        data = [{"value": st["id"], "name": st["name"]} for st in secondary_types]
+        return JsonResponse(data, safe=False)
+    except PrimaryTextileType.DoesNotExist:
+        return JsonResponse({"error": "PrimaryTextileType not found"}, status=404)
 
 
 def textile_records_single(request, item_id):

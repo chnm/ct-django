@@ -40,7 +40,7 @@
                 </div>
                 <div class="form-group">
                     <label for="{{ filter.form.primary_textile_types.id_for_label }}" class="block text-sm font-medium text-gray-700">Primary Textile Type</label>
-                    <select id="{{ filter.form.primary_textile_types.id_for_label }}" name="{{ filter.form.primary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                    <select id="{{ filter.form.primary_textile_types.id_for_label }}" name="{{ filter.form.primary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" data-primary-id="{{ filter.form.primary_textile_types.id_for_label }}">
                         {% for value, name in filter.form.primary_textile_types.field.choices %}
                             <option value="{{ value }}">{{ name }}</option>
                         {% endfor %}
@@ -48,14 +48,12 @@
                 </div>
                 <div class="form-group">
                     <label for="{{ filter.form.secondary_textile_types.id_for_label }}" class="block text-sm font-medium text-gray-700">Secondary Textile Type</label>
-                    <select id="{{ filter.form.secondary_textile_types.id_for_label }}" name="{{ filter.form.secondary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        {% for value, name in filter.form.secondary_textile_types.field.choices %}
-                            <option value="{{ value }}">{{ name }}</option>
-                        {% endfor %}
+                    <select id="{{ filter.form.secondary_textile_types.id_for_label }}" name="{{ filter.form.secondary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-not-allowed opacity-50" disabled data-secondary-id="{{ filter.form.secondary_textile_types.id_for_label }}">
+                        <option value="">Select Secondary Textile Type</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="id_source_type" class="block text-sm font-medium text-gray-700">{% trans "Source type" %}</label>
+                    <label for="id_source_type" class="block text-sm font-medium text-gray-700">Source Type</label>
                     <select name="source_type" id="id_source_type" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
                         <option value="" selected>{% trans "All" %}</option>
                         {% for source_type in source_types %}
@@ -75,10 +73,6 @@
                             </option>
                         {% endfor %}
                     </select>
-                </div>
-                <div class="form-group">
-                    <label for="id_source_reference" class="block text-sm font-medium text-gray-700">{% trans "Source reference" %}</label>
-                    <input type="text" name="source_reference" id="id_source_reference" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ request.GET.source_reference }}">
                 </div>
                 <div class="form-group">
                     <label for="{{ filter.form.from_area.id_for_label }}" class="block text-sm font-medium text-gray-700">From Area</label>

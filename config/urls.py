@@ -8,6 +8,7 @@ from wagtail.documents import urls as wagtaildocs_urls
 
 from material.views import (
     TextileTableView,
+    get_secondary_textile_types,
     index,
     keyword_search,
     record_details,
@@ -29,4 +30,9 @@ urlpatterns = [
     path(
         "record-details/<int:record_id>/", record_details, name="record_details"
     ),  # page
+    path(
+        "get-secondary-textile-types/<int:primary_id>/",
+        get_secondary_textile_types,
+        name="get_secondary_textile_types",
+    ),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
