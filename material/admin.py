@@ -8,10 +8,11 @@ from material.models import (
     NamedActor,
     Place,
     PlacesAlias,
+    PrimaryTextileType,
+    SecondaryTextileType,
     Subject,
     TextileAlias,
     TextileRecord,
-    TextileType,
 )
 from material.resources import (
     AreaResource,
@@ -62,9 +63,21 @@ class SubjectAdmin(admin.ModelAdmin):
     search_fields = ["name"]
 
 
-@admin.register(TextileType)
-class TextileTypeAdmin(admin.ModelAdmin):
-    list_display = ["name", "description"]
+@admin.register(PrimaryTextileType)
+class PrimaryTextileTypeAdmin(admin.ModelAdmin):
+    list_display = [
+        "name",
+        "description",
+    ]
+    inlines = [TextileAliasInline]
+
+
+@admin.register(SecondaryTextileType)
+class SecondaryTextileTypeAdmin(admin.ModelAdmin):
+    list_display = [
+        "name",
+        "description",
+    ]
     inlines = [TextileAliasInline]
 
 
@@ -84,7 +97,8 @@ class TextileRecordAdmin(ImportExportModelAdmin):
         "year",
         "primary_subjects",
         "secondary_subjects",
-        "textile_types",
+        "primary_textile_types",
+        "secondary_textile_types",
         "source_type",
         "circulation",
         "from_area",

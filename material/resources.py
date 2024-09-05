@@ -6,7 +6,15 @@ from import_export import fields, resources
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget, Widget
 from taggit.models import Tag
 
-from material.models import Area, Image, Place, Subject, TextileRecord, TextileType
+from material.models import (
+    Area,
+    Image,
+    Place,
+    PrimaryTextileType,
+    SecondaryTextileType,
+    Subject,
+    TextileRecord,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -90,15 +98,15 @@ class TextileRecordResource(resources.ModelResource):
     )
     price = fields.Field(attribute="price", column_name="price")
     currency = fields.Field(attribute="currency", column_name="currency")
-    textile_type = fields.Field(
-        attribute="textile_type",
-        column_name="textile_type",
-        widget=ForeignKeyWidget(TextileType, "name"),
+    primary_textile_types = fields.Field(
+        attribute="primary_textile_types",
+        column_name="primary_textile_types",
+        widget=ManyToManyWidget(PrimaryTextileType, field="name"),
     )
-    textile_subtype = fields.Field(
-        attribute="textile_subtype",
-        column_name="textile_subtype",
-        widget=ForeignKeyWidget(TextileType, "name"),
+    secondary_textile_types = fields.Field(
+        attribute="secondary_textile_types",
+        column_name="secondary_textile_types",
+        widget=ManyToManyWidget(SecondaryTextileType, field="name"),
     )
     subject_primary = fields.Field(
         attribute="primary_subjects",
@@ -154,8 +162,8 @@ class TextileRecordResource(resources.ModelResource):
             "keywords",
             "price",
             "currency",
-            "textile_type",
-            "textile_subtype",
+            "primary_textile_types",
+            "secondary_textile_types",
             "subject_primary",
             "subject_secondary",
             "originating_location_place",
@@ -171,8 +179,9 @@ class TextileRecordResource(resources.ModelResource):
     def before_import_row(self, row, **kwargs):
         try:
             textile_instance = self.get_or_create_textile_record(row)
-            self.process_textile_types(row, textile_instance)
             self.process_subjects(row, textile_instance)
+            self.process_primary_textile_types(row, textile_instance)
+            self.process_secondary_textile_types(row, textile_instance)
             self.process_locations(row, textile_instance)
             self.process_keywords(row, textile_instance)
 
@@ -207,12 +216,21 @@ class TextileRecordResource(resources.ModelResource):
         )
         return instance
 
-    def process_textile_types(self, row, textile_instance):
-        for field in ["textile_type", "textile_subtype"]:
-            value = self.safe_get_strip(row, field)
-            if value:
-                type_instance, _ = TextileType.objects.get_or_create(name=value)
-                textile_instance.textile_types.add(type_instance)
+    def process_primary_textile_types(self, row, textile_instance):
+        primary_value = self.safe_get_strip(row, "textile_type")
+        if primary_value:
+            primary_type_instance, _ = PrimaryTextileType.objects.get_or_create(
+                name=primary_value
+            )
+            textile_instance.primary_textile_types.add(primary_type_instance)
+
+    def process_secondary_textile_types(self, row, textile_instance):
+        secondary_value = self.safe_get_strip(row, "textile_subtype")
+        if secondary_value:
+            secondary_type_instance, _ = SecondaryTextileType.objects.get_or_create(
+                name=secondary_value
+            )
+            textile_instance.secondary_textile_types.add(secondary_type_instance)
 
     def process_subjects(self, row, textile_instance):
         for field, related_field in [
