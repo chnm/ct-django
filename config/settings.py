@@ -46,8 +46,6 @@ INSTALLED_APPS = [
     "allauth.socialaccount",
     "material",
     "django_htmx",
-    "crispy_forms",
-    "crispy_tailwind",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.embeds",
@@ -174,10 +172,6 @@ TAILWIND_APP_NAME = "theme"
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
-
-CRISPY_ALLOWED_TEMPLATE_PACKS = "tailwind"
-
-CRISPY_TEMPLATE_PACK = "tailwind"
 
 
 # Static files (CSS, JavaScript, Images)
