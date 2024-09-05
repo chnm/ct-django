@@ -10,6 +10,8 @@
       <link rel="stylesheet" href="{% static 'css/style.css' %}" />
     {% endblock css %}
     <script src="{% static 'js/htmx.min.js' %}" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {% block extrahead %}{% endblock extrahead %}
   </head>
   <body class="bg-gray-100">
     <nav class="bg-gray-100">
@@ -80,10 +82,6 @@
       </div>
     </footer>
 
-
-    {% block js %}
-      <script src="{% static 'js/ct.js' %}"></script>
-    {% endblock js %}
     {% block extrajs %}{% endblock extrajs %}
 
   </body>
