@@ -6,7 +6,13 @@ from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
-from material.views import TextileTableView, index, textile_records_single
+from material.views import (
+    TextileTableView,
+    index,
+    keyword_search,
+    record_details,
+    textile_records_single,
+)
 
 urlpatterns = [
     path("admin/", admin.site.urls),
@@ -16,5 +22,11 @@ urlpatterns = [
     path("pages/", include(wagtail_urls)),
     path("", index, name="index"),
     path("database/", TextileTableView.as_view(), name="database"),
-    path("database/<int:item_id>/", textile_records_single, name="textile_single"),
+    path(
+        "database/<int:item_id>/", textile_records_single, name="textile_single"
+    ),  # modal view
+    path("api/keywords/", keyword_search, name="keyword_search"),
+    path(
+        "record-details/<int:record_id>/", record_details, name="record_details"
+    ),  # page
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
