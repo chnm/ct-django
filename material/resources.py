@@ -1,10 +1,20 @@
 import logging
 
+from django.core.exceptions import ObjectDoesNotExist
+from django.db.utils import IntegrityError
 from import_export import fields, resources
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget, Widget
 from taggit.models import Tag
 
-from material.models import Area, Image, Place, Subject, TextileRecord, TextileType
+from material.models import (
+    Area,
+    Image,
+    Place,
+    PrimaryTextileType,
+    SecondaryTextileType,
+    Subject,
+    TextileRecord,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -68,6 +78,7 @@ class TaggitWidget(Widget):
 
 
 class TextileRecordResource(resources.ModelResource):
+    raise_errors = False
     # Define fields to map spreadsheet columns
     year = fields.Field(attribute="year", column_name="year")
     textile_specifications = fields.Field(
@@ -87,15 +98,15 @@ class TextileRecordResource(resources.ModelResource):
     )
     price = fields.Field(attribute="price", column_name="price")
     currency = fields.Field(attribute="currency", column_name="currency")
-    textile_type = fields.Field(
-        attribute="textile_type",
-        column_name="textile_type",
-        widget=ForeignKeyWidget(TextileType, "name"),
+    primary_textile_types = fields.Field(
+        attribute="primary_textile_types",
+        column_name="primary_textile_types",
+        widget=ManyToManyWidget(PrimaryTextileType, field="name"),
     )
-    textile_subtype = fields.Field(
-        attribute="textile_subtype",
-        column_name="textile_subtype",
-        widget=ForeignKeyWidget(TextileType, "name"),
+    secondary_textile_types = fields.Field(
+        attribute="secondary_textile_types",
+        column_name="secondary_textile_types",
+        widget=ManyToManyWidget(SecondaryTextileType, field="name"),
     )
     subject_primary = fields.Field(
         attribute="primary_subjects",
@@ -151,8 +162,8 @@ class TextileRecordResource(resources.ModelResource):
             "keywords",
             "price",
             "currency",
-            "textile_type",
-            "textile_subtype",
+            "primary_textile_types",
+            "secondary_textile_types",
             "subject_primary",
             "subject_secondary",
             "originating_location_place",
@@ -166,144 +177,123 @@ class TextileRecordResource(resources.ModelResource):
         )
 
     def before_import_row(self, row, **kwargs):
-        # Now we handle the data in the columns textile_type and textile_subtype.
-        # Each of these are assigned to the model TextileType. We will create these
-        # if they do not exist and update the row with the correct data.
-        textile_type = (
-            row.get("textile_type").strip() if row.get("textile_type") else None
-        )
-        textile_subtype = (
-            row.get("textile_subtype").strip() if row.get("textile_subtype") else None
-        )
+        try:
+            textile_instance = self.get_or_create_textile_record(row)
+            self.process_subjects(row, textile_instance)
+            self.process_primary_textile_types(row, textile_instance)
+            self.process_secondary_textile_types(row, textile_instance)
+            self.process_locations(row, textile_instance)
+            self.process_keywords(row, textile_instance)
 
-        textile_instance, created = TextileRecord.objects.get_or_create(
-            id=row.get("id"),
-            defaults={
-                "year": row.get("year"),
-                "textile_specifications": row.get("textile_specifications"),
-                "circulation": row.get("circulation"),
-                "summary_of_record": row.get("summary_of_record"),
-                "transcription": row.get("transcription"),
-                "price": row.get("price"),
-                "currency": row.get("currency"),
-                "source_type": row.get("source_type"),
-                "description_of_source": row.get("description_of_source"),
-                "record_creator": row.get("record_creator"),
-                "source_reference": row.get("source_reference"),
-            },
-        )
-        textile_type_instance, created = TextileType.objects.get_or_create(
-            name=textile_type,
-        )
-        if textile_type_instance is not None:
-            textile_instance.textile_types.add(textile_type_instance)
+            textile_instance.save()
 
-        textile_subtype_instance, created = TextileRecord.objects.get_or_create(
-            id=row.get("id"),
-            defaults={
-                "year": row.get("year"),
-                "textile_specifications": row.get("textile_specifications"),
-                "circulation": row.get("circulation"),
-                "summary_of_record": row.get("summary_of_record"),
-                "transcription": row.get("transcription"),
-                "price": row.get("price"),
-                "currency": row.get("currency"),
-                "source_type": row.get("source_type"),
-                "description_of_source": row.get("description_of_source"),
-                "record_creator": row.get("record_creator"),
-                "source_reference": row.get("source_reference"),
-            },
-        )
-        textile_subtype_instance, created = TextileType.objects.get_or_create(
-            name=textile_subtype,
-        )
-        if textile_subtype_instance is not None:
-            textile_instance.textile_types.add(textile_subtype_instance)
-
-        # Handle the ManyToMany primary_subjects and secondary_subjects fields
-        # from the row data.
-        primary_subjects = (
-            row.get("subject_primary").strip() if row.get("subject_primary") else None
-        )
-        secondary_subjects = (
-            row.get("subject_secondary").strip()
-            if row.get("subject_secondary")
-            else None
-        )
-
-        primary_subjects_instance, created = Subject.objects.get_or_create(
-            name=primary_subjects,
-        )
-        if primary_subjects_instance is not None:
-            textile_instance.primary_subjects.add(primary_subjects_instance)
-
-        secondary_subjects_instance, created = Subject.objects.get_or_create(
-            name=secondary_subjects,
-        )
-        if secondary_subjects_instance is not None:
-            textile_instance.secondary_subjects.add(secondary_subjects_instance)
-
-        # Handle the ForeignKey fields from_place and to_place
-        from_place = (
-            row.get("originating_location_place").strip()
-            if row.get("originating_location_place")
-            else None
-        )
-        to_place = (
-            row.get("destination_location_place").strip()
-            if row.get("destination_location_place")
-            else None
-        )
-
-        from_place_instance, created = Place.objects.get_or_create(
-            city=from_place,
-        )
-        if from_place_instance is not None:
-            textile_instance.from_place = from_place_instance
-
-        to_place_instance, created = Place.objects.get_or_create(
-            city=to_place,
-        )
-        if to_place_instance is not None:
-            textile_instance.to_place = to_place_instance
-
-        # Handle the ForeignKey fields from_area and to_area
-        from_area = (
-            row.get("originating_location_area").strip()
-            if row.get("originating_location_area")
-            else None
-        )
-        to_area = (
-            row.get("destination_location_area").strip()
-            if row.get("destination_location_area")
-            else None
-        )
-
-        from_area_instance, created = Area.objects.get_or_create(
-            name=from_area,
-        )
-        if from_area_instance is not None:
-            textile_instance.from_area = from_area_instance
-
-        to_area_instance, created = Area.objects.get_or_create(
-            name=to_area,
-        )
-        if to_area_instance is not None:
-            textile_instance.to_area = to_area_instance
-
-        # Handle the taggit tags separated by a semicolon
-        keywords = (
-            row.get("keywords").strip().split(";")
-            if row.get("keywords") is not None
-            else []
-        )
-        for keyword in keywords:
-            textile_instance.keywords.add(keyword)
-
-        # Save the instance
-        textile_instance.save()
+            logger.info(
+                f"Successfully processed row for TextileRecord id: {textile_instance.id}"
+            )
+        except Exception as e:
+            logger.error(f"Error processing row: {row}")
+            logger.error(f"Error details: {str(e)}")
+            raise
 
         return super().before_import_row(row, **kwargs)
+
+    def get_or_create_textile_record(self, row):
+        defaults = {
+            "year": row.get("year"),
+            "textile_specifications": row.get("textile_specifications"),
+            "circulation": row.get("circulation"),
+            "summary_of_record": row.get("summary_of_record"),
+            "transcription": row.get("transcription"),
+            "price": row.get("price"),
+            "currency": row.get("currency"),
+            "source_type": row.get("source_type"),
+            "description_of_source": row.get("description_of_source"),
+            "record_creator": row.get("record_creator"),
+            "source_reference": row.get("source_reference"),
+        }
+        instance, created = TextileRecord.objects.get_or_create(
+            id=row.get("id"), defaults=defaults
+        )
+        return instance
+
+    def process_primary_textile_types(self, row, textile_instance):
+        primary_value = self.safe_get_strip(row, "textile_type")
+        if primary_value:
+            primary_type_instance, _ = PrimaryTextileType.objects.get_or_create(
+                name=primary_value
+            )
+            textile_instance.primary_textile_types.add(primary_type_instance)
+
+    def process_secondary_textile_types(self, row, textile_instance):
+        secondary_value = self.safe_get_strip(row, "textile_subtype")
+        if secondary_value:
+            secondary_type_instance, _ = SecondaryTextileType.objects.get_or_create(
+                name=secondary_value
+            )
+            textile_instance.secondary_textile_types.add(secondary_type_instance)
+
+    def process_subjects(self, row, textile_instance):
+        for field, related_field in [
+            ("subject_primary", "primary_subjects"),
+            ("subject_secondary", "secondary_subjects"),
+        ]:
+            value = self.safe_get_strip(row, field)
+            if value:
+                subject_instance, _ = Subject.objects.get_or_create(name=value)
+                getattr(textile_instance, related_field).add(subject_instance)
+
+    def process_locations(self, row, textile_instance):
+        for field, model_field, location_type in [
+            ("originating_location_place", "from_place", Place),
+            ("destination_location_place", "to_place", Place),
+            ("originating_location_area", "from_area", Area),
+            ("destination_location_area", "to_area", Area),
+        ]:
+            value = self.safe_get_strip(row, field)
+            if value:
+                location_field = "city" if location_type == Place else "name"
+                try:
+                    # Try case-insensitive match
+                    location_instance = location_type.objects.filter(
+                        **{location_field + "__iexact": value}
+                    ).first()
+
+                    if not location_instance:
+                        location_instance = location_type.objects.create(
+                            **{location_field: value}
+                        )
+                        logger.warning(
+                            f"{location_type.__name__} with {location_field}='{value}' did not exist. Created new instance."
+                        )
+                    else:
+                        logger.info(
+                            f"Found existing {location_type.__name__} with {location_field}='{value}'"
+                        )
+                except IntegrityError as e:
+                    logger.error(
+                        f"Failed to create {location_type.__name__} with {location_field}='{value}'. {str(e)}"
+                    )
+                    continue
+                except Exception as e:
+                    logger.error(
+                        f"Unexpected error when processing {location_type.__name__} with {location_field}='{value}': {str(e)}"
+                    )
+                    continue
+
+                setattr(textile_instance, model_field, location_instance)
+            else:
+                logger.info(f"No value provided for {field}. Skipping.")
+
+    def process_keywords(self, row, textile_instance):
+        keywords = self.safe_get_strip(row, "keywords")
+        if keywords:
+            for keyword in keywords.split(";"):
+                textile_instance.keywords.add(keyword.strip())
+
+    @staticmethod
+    def safe_get_strip(row, key):
+        value = row.get(key)
+        return value.strip() if value else None
 
 
 class ImageResource(resources.ModelResource):

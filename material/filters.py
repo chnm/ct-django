@@ -1,103 +1,83 @@
+from decimal import Decimal
+
+import django_filters
 from django.db.models import Q
-from django.forms import Select, TextInput
-from django_filters import (
-    CharFilter,
-    ChoiceFilter,
-    FilterSet,
-    ModelChoiceFilter,
-    NumberFilter,
+
+from material.models import (
+    Area,
+    Place,
+    PrimaryTextileType,
+    SecondaryTextileType,
+    TextileRecord,
 )
-from taggit.models import Tag
-
-from material.models import Area, Subject, TextileRecord, TextileType
 
 
-def get_source_type_choices():
-    # Get distinct source_type values from TextileRecord
-    choices = (
-        TextileRecord.objects.order_by("source_type")
-        .values_list("source_type", flat=True)
-        .distinct()
+class TextileFilter(django_filters.FilterSet):
+    year = django_filters.CharFilter(
+        field_name="year", lookup_expr="icontains", label="Year"
     )
-    # Convert to tuple format expected by ChoiceFilter choices parameter
-    return [
-        (choice, choice) for choice in choices if choice
-    ]  # Exclude empty or null values
-
-
-class TextileRecordFilter(FilterSet):
-    year = NumberFilter(
-        field_name="year",
-        lookup_expr="contains",
-        widget=TextInput(attrs={"placeholder": "Year"}),
+    primary_textile_types = django_filters.ModelChoiceFilter(
+        queryset=PrimaryTextileType.objects.all(), label="Primary Textile Type"
     )
-    # text_search = CharFilter(method="search_text", label="Search", widget=TextInput(attrs={"placeholder": "Search"}))
-    # def text_search_filter(self, queryset, name, value):
-    #     return queryset.filter(
-    #         Q(summary_of_record__icontains=value) |
-    #         Q(transcription__icontains=value)
-    #     )
-    textile_type = ModelChoiceFilter(
-        queryset=TextileType.objects.all(),
-        field_name="textile_types",
-        widget=Select(attrs={"placeholder": "Textile Type"}),
-        label="Textile Type",
+    secondary_textile_types = django_filters.ModelChoiceFilter(
+        queryset=SecondaryTextileType.objects.all(), label="Secondary Textile Type"
     )
-    textile_subtype = ModelChoiceFilter(
-        queryset=TextileType.objects.all(),
-        field_name="textile_types",
-        widget=Select(attrs={"placeholder": "Textile Subtype"}),
-        label="Textile Subtype",
+    source_type = django_filters.CharFilter(
+        field_name="source_type", lookup_expr="exact", label="Source type"
     )
-    subject_type = ModelChoiceFilter(
-        queryset=Subject.objects.all(),
-        field_name="primary_subjects",
-        widget=Select(attrs={"placeholder": "Subject Type"}),
-        label="Subject Type",
+    circulation = django_filters.CharFilter(
+        field_name="circulation", lookup_expr="icontains", label="Circulation"
     )
-    subject_subtype = ModelChoiceFilter(
-        queryset=Subject.objects.all(),
-        field_name="secondary_subjects",
-        widget=Select(attrs={"placeholder": "Subject Subtype"}),
-        label="Subject Subtype",
+    source_reference = django_filters.CharFilter(
+        field_name="source_reference", lookup_expr="icontains", label="Source reference"
     )
-    circulation = ChoiceFilter(
-        choices=TextileRecord.CIRCULATION_CHOICES,
-        field_name="circulation",
-        widget=Select(attrs={"placeholder": "Circulation"}),
-    )
-    # keywords = ModelMultipleChoiceFilter(
-    #     queryset=Tag.objects.all(),
-    #     widget=CheckboxSelectMultiple(),
-    #     field_name="keywords",
-    # )
-    origin_location = ModelChoiceFilter(
-        queryset=Area.objects.all(),
+    from_area = django_filters.ModelChoiceFilter(
         field_name="from_area",
-        widget=Select(attrs={"placeholder": "Area origin"}),
-    )
-    destination_location = ModelChoiceFilter(
         queryset=Area.objects.all(),
-        field_name="to_area",
-        widget=Select(attrs={"placeholder": "Area destination"}),
+        label="From area",
     )
-    source_type = ChoiceFilter(
-        choices=get_source_type_choices,
-        field_name="source_type",
-        widget=Select(attrs={"placeholder": "Source Type"}),
+    to_area = django_filters.ModelChoiceFilter(
+        field_name="to_area",
+        queryset=Area.objects.all(),
+        label="To area",
+    )
+    from_place = django_filters.ModelChoiceFilter(
+        field_name="from_place",
+        queryset=Place.objects.all(),
+        label="From place",
+    )
+    to_place = django_filters.ModelChoiceFilter(
+        field_name="to_place",
+        queryset=Place.objects.all(),
+        label="To place",
+    )
+    summary_of_record = django_filters.CharFilter(
+        field_name="summary_of_record",
+        lookup_expr="icontains",
+        label="Summary of record",
+    )
+    transcription = django_filters.CharFilter(
+        field_name="transcription", lookup_expr="icontains", label="Transcription"
+    )
+    keywords = django_filters.CharFilter(
+        field_name="keywords__name", lookup_expr="icontains", label="Keywords"
     )
 
     class Meta:
         model = TextileRecord
         fields = [
             "year",
-            "subject_type",
-            "subject_subtype",
-            "textile_type",
-            "textile_subtype",
-            "circulation",
-            # "keywords",
-            "origin_location",
-            "destination_location",
+            "primary_textile_types",
+            "secondary_textile_types",
             "source_type",
+            "circulation",
+            "source_reference",
+            "from_area",
+            "to_area",
+            "from_place",
+            "to_place",
+            "summary_of_record",
+            "transcription",
+            "keywords",
         ]
+        empty_text = "No results match the search criteria."

@@ -4,7 +4,7 @@ from taggit.managers import TaggableManager
 
 class Area(models.Model):
     id = models.AutoField(primary_key=True)
-    name = models.CharField(max_length=255, unique=True, blank=True, null=True)
+    name = models.CharField(max_length=255, unique=True, default="Unnamed Area")
 
     def __str__(self) -> str:
         if self.name is not None:
@@ -19,7 +19,7 @@ class Area(models.Model):
 
 class Place(models.Model):
     id = models.AutoField(primary_key=True)
-    city = models.CharField(max_length=765, blank=True, null=True, unique=True)
+    city = models.CharField(max_length=765, unique=True, default="Unnamed City")
     country = models.CharField(max_length=765, blank=True, null=True)
     area = models.ForeignKey(
         Area, on_delete=models.CASCADE, related_name="places", blank=True, null=True
@@ -86,10 +86,11 @@ class TextileRecord(models.Model):
 
     id = models.AutoField(primary_key=True)
     year = models.IntegerField(blank=True, null=True)
-    textile_types = models.ManyToManyField(
-        "TextileType",
-        related_name="textile_records",
-        blank=True,
+    primary_textile_types = models.ManyToManyField(
+        "PrimaryTextileType", related_name="textile_records", blank=True, default=[]
+    )
+    secondary_textile_types = models.ManyToManyField(
+        "SecondaryTextileType", related_name="textile_records", blank=True, default=[]
     )
     textile_specifications = models.CharField(blank=True, null=True, max_length=255)
     circulation = models.CharField(
@@ -155,17 +156,20 @@ class TextileRecord(models.Model):
         ordering = ["year"]
 
 
-class TextileType(models.Model):
-    # This model tracks the textiles that are associated with a TextileRecord. There can be multiple textiles associated with a single TextileRecord.
-    TYPE_CHOICES = [
-        ("pr", "Primary"),
-        ("se", "Secondary"),
-    ]
-
+class PrimaryTextileType(models.Model):
     id = models.AutoField(primary_key=True)
-    textile_type_selection = models.CharField(
-        blank=True, null=True, choices=TYPE_CHOICES, max_length=2
-    )
+    name = models.CharField(blank=True, null=True, max_length=255)
+    description = models.TextField(blank=True, null=True, verbose_name="Notes")
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+    class Meta:
+        ordering = ["name"]
+
+
+class SecondaryTextileType(models.Model):
+    id = models.AutoField(primary_key=True)
     name = models.CharField(blank=True, null=True, max_length=255)
     description = models.TextField(blank=True, null=True, verbose_name="Notes")
 
@@ -201,8 +205,17 @@ class PlacesAlias(models.Model):
 
 class TextileAlias(models.Model):
     id = models.AutoField(primary_key=True)
-    textile_record = models.ForeignKey(
-        TextileType, on_delete=models.CASCADE, related_name="aliases"
+    textile_record_primary = models.ForeignKey(
+        PrimaryTextileType,
+        on_delete=models.CASCADE,
+        related_name="primary_alias",
+        default=None,
+    )
+    textile_record_secondary = models.ForeignKey(
+        SecondaryTextileType,
+        on_delete=models.CASCADE,
+        related_name="secondary_alias",
+        default=None,
     )
     alias = models.CharField(max_length=765, unique=True)
 
