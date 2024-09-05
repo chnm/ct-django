@@ -32,7 +32,19 @@ function resetForm() {
   form.submit();
 }
 
+let scrollposition = 0;
+
+let scrollPosition = 0;
+
 function openModal(recordId, recordUrl) {
+  // Save the current scroll position
+  scrollPosition = window.scrollY;
+
+  // Lock the scroll position
+  document.body.style.position = "fixed";
+  document.body.style.top = `-${scrollPosition}px`;
+  document.body.style.width = "100%";
+
   // Make an AJAX request to fetch the record details
   fetch(`/record-details/${recordId}/`)
     .then((response) => response.json())
@@ -71,5 +83,12 @@ function openModal(recordId, recordUrl) {
 }
 
 function closeModal() {
+  // Hide the modal
   document.getElementById("detailsModal").classList.add("hidden");
+
+  // Restore the scroll position
+  document.body.style.position = "";
+  document.body.style.top = "";
+  document.body.style.width = "";
+  window.scrollTo(0, scrollPosition);
 }
