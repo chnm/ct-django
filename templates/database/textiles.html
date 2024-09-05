@@ -48,14 +48,14 @@
                 </div>
                 <div class="form-group">
                     <label for="{{ filter.form.secondary_textile_types.id_for_label }}" class="block text-sm font-medium text-gray-700">Secondary Textile Type</label>
-                    <select id="{{ filter.form.secondary_textile_types.id_for_label }}" name="{{ filter.form.secondary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-gray-100 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm cursor-not-allowed opacity-50" disabled data-secondary-id="{{ filter.form.secondary_textile_types.id_for_label }}">
+                    <select id="{{ filter.form.secondary_textile_types.id_for_label }}" name="{{ filter.form.secondary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" disabled data-secondary-id="{{ filter.form.secondary_textile_types.id_for_label }}">
                         <option value="">Select Secondary Textile Type</option>
                     </select>
                 </div>
                 <div class="form-group">
                     <label for="id_source_type" class="block text-sm font-medium text-gray-700">Source Type</label>
                     <select name="source_type" id="id_source_type" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="" selected>{% trans "All" %}</option>
+                        <option value="" {% if not request.GET.source_type %}selected{% endif %}>All</option>
                         {% for source_type in source_types %}
                             <option value="{{ source_type }}" {% if source_type == request.GET.source_type %}selected{% endif %}>
                                 {{ source_type }}
@@ -64,9 +64,9 @@
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="id_circulation" class="block text-sm font-medium text-gray-700">{% trans "Circulation" %}</label>
+                    <label for="id_circulation" class="block text-sm font-medium text-gray-700">Circulation</label>
                     <select name="circulation" id="id_circulation" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                        <option value="">{% trans "All" %}</option>
+                        <option value="">All</option>
                         {% for abbr, full in circulation_types %}
                             <option value="{{ abbr }}" {% if abbr == request.GET.circulation %}selected{% endif %}>
                                 {{ full }}

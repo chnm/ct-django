@@ -40,6 +40,10 @@ def record_details(request, record_id):
 
 
 def get_secondary_textile_types(request, primary_id):
+    if not primary_id:
+        # Return an empty set if no primary textile type is selected
+        return JsonResponse([], safe=False)
+
     try:
         primary_textile_type = PrimaryTextileType.objects.get(id=primary_id)
         # Fetch TextileRecord instances that have the selected PrimaryTextileType
@@ -83,10 +87,14 @@ class TextileTableView(SingleTableMixin, FilterView):
         )
         source_types = (
             TextileRecord.objects.values_list("source_type", flat=True)
+            .exclude(source_type__isnull=True)
             .distinct()
             .order_by("source_type")
         )
+        CIRCULATION_CHOICES = TextileRecord.CIRCULATION_CHOICES
+        circulation_types = [(abbr, full) for abbr, full in CIRCULATION_CHOICES]
 
         context["years"] = years
         context["source_types"] = source_types
+        context["circulation_types"] = circulation_types
         return context

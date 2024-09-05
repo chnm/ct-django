@@ -1,6 +1,7 @@
 document.addEventListener("DOMContentLoaded", function () {
   const primarySelect = document.querySelector("[data-primary-id]");
   const secondarySelect = document.querySelector("[data-secondary-id]");
+  const resetButton = document.querySelector("[data-reset-button]");
 
   if (primarySelect && secondarySelect) {
     primarySelect.addEventListener("change", function () {
@@ -47,6 +48,21 @@ document.addEventListener("DOMContentLoaded", function () {
         secondarySelect.classList.remove("bg-white");
       }
     });
+
+    if (resetButton) {
+      resetButton.addEventListener("click", function () {
+        primarySelect.value = "";
+        secondarySelect.innerHTML =
+          '<option value="">Select Secondary Textile Type</option>';
+        secondarySelect.disabled = true;
+        secondarySelect.classList.add(
+          "cursor-not-allowed",
+          "opacity-50",
+          "bg-gray-100",
+        );
+        secondarySelect.classList.remove("bg-white");
+      });
+    }
   } else {
     console.error("Primary or secondary select element not found");
   }
@@ -85,8 +101,6 @@ function resetForm() {
   form.reset();
   form.submit();
 }
-
-let scrollposition = 0;
 
 let scrollPosition = 0;
 
