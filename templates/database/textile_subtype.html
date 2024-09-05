@@ -1,0 +1,7 @@
+{% if record.secondary_textile_types.all %}
+    {% for type in record.secondary_textile_types.all %}
+        <span class="block">{{ subtype.name }}</span>
+    {% endfor %}
+{% else %}
+    <span class="block text-center">&mdash;</span>
+{% endif %}

@@ -45,10 +45,9 @@ def textile_records_single(request, item_id):
 
 
 class TextileTableView(SingleTableMixin, FilterView):
-    paginate_by = 5
+    paginate_by = 15
     table_class = TextileTable
     filterset_class = TextileFilter
-    model = TextileRecord
     queryset = TextileRecord.objects.all()
 
     def get_template_names(self):
@@ -58,62 +57,17 @@ class TextileTableView(SingleTableMixin, FilterView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
-        source_types = (
-            TextileRecord.objects.exclude(source_type__isnull=True)
-            .exclude(source_type__exact="")
-            .values_list("source_type", flat=True)
-        )
-        distinct_source_types = sorted(
-            set(source_types)
-        )  # remove duplicates and sorts the result
-        circulation_types = (
-            TextileRecord.objects.exclude(circulation__isnull=True)
-            .exclude(circulation__exact="")
-            .values_list("circulation", flat=True)
-        )
-        distinct_circulation_types = sorted(
-            set(circulation_types)
-        )  # remove duplicates and sort the result
         years = (
             TextileRecord.objects.values_list("year", flat=True)
             .distinct()
             .order_by("year")
         )
-
-        # Map the abbreviated values to full string values
-        circulation_choices_dict = dict(TextileRecord.CIRCULATION_CHOICES)
-        circulation_display = [
-            (abbr, circulation_choices_dict[abbr])
-            for abbr in distinct_circulation_types
-        ]
-
-        # Fetch all records and replace the abbreviated circulation values with full string values
-        records = TextileRecord.objects.all()
-        for record in records:
-            record.circulation_display = circulation_choices_dict.get(
-                record.circulation, record.circulation
-            )
-
-            # Fetch primary and secondary textile types
-            primary_types = record.primary_textile_types.all()
-            secondary_types = record.secondary_textile_types.all()
-
-            record.textile_type_display = (
-                ", ".join([t.name for t in primary_types]) if primary_types else None
-            )
-            record.textile_subtype_display = (
-                ", ".join([t.name for t in secondary_types])
-                if secondary_types
-                else None
-            )
-
-        table = TextileTable(records)
-        context["table"] = table
-        context["table_rows"] = table.rows
-
-        context["source_types"] = distinct_source_types
-        context["circulation_types"] = circulation_display
+        source_types = (
+            TextileRecord.objects.values_list("source_type", flat=True)
+            .distinct()
+            .order_by("source_type")
+        )
 
         context["years"] = years
-
+        context["source_types"] = source_types
         return context
