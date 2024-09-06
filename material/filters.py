@@ -62,6 +62,26 @@ class TextileFilter(django_filters.FilterSet):
     keywords = django_filters.CharFilter(
         field_name="keywords__name", lookup_expr="icontains", label="Keywords"
     )
+    text_search = django_filters.CharFilter(
+        method="search_text",
+        label="Text search",
+    )
+
+    def search_text(self, queryset, name, value):
+        return queryset.filter(
+            Q(year__icontains=value)
+            | Q(primary_textile_types__name__icontains=value)
+            | Q(secondary_textile_types__name__icontains=value)
+            | Q(source_type__icontains=value)
+            | Q(circulation__icontains=value)
+            | Q(source_reference__icontains=value)
+            | Q(from_area__name__icontains=value)
+            | Q(to_area__name__icontains=value)
+            | Q(from_place__city__icontains=value)
+            | Q(to_place__city__icontains=value)
+            | Q(summary_of_record__icontains=value)
+            | Q(transcription__icontains=value)
+        )
 
     class Meta:
         model = TextileRecord
@@ -79,5 +99,6 @@ class TextileFilter(django_filters.FilterSet):
             "summary_of_record",
             "transcription",
             "keywords",
+            "text_search",
         ]
         empty_text = "No results match the search criteria."
