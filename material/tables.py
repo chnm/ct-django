@@ -10,8 +10,17 @@ from material.models import TextileRecord
 class TextileTable(tables.Table):
     image = tables.TemplateColumn(
         template_name="database/image_display.html",
-        verbose_name="Image",
+        verbose_name="Preview",
         orderable=False,
+    )
+    id = tables.TemplateColumn(
+        template_code="""
+        <div class="flex justify-center items-center">
+        <a class="text-blue-500 hover:underline pointer" href="{% url 'textile_single' item_id=record.id %}">View Item {{ record.id }} record</a>
+        </div>
+        """,
+        orderable=False,
+        verbose_name="Item ID",
     )
     year = tables.Column(verbose_name="Year", orderable=False)
     textile_type = tables.TemplateColumn(
@@ -46,6 +55,7 @@ class TextileTable(tables.Table):
             "class": "min-w-full divide-y divide-gray-200",
         }
         fields = (
+            "id",
             "image",
             "year",
             "textile_type",
