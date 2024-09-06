@@ -14,7 +14,7 @@
     </section>
 
     {# Search form #}
-    <div x-data="{ open: false }" class="mb-4 border border-gray-300 rounded-lg">
+    <div x-data="{ open: true }" class="mb-4 border border-gray-300 rounded-lg">
         <div @click="open = !open" class="bg-slate-600 text-white px-4 py-2 rounded-t-lg cursor-pointer flex justify-between items-center">
             <span>Filters</span>
             <svg :class="{'transform rotate-180': open}" class="w-4 h-4 transition-transform" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -91,7 +91,7 @@
                     </select>
                 </div>
                 <div class="form-group" x-data="{ open: false, results: [] }">
-                    <label for="id_keywords" class="block text-sm font-medium text-gray-700">{% trans "Keywords" %}</label>
+                    <label for="id_keywords" class="block text-sm font-medium text-gray-700">Keywords Search</label>
                     <input type="text" name="keywords" id="id_keywords" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ request.GET.keywords }}" @input="fuzzySearch($event)" @focus="open = true" @blur="setTimeout(() => open = false, 200)">
                     <div x-show="open" id="keywords-dropdown" class="absolute bg-white border border-gray-300 mt-1 w-full z-10">
                         <template x-for="result in results" :key="result.name">
@@ -101,9 +101,13 @@
                         </template>
                     </div>
                 </div>
+                <div class="form-group">
+                    <label for="text_search" class="block text-sm font-medium text-gray-700">Text Search</label>
+                    <input type="text" name="text_search" id="text_search" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ request.GET.text_search }}">
+                </div>
                 <div class="form-group col-span-1 md:col-span-2 lg:col-span-3">
-                    <button type="submit" class="bg-green-500 text-white px-4 py-2 rounded">Filter</button>
-                    <button type="button" class="bg-gray-500 text-white px-4 py-2 rounded" onclick="resetForm()">Reset</button>
+                    <button type="submit" class="bg-green-500 hover:bg-green-700 text-white px-4 py-2 rounded">Filter</button>
+                    <button type="button" class="bg-gray-500 hover:bg-gray-700 text-white px-4 py-2 rounded" onclick="resetForm()">Reset</button>
                 </div>
             </form>
         </div>
