@@ -16,9 +16,9 @@
     <h2 class="text-xl mb-4">Record Excerpt</h2>
     <div class="font-serif text-lg mb-4">
         {% if item.transcription %}
-            <blockquote class="pl-4 border-l-2 border-red-200 italic">{{ item.transcription }}</blockquote>
+            <blockquote class="pl-4 border-l-2 border-yellow-500 italic">{{ item.transcription }}</blockquote>
         {% else %}
-            <blockquote class="pl-4 border-l-2 border-red-200 italic">No transcription available.</blockquote>
+            <blockquote class="pl-4 border-l-2 border-yellow-500 italic">No transcription available.</blockquote>
         {% endif %}
         {% if item.source_reference %}
             <p class="text-sm text-right">Source: {{ item.source_reference }}</p>
@@ -48,7 +48,7 @@
 
     <hr class="my-8">
 
-    <div class="bg-gray-50 p-3">
+    <div class="bg-slate-200 p-3">
         <h3 class="text-lg mb-4">Item Metadata</h3>
         <div>
             <p class="text-base"><strong>Primary Textile Types</strong>:

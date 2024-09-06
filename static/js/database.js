@@ -122,23 +122,32 @@ function openModal(recordId, recordUrl) {
       // Populate the modal content with the fetched data
       const modalContent = document.getElementById("modal-content");
       modalContent.innerHTML = `
-        <p><strong>To Area:</strong> ${safeData(data.to_area)}</p>
-        <p><strong>From Area:</strong> ${safeData(data.from_area)}</p>
-        <p><strong>To Place:</strong> ${safeData(data.to_place)}</p>
-        <p><strong>From Place:</strong> ${safeData(data.from_place)}</p>
-        <p><strong>Transcription:</strong></p> 
+        <p><strong>Record ID:</strong> ${recordId}</p>
+        <p><strong>Originating Area:</strong> ${safeData(data.from_area)}</p>
+        <p><strong>Originating Place:</strong> ${safeData(data.from_place)}</p>
+        <p><strong>Destination Area:</strong> ${safeData(data.to_area)}</p>
+        <p><strong>Destination Place:</strong> ${safeData(data.to_place)}</p>
+        <p><strong>Summary of Record:</strong> ${safeData(
+          data.summary_of_record,
+        )}</p>
+
+        <p><strong>Excerpt from Record:</strong></p> 
         <blockquote class="pl-4 ml-4 border-l-2 border-yellow-500">${safeData(
           data.transcription,
         )}</blockquote>
         <p class="text-sm text-right pb-2 mb-2">${safeData(
           data.source_reference,
         )}</p>
-        <p><strong>Summary of Record:</strong> ${safeData(
-          data.summary_of_record,
+        <p><strong>Source Reference:</strong> ${safeData(
+          data.source_reference,
         )}</p>
         <p><strong>Source Type:</strong> ${safeData(data.source_type)}</p>
+        <p><strong>Description of Source:</strong> ${safeData(
+          data.description_of_source,
+        )}</p>
+        <p><strong>Record Creator:</strong> ${safeData(data.record_creator)}</p>
         <div class="flex justify-center mt-4">
-            <a href="${recordUrl}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">View Full Record Details</a>
+            <a href="${recordUrl}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">View Full Record Details</a>
         </div>
         `;
 
