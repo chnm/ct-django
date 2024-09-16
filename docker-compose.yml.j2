@@ -1,10 +1,14 @@
 # this is a Jinja2 template file used during the Ansible deployment
 # environment specific configuration can be found in our Ansble scripts
+---
+name: {{ compose_stack_name }}
 
 services:
+
+  {% set service = 'app' %}
+
   app:
     image: ghcr.io/{{ template.git.package.image_name }}:{{ template.git.package.tag }}
-    container_name: {{ template.name }}_app
     ports:
       - "{{ template.env.host_app_port }}:8000"
     environment:
@@ -13,16 +17,29 @@ services:
       - DJANGO_ALLOWED_HOSTS={{ template.env.allowed_hosts }}
       - DJANGO_CSRF_TRUSTED_ORIGINS={{ template.env.trusted_origins }}
       - SQLITE_PATH={{ template.env.sqlite_path }}
-    volumes:
-      - dj-sqlite:/db
     command: >
       sh -c "
         poetry run python manage.py migrate &&
         poetry run python manage.py runserver 0.0.0.0:8000
       "
+    {% if template.volumes is defined %}
+    {% set vols = (template.volumes | selectattr('service', 'eq', service)) %}
+    {% if vols is iterable and vols | length > 0 %}
+
+    volumes:
+    {% for vol in vols %}
+
+      - {{ vol.name }}:{{ vol.container_path }}
+    {% endfor %}
+    {% endif %}
+    {% endif %}
+
 
 # external volumes managed and defined by ansible
 volumes:
-  dj-sqlite:
-    name: "{{ template.name }}_db-vol"
+{% for vol in template.volumes %}
+
+  {{ vol.name }}:
+    name: "{{ compose_stack_name }}--{{ vol.name }}"
     external: true
+{% endfor %}
