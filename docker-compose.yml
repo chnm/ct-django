@@ -1,8 +1,9 @@
+name: ct-django
+
 services:
   app:
     build: .
     image: "rrchnm/ct-django"
-    container_name: "ct-app"
     ports:
       - "8000:8000"
     environment:
