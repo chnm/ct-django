@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", function () {
           .then((data) => {
             // Clear existing options
             secondarySelect.innerHTML =
-              '<option value="">Select Secondary Textile Type</option>';
+              '<option value="">Select secondary textile type</option>';
 
             // Populate new options
             data.forEach((item) => {
@@ -38,7 +38,7 @@ document.addEventListener("DOMContentLoaded", function () {
       } else {
         // Disable the secondary select if no primary type is selected
         secondarySelect.innerHTML =
-          '<option value="">Select Secondary Textile Type</option>';
+          '<option value="">Select secondary textile type</option>';
         secondarySelect.disabled = true;
         secondarySelect.classList.add(
           "cursor-not-allowed",
@@ -53,7 +53,7 @@ document.addEventListener("DOMContentLoaded", function () {
       resetButton.addEventListener("click", function () {
         primarySelect.value = "";
         secondarySelect.innerHTML =
-          '<option value="">Select Secondary Textile Type</option>';
+          '<option value="">Select secondary textile type</option>';
         secondarySelect.disabled = true;
         secondarySelect.classList.add(
           "cursor-not-allowed",
@@ -130,24 +130,9 @@ function openModal(recordId, recordUrl) {
         <p><strong>Summary of Record:</strong> ${safeData(
           data.summary_of_record,
         )}</p>
-
-        <p><strong>Excerpt from Record:</strong></p> 
-        <blockquote class="pl-4 ml-4 border-l-2 border-yellow-500">${safeData(
-          data.transcription,
-        )}</blockquote>
-        <p class="text-sm text-right pb-2 mb-2">${safeData(
-          data.source_reference,
-        )}</p>
-        <p><strong>Source Reference:</strong> ${safeData(
-          data.source_reference,
-        )}</p>
-        <p><strong>Source Type:</strong> ${safeData(data.source_type)}</p>
-        <p><strong>Description of Source:</strong> ${safeData(
-          data.description_of_source,
-        )}</p>
         <p><strong>Record Creator:</strong> ${safeData(data.record_creator)}</p>
         <div class="flex justify-center mt-4">
-            <a href="${recordUrl}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">View Full Record Details</a>
+            <a href="${recordUrl}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">View Full Record</a>
         </div>
         `;
 
