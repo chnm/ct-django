@@ -48,36 +48,3 @@ document.addEventListener("DOMContentLoaded", function () {
   updateIndicators();
   // Add event listeners or other logic to change slides
 });
-
-// Handle keyword auto-suggestion
-// document.addEventListener('DOMContentLoaded', function() {
-//   document.querySelector('[name="keywords"]').id = 'keywords-input';
-// });
-
-// document.addEventListener('DOMContentLoaded', function() {
-//     const input = document.getElementById('keywords-input');
-//     const suggestionsContainer = document.getElementById('keywords-suggestions');
-
-//     input.addEventListener('input', function() {
-//         const query = this.value;
-//         if (query.length > 2) { // Fetch suggestions after 2 characters
-//             fetch(`/keyword-suggestions/?term=${encodeURIComponent(query)}`)
-//                 .then(response => response.json())
-//                 .then(suggestions => {
-//                     suggestionsContainer.innerHTML = ''; // Clear previous suggestions
-//                     suggestions.forEach(suggestion => {
-//                         const div = document.createElement('div');
-//                         div.textContent = suggestion;
-//                         div.classList.add('suggestion-item');
-//                         div.addEventListener('click', function() {
-//                             input.value = suggestion; // Fill input with clicked suggestion
-//                             suggestionsContainer.innerHTML = ''; // Clear suggestions
-//                         });
-//                         suggestionsContainer.appendChild(div);
-//                     });
-//                 });
-//         } else {
-//             suggestionsContainer.innerHTML = ''; // Clear suggestions if query is too short
-//         }
-//     });
-// });
