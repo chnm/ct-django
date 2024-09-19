@@ -8,6 +8,8 @@
     {% tailwind_css %}
     {% block css %}
       <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+      <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+      <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
     {% endblock css %}
     <script src="{% static 'js/htmx.min.js' %}" defer></script>
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -38,13 +40,12 @@
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
               <div class="flex space-x-4">
-                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Pilot</a>
-                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">People</a>
-                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Contact</a>
-                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Conference</a>
-                <span class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">|</span>
-                <a href="/admin/" class="rounded-md px-3 py-2 text-base font-medium text-blue-700 hover:underline">Admin</a>
-                <a href="/database/" class="rounded-md px-3 py-2 text-base font-medium text-blue-700 hover:underline">Database</a>
+                <a href="/database/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Database</a>
+                <a href="/lessons/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Lesson Plans</a>
+                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Zotero</a>
+                <a href="/concepts/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Concepts</a>
+                <a href="/events/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Launch Event</a>
+                <a href="/about/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">About</a>
               </div>
             </div>
           </div>
@@ -62,9 +63,13 @@
       </div>
     </nav>
 
+        {# The index page does not use the container #}
+    {% block index %}{% endblock index %}
+
     <div class="container mx-auto py-8">
       <main>{% block content %} {% endblock content %}</main>
     </div>
+
 
     <footer class="pt-5 my-5 text-gray-500 border-t">
       <div class="flex flex-wrap justify-center items-center">
