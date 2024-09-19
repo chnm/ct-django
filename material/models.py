@@ -85,6 +85,10 @@ class TextileRecord(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)
+    is_public = models.BooleanField(
+        default=False,
+        help_text="Check this box if the record is publicly viewable. Unchecked will keep the record hidden.",
+    )
     year = models.IntegerField(blank=True, null=True)
     primary_textile_types = models.ManyToManyField(
         "PrimaryTextileType", related_name="textile_records", blank=True, default=[]
@@ -93,13 +97,11 @@ class TextileRecord(models.Model):
         "SecondaryTextileType", related_name="textile_records", blank=True, default=[]
     )
     textile_specifications = models.CharField(blank=True, null=True, max_length=255)
-    circulation = models.CharField(
-        blank=True, null=True, choices=CIRCULATION_CHOICES, max_length=2
-    )
+    circulation = models.CharField(blank=True, null=True, choices=CIRCULATION_CHOICES)
     summary_of_record = models.TextField(blank=True, null=True)
     transcription = models.TextField(blank=True, null=True)
     keywords = TaggableManager(blank=True)
-    price = models.TextField(blank=True, null=True)
+    price = models.CharField(max_length=350, blank=True, null=True)
     currency = models.CharField(max_length=765, blank=True, null=True)
     primary_subjects = models.ManyToManyField(
         Subject,
@@ -147,6 +149,12 @@ class TextileRecord(models.Model):
 
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
+    creator = models.CharField(
+        max_length=350,
+        blank=True,
+        null=True,
+        choices=[("user", "User"), ("admin", "Admin"), ("crawler", "Web Crawler")],
+    )
 
     def __str__(self) -> str:
         return f"Item ID {self.id}"
