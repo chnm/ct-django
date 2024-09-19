@@ -28,7 +28,7 @@
                   hx-swap="outerHTML"
                   hx-indicator=".progress"
                   class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-    {# Manually render each field from the TextileFilter #}
+                {# Manually render each field from the TextileFilter #}
                 <div class="form-group">
                     <label for="id_year" class="block text-sm font-medium text-gray-700">{% trans "Year" %}</label>
                     <select name="year" id="id_year" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
@@ -49,7 +49,7 @@
                 <div class="form-group">
                     <label for="{{ filter.form.secondary_textile_types.id_for_label }}" class="block text-sm font-medium text-gray-700">Secondary Textile Type</label>
                     <select id="{{ filter.form.secondary_textile_types.id_for_label }}" name="{{ filter.form.secondary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" disabled data-secondary-id="{{ filter.form.secondary_textile_types.id_for_label }}">
-                        <option value="">Select Secondary Textile Type</option>
+                        <option value="">Select secondary textile type</option>
                     </select>
                 </div>
                 <div class="form-group">
@@ -90,16 +90,14 @@
                         {% endfor %}
                     </select>
                 </div>
-                <div class="form-group" x-data="{ open: false, results: [] }">
-                    <label for="id_keywords" class="block text-sm font-medium text-gray-700">Keywords Search</label>
-                    <input type="text" name="keywords" id="id_keywords" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ request.GET.keywords }}" @input="fuzzySearch($event)" @focus="open = true" @blur="setTimeout(() => open = false, 200)">
-                    <div x-show="open" id="keywords-dropdown" class="absolute bg-white border border-gray-300 mt-1 w-full z-10">
-                        <template x-for="result in results" :key="result.name">
-                            <div class="dropdown-item p-2 hover:bg-gray-200 cursor-pointer" @click="selectKeyword(result.name)">
-                                <span x-text="result.name"></span>
-                            </div>
-                        </template>
-                    </div>
+                <div class="form-group col-span-1 lg:col-span-1 overflow-y-auto max-h-96">
+                    <label for="id_keyword" class="block text-sm font-medium text-gray-700">Keywords</label>
+                    <select name="keyword" id="id_keyword" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
+                        <option value="">Select a keyword</option>
+                        {% for keyword in keywords %}
+                            <option value="{{ keyword }}" {% if selected_keyword == keyword %}selected{% endif %}>{{ keyword }}</option>
+                        {% endfor %}
+                    </select>
                 </div>
                 <div class="form-group">
                     <label for="text_search" class="block text-sm font-medium text-gray-700">Text Search</label>
