@@ -38,9 +38,7 @@ class TextileTable(tables.Table):
         template_code="""
         <div class="flex justify-center items-center">
         <a href="#" onclick="openModal('{{ record.id }}', '{% url 'textile_single' item_id=record.id %}')">
-            <svg class="w-6 h-6 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
-            </svg>
+            <i class="fas fa-external-link-alt w-6 h-6 text-gray-500"></i>
         </a>
         </div>
         """,
