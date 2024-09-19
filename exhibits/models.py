@@ -26,7 +26,7 @@ class ExhibitHome(Page):
         blank=False,
         on_delete=models.SET_NULL,
         related_name="+",
-        help_text="Exhibit landing page image",
+        help_text="Exhibit landing page with full screen image",
     )
     hero_text = models.TextField(
         blank=True, max_length=355, help_text="An introduction to the exhibit."
@@ -119,4 +119,18 @@ class ImageComparison(Orderable):
         FieldPanel("first_image"),
         FieldPanel("second_image"),
         FieldPanel("slider_value"),
+    ]
+
+
+class GeneralPage(Page):
+    body = RichTextField(blank=True, help_text="General site pages.")
+    sidebar = RichTextField(blank=True, help_text="Sidebar content for the page.")
+
+    search_fields = Page.search_fields + [
+        index.SearchField("body"),
+    ]
+
+    content_panels = Page.content_panels + [
+        FieldPanel("body"),
+        FieldPanel("sidebar"),
     ]
