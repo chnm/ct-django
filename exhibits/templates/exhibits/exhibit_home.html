@@ -4,9 +4,9 @@
 {% block body_class %}template-homepage{% endblock %}
 
 {% block content %}
-  <div>
+  <div class="prose">
     <h1>{{ page.title }}</h1>
-    {% image page.image fill-480x320 %}
+    {% image page.image max-1000x500 %}
     <p>{{ page.hero_text }}</p>
     {% if page.hero_cta_link %}
       <a href="{% pageurl page.hero_cta_link %}">
