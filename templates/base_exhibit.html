@@ -1,0 +1,41 @@
+{% load static tailwind_tags i18n %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>{% block title %}Connecting Threads - Exhibit{% endblock %}</title>
+    {% tailwind_css %}
+    {% block css %}
+      <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+      <link href="{% static 'fontawesomefree/css/fontawesome.css' %}" rel="stylesheet" type="text/css">
+      <link href="{% static 'fontawesomefree/css/solid.css' %}" rel="stylesheet" type="text/css">
+    {% endblock css %}
+    <script src="{% static 'js/htmx.min.js' %}" defer></script>
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {% block extrahead %}{% endblock extrahead %}
+  </head>
+  <body class="bg-gray-100">
+    <div class="min-h-screen flex flex-col">
+      <main class="flex-grow">
+        {% block content %}{% endblock content %}
+      </main>
+      <footer class="bg-gray-800 text-white p-4">
+        <div class="container mx-auto">
+          <div class="flex justify-between items-center">
+            <div class="flex space-x-4 ml-auto">
+              <a href="/" class="text-white hover:underline">Home</a>
+              <a href="/database/" class="text-white hover:underline">Database</a>
+              <a href="/lessons/" class="text-white hover:underline">Lesson Plans</a>
+              <a href="#" class="text-white hover:underline">Zotero</a>
+              <a href="/concepts/" class="text-white hover:underline">Concepts</a>
+              <a href="/events/" class="text-white hover:underline">Launch Event</a>
+              <a href="/about/" class="text-white hover:underline">About</a>
+            </div>
+          </div>
+        </div>
+      </footer>
+    </div>
+    {% block extrajs %}{% endblock extrajs %}
+  </body>
+</html>

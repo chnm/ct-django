@@ -66,6 +66,9 @@
         {# The index page does not use the container #}
     {% block index %}{% endblock index %}
 
+        {# The exhibit pages do not use the container #}
+    {% block exhibit %}{% endblock exhibit %}
+
     <div class="container mx-auto py-8">
       <main>{% block content %} {% endblock content %}</main>
     </div>
