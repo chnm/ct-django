@@ -2,101 +2,124 @@
 {% load render_table from django_tables2 %}
 
 {% block content %}
-    <h1 class="text-3xl mb-4">{{ item.year }}</h1>
-
-    <h2 class="text-xl mb-4">Summary</h2>
-    <div class="font-serif text-lg mb-4">
-        {% if item.summary %}
-            <p class="mb-2">{{ item.summary }}</p>
-        {% else  %}
-            <p class="mb-2">No summary is available for this item.</p>
-        {% endif %}
+    <div class="prose">
+        <h1 class="text-3xl mb-4">Record {{ item.id }} from {{ item.year }}</h1>
+        <p class="mb-4"><a href="/database/">&larr; Return to database</a></p>
     </div>
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <!-- Left Column -->
+        <div class="prose">
+            <h2 class="text-xl mb-4">Summary</h2>
+            <div class="font-serif text-lg mb-4">
+                {% if item.summary_of_record %}
+                    <p class="mb-2">{{ item.summary_of_record }}</p>
+                {% else %}
+                    <p class="mb-2">No summary is available for this item.</p>
+                {% endif %}
+            </div>
 
-    <h2 class="text-xl mb-4">Record Excerpt</h2>
-    <div class="font-serif text-lg mb-4">
-        {% if item.transcription %}
-            <blockquote class="pl-4 border-l-2 border-yellow-500 italic">{{ item.transcription }}</blockquote>
-        {% else %}
-            <blockquote class="pl-4 border-l-2 border-yellow-500 italic">No transcription available.</blockquote>
-        {% endif %}
-        {% if item.source_reference %}
-            <p class="text-sm text-right">Source: {{ item.source_reference }}</p>
-        {% endif %}
+            <h2 class="text-xl mb-4">Record Excerpt</h2>
+            <div class="font-serif text-lg mb-4">
+                {% if item.transcription %}
+                    <blockquote class="pl-4 border-l-2 border-yellow-500 italic">{{ item.transcription }}</blockquote>
+                {% else %}
+                    <blockquote class="pl-4 border-l-2 border-yellow-500 italic">No transcription available.</blockquote>
+                {% endif %}
+                {% if item.source_reference %}
+                    <p class="text-sm text-right">Source: {{ item.source_reference }}</p>
+                {% endif %}
+            </div>
+
+            <div class="bg-slate-200 p-3 mb-4">
+                <h3 class="text-lg mb-4">Item Metadata</h3>
+                <div>
+                    <p class="text-base"><strong>Primary Textile Types</strong>:
+                        {% if item.primary_textile_types.all %}
+                            {% for primary_type in item.primary_textile_types.all %}
+                                {{ primary_type.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            No primary textile types available.
+                        {% endif %}
+                    </p>
+
+                    <p class="text-base"><strong>Secondary Textile Types</strong>:
+                        {% if item.secondary_textile_types.all %}
+                            {% for secondary_type in item.secondary_textile_types.all %}
+                                {{ secondary_type.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            No secondary textile types available.
+                        {% endif %}
+                    </p>
+                    <p class="text-base"><strong>Primary Subjects</strong>:
+                        {% if item.primary_subjects.all %}
+                            {% for primary_subject in item.primary_subjects.all %}
+                                {{ primary_subject.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            No primary subjects available.
+                        {% endif %}
+                    </p>
+
+                    <p class="text-base"><strong>Secondary Subjects</strong>:
+                        {% if item.secondary_subjects.all %}
+                            {% for secondary_subject in item.secondary_subjects.all %}
+                                {{ secondary_subject.name }}{% if not forloop.last %}, {% endif %}
+                            {% endfor %}
+                        {% else %}
+                            No secondary subjects available.
+                        {% endif %}
+                    </p>
+                    {# list keywords from Taggit #}
+                    <p class="text-base"><strong>Keywords</strong>: {{ item.keywords.all|join:", " }}</p>
+                </div>
+                <div>
+                    <p class="text-base"><strong>Circulation</strong>: {{ item.get_circulation_display }}</p>
+                    <p class="text-base"><strong>Source type</strong>: {{ item.source_type }}</p>
+                    <p class="text-base"><strong>Year</strong>: {{ item.year }}</p>
+                    <p class="text-base"><strong>Reference</strong>: {{ item.source_reference }}</p>
+                </div>
+            </div>
+
+            {% if item.map %}
+                <section class="mt-8">
+                    <h3 class="text-3xl">Map</h3>
+                    <p>Future spot for spatial data.</p>
+                    <div id="map" class="h-96 border border-gray-300 flex items-center justify-center">Map</div>
+                </section>
+            {% endif %}
+        </div>
+
+        <!-- Right Column -->
+        <div class="prose">
+            <h2 class="text-xl mb-4">Images</h2>
+            {% if item.images.all %}
+                <div class="grid grid-cols-1 gap-4">
+                    {% for image in item.images.all %}
+                        <figure>
+                            <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="w-full h-auto">
+                            <figcaption class="text-center text-sm">{{ image.caption }}</figcaption>
+                        </figure>
+                    {% endfor %}
+                </div>
+            {% else %}
+                <p>No images are available for this item.</p>
+            {% endif %}
+
+            <h2 class="text-xl mb-4 mt-4">Item Crosslinks</h2>
+            {% if item.crosslinks %}
+                <div class="bg-slate-200 p-3">
+                    <ul>
+                        {% for crosslink in item.crosslinks.all %}
+                            <li><a href="{{ crosslink.url }}">{{ crosslink.title }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+            {% else %}
+                <p>No crosslinks are available for this item.</p>
+            {% endif %}
+        </div>
     </div>
-
-{# if images are attached, display them all #}
-    <h2 class="text-xl mb-4">Images</h2>
-    {% if item.images.all %}
-        <div class="grid grid-cols-2 gap-4">
-            {% for image in item.images.all %}
-                <figure>
-                    <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="w-full h-auto">
-                    <figcaption class="text-center text-sm">{{ image.caption }}</figcaption>
-                </figure>
-            {% endfor %}
-        </div>
-    {% else %}
-        <p>No images are available for this item.</p>
-    {% endif %}
-
-    <section class="mt-8">
-        <h3 class="text-3xl">Map</h3>
-        <p>Future spot for spatial data.</p>
-        <div id="map" class="h-96 border border-gray-300 flex items-center justify-center">Map</div>
-    </section>
-
-    <hr class="my-8">
-
-    <div class="bg-slate-200 p-3">
-        <h3 class="text-lg mb-4">Item Metadata</h3>
-        <div>
-            <p class="text-base"><strong>Primary Textile Types</strong>:
-                {% if item.primary_textile_types.all %}
-                    {% for primary_type in item.primary_textile_types.all %}
-                        {{ primary_type.name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                {% else %}
-                    No primary textile types available.
-                {% endif %}
-            </p>
-
-            <p class="text-base"><strong>Secondary Textile Types</strong>:
-                {% if item.secondary_textile_types.all %}
-                    {% for secondary_type in item.secondary_textile_types.all %}
-                        {{ secondary_type.name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                {% else %}
-                    No secondary textile types available.
-                {% endif %}
-            </p>
-            <p class="text-base"><strong>Primary Subjects</strong>:
-                {% if item.primary_subjects.all %}
-                    {% for primary_subject in item.primary_subjects.all %}
-                        {{ primary_subject.name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                {% else %}
-                    No primary subjects available.
-                {% endif %}
-            </p>
-
-            <p class="text-base"><strong>Secondary Subjects</strong>:
-                {% if item.secondary_subjects.all %}
-                    {% for secondary_subject in item.secondary_subjects.all %}
-                        {{ secondary_subject.name }}{% if not forloop.last %}, {% endif %}
-                    {% endfor %}
-                {% else %}
-                    No secondary subjects available.
-                {% endif %}
-            </p>
-            {# list keywords from Taggit #}
-            <p class="text-base"><strong>Keywords</strong>: {{ item.keywords.all|join:", " }}</p>
-        </div>
-        <div>
-            <p class="text-base"><strong>Circulation</strong>: {{ item.get_circulation_display }}</p>
-            <p class="text-base"><strong>Source type</strong>: {{ item.source_type }}</p>
-            <p class="text-base"><strong>Year</strong>: {{ item.year }}</p>
-            <p class="text-base"><strong>Reference</strong>: {{ item.source_reference }}</p>
-        </div>
     </div>
 {% endblock content %}

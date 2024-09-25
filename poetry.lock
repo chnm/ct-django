@@ -630,6 +630,16 @@ files = [
 ]
 
 [[package]]
+name = "fontawesomefree"
+version = "6.6.0"
+description = "Font Awesome Free"
+optional = false
+python-versions = "*"
+files = [
+    {file = "fontawesomefree-6.6.0-py3-none-any.whl", hash = "sha256:599b574431c9bd92ed5fc054d1045a07c42335da36c17884f2b934755eef9089"},
+]
+
+[[package]]
 name = "geographiclib"
 version = "2.0"
 description = "The geodesic routines from GeographicLib"
@@ -1494,4 +1504,4 @@ wand = ["Wand (>=0.6,<1.0)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "525aec196da54a40f12c1eb9da2acd49c2246de437a5c8b3a20200e73cff842c"
+content-hash = "5782619ac00169a7bc0e6aa9ed56ca680461a429b57977dcb9b2e2ff26628292"

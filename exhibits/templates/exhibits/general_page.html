@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load wagtailcore_tags wagtailimages_tags %}
+
+{% block title %}{{page.title}}{% endblock title %}
+
+{% block content %}
+  <div class="container mx-auto px-4 py-8">
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-2">
+      <!-- Left Column: Body Text -->
+      <div class="lg:col-span-2 prose">
+        <h1>{{ page.title }}</h1>
+        {{ page.body|richtext }}
+      </div>
+      <!-- Right Column: Sidebar -->
+      <div class="prose">
+        {{ page.sidebar|richtext }}
+      </div>
+    </div>
+  </div>
+{% endblock content %}

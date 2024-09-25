@@ -24,6 +24,7 @@ django-admin-interface = "^0.28.8"
 geopy = "^2.4.1"
 django-tables2 = "^2.7.0"
 django-filter = "^24.2"
+fontawesomefree = "^6.6.0"
 
 
 [tool.poetry.group.dev.dependencies]

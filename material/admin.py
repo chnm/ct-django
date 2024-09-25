@@ -81,16 +81,28 @@ class SecondaryTextileTypeAdmin(admin.ModelAdmin):
     inlines = [TextileAliasInline]
 
 
+def make_public(modeladmin, request, queryset):
+    queryset.update(is_public=True)
+
+
+make_public.short_description = "Mark selected records as public"
+
+
+def make_private(modeladmin, request, queryset):
+    queryset.update(is_public=False)
+
+
+make_private.short_description = "Mark selected records as private"
+
+
 @admin.register(TextileRecord)
 class TextileRecordAdmin(ImportExportModelAdmin):
     resource_class = TextileRecordResource
     list_display = [
         "id",
         "year",
-        "price",
-        "currency",
-        "record_creator",
-        "source_reference",
+        "summary_of_record",
+        "is_public",
     ]
     search_fields = ["transcription", "summary_of_record"]
     list_filter = [
@@ -103,9 +115,11 @@ class TextileRecordAdmin(ImportExportModelAdmin):
         "circulation",
         "from_area",
         "to_area",
+        "is_public",
     ]
     inlines = [NamedActorsInline, ImagesInline, ArchivalRecordInline]
     ordering = ["year"]
+    actions = [make_public, make_private]  # Register custom actions
 
 
 @admin.register(Image)

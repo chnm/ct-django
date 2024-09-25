@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     "import_export",
     "taggit",
     "tailwind",
+    "fontawesomefree",
     "django_tables2",
     "django_filters",
     "theme",
@@ -127,13 +128,12 @@ WSGI_APPLICATION = "config.wsgi.application"
 
 DATABASES = {
     "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": env("SQLITE_PATH", default=BASE_DIR / "db.sqlite3"),
-        # "HOST": env("DB_HOST", default="localhost"),
-        # "PORT": env("DB_PORT", default="5432"),
-        # "NAME": env("DB_NAME", default="postgres"),
-        # "USER": env("DB_USER", default="postgres"),
-        # "PASSWORD": env("DB_PASSWORD"),
+        "ENGINE": "django.db.backends.postgresql",
+        "HOST": env("DB_HOST", default="localhost"),
+        "PORT": env("DB_PORT", default="5432"),
+        "NAME": env("DB_NAME", default="postgres"),
+        "USER": env("DB_USER", default="postgres"),
+        "PASSWORD": env("DB_PASSWORD"),
     }
 }
 
