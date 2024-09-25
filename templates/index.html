@@ -1,7 +1,7 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}Homepage{% endblock title %}
+{% block title %}Connecting Threads{% endblock title %}
 
 {% block index %}
   <!-- Hero Section -->
@@ -23,25 +23,33 @@
   </section>
 
   <!-- Explore Section -->
-  <section class="py-16 bg-gray-100 min-h-screen flex items-center">
+  <section id="exhibits" class="py-16 bg-gray-100 min-h-screen flex items-center">
     <div class="container mx-auto px-4 text-center">
       <h2 class="text-3xl md:text-3xl font-bold mb-8">Explore the story by choosing one of the regions below:</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         <div class="relative group">
-          <img src="https://picsum.photos/200" alt="Preview 1" class="w-full h-auto">
-          <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in South India</div>
+          <a href="/pages/exhibits/madras-in-south-india/">
+            <img src="https://picsum.photos/200" alt="Preview 1" class="w-full h-auto">
+            <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in South India</div>
+          </a>
         </div>
         <div class="relative group">
-          <img src="https://picsum.photos/200" alt="Preview 2" class="w-full h-auto">
-          <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in the Greater Caribbean</div>
+          <a href="/pages/exhibits/madras-in-the-caribbean/">
+            <img src="https://picsum.photos/200" alt="Preview 2" class="w-full h-auto">
+            <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in the Greater Caribbean</div>
+          </a>
         </div>
         <div class="relative group">
-          <img src="https://picsum.photos/200" alt="Preview 3" class="w-full h-auto">
-          <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in Europe</div>
+          <a href="/pages/exhibits/madras-in-europe/">
+            <img src="https://picsum.photos/200" alt="Preview 3" class="w-full h-auto">
+            <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in Europe</div>
+          </a>
         </div>
         <div class="relative group">
-          <img src="https://picsum.photos/200" alt="Preview 4" class="w-full h-auto">
-          <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras Legacies</div>
+          <a href="/pages/exhibits/madras-legacies/">
+            <img src="https://picsum.photos/200" alt="Preview 4" class="w-full h-auto">
+            <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras Legacies</div>
+          </a>
         </div>
       </div>
     </div>
