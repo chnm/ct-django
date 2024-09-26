@@ -22,17 +22,6 @@ class GeneralPage(Page):
     ]
 
 
-class ExhibitHomeIndex(Page):
-    intro = RichTextField(blank=True, help_text="An index page for all the exhibits.")
-    content_panels = Page.content_panels + [FieldPanel("intro")]
-
-    def get_context(self, request):
-        context = super().get_context(request)
-        exhibitpages = self.get_children().live()
-        context["exhibitpages"] = exhibitpages
-        return context
-
-
 class ExhibitHome(Page):
     image = models.ForeignKey(
         "wagtailimages.Image",
@@ -115,6 +104,7 @@ class ExhibitHome(Page):
                 FieldPanel("hero_text"),
                 # FieldPanel("hero_cta"),
                 # FieldPanel("hero_cta_link"),
+                FieldPanel("exhibit_display_order"),
                 FieldPanel("citation_text"),
                 # FieldPanel("tags"),
             ],
@@ -127,69 +117,36 @@ class ExhibitHome(Page):
     ]
 
 
-class ExhibitPageLeftImageOneThird(Page):
-    image = models.ForeignKey(
-        "wagtailimages.Image",
-        null=True,
-        blank=False,
-        on_delete=models.SET_NULL,
-        related_name="+",
-        help_text="Exhibit page with one-third screen image on left",
-    )
-    image_caption = models.CharField(
-        max_length=500,
-        blank=True,
-        help_text="Caption for the exhibit landing page image.",
-        verbose_name="Image caption",
-    )
-    body = RichTextField(blank=True)
-    link_to_next_page = models.ForeignKey(
-        "wagtailcore.Page",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="+",
-    )
-    link_to_previous_page = models.ForeignKey(
-        "wagtailcore.Page",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="+",
-    )
-    is_end_of_exhibit = models.BooleanField(
-        default=False,
-        help_text="Is this the last page of the exhibit? If checked, yes.",
-    )
-    is_chapter_intro_page = models.BooleanField(
-        default=False,
-        help_text="Is this the first page of a chapter? If checked, yes.",
-    )
-
-    content_panels = Page.content_panels + [
-        FieldPanel("image"),
-        FieldPanel("image_caption"),
-        FieldPanel("body"),
-        FieldPanel("link_to_next_page"),
-        FieldPanel("link_to_previous_page"),
-        FieldPanel("is_end_of_exhibit"),
-        FieldPanel("is_chapter_intro_page"),
+class ExhibitPage(Page):
+    LAYOUT_CHOICES = [
+        ("left_image_one_third", "Left Image, One Third"),
+        ("right_image_one_third", "Right Image, One Third"),
+        ("left_image_two_thirds", "Left Image, Two Thirds"),
+        ("right_image_two_thirds", "Right Image, Two Thirds"),
+        ("half_and_half", "Half and Half"),
+        ("full_screen", "Full Screen"),
+        ("wide_image", "Wide Image"),
+        ("comparison_image", "Comparison Image"),
     ]
 
-
-class ExhibitPageRightImageOneThird(Page):
+    layout = models.CharField(
+        max_length=22,
+        choices=LAYOUT_CHOICES,
+        default="left_image_one_third",
+        help_text="Select the layout for this exhibit page.",
+    )
     image = models.ForeignKey(
         "wagtailimages.Image",
         null=True,
         blank=False,
         on_delete=models.SET_NULL,
         related_name="+",
-        help_text="Exhibit page with one-third screen image on right",
+        help_text="Image for the exhibit page.",
     )
     image_caption = models.CharField(
         max_length=500,
         blank=True,
-        help_text="Caption for the exhibit landing page image.",
+        help_text="Caption for the exhibit page image.",
         verbose_name="Image caption",
     )
     body = RichTextField(blank=True)
@@ -217,63 +174,19 @@ class ExhibitPageRightImageOneThird(Page):
     )
 
     content_panels = Page.content_panels + [
+        FieldPanel("layout"),
         FieldPanel("image"),
         FieldPanel("image_caption"),
         FieldPanel("body"),
         FieldPanel("link_to_next_page"),
+        FieldPanel("link_to_previous_page"),
         FieldPanel("is_end_of_exhibit"),
         FieldPanel("is_chapter_intro_page"),
-        FieldPanel("link_to_previous_page"),
-    ]
-
-
-class ExhibitPageHalfAndHalf(Page):
-    image = models.ForeignKey(
-        "wagtailimages.Image",
-        null=True,
-        blank=False,
-        on_delete=models.SET_NULL,
-        related_name="+",
-        help_text="Exhibit page with one-third screen image on right",
-    )
-    image_caption = models.CharField(
-        max_length=500,
-        blank=True,
-        help_text="Caption for the exhibit landing page image.",
-        verbose_name="Image caption",
-    )
-    body = RichTextField(blank=True)
-    link_to_next_page = models.ForeignKey(
-        "wagtailcore.Page",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="+",
-    )
-    link_to_previous_page = models.ForeignKey(
-        "wagtailcore.Page",
-        null=True,
-        blank=True,
-        on_delete=models.SET_NULL,
-        related_name="+",
-    )
-    is_end_of_exhibit = models.BooleanField(
-        default=False,
-        help_text="Is this the last page of the exhibit? If checked, yes.",
-    )
-    is_chapter_intro_page = models.BooleanField(
-        default=False,
-        help_text="Is this the first page of a chapter? If checked, yes.",
-    )
-
-    content_panels = Page.content_panels + [
-        FieldPanel("image"),
-        FieldPanel("image_caption"),
-        FieldPanel("body"),
-        FieldPanel("link_to_next_page"),
-        FieldPanel("is_end_of_exhibit"),
-        FieldPanel("is_chapter_intro_page"),
-        FieldPanel("link_to_previous_page"),
+        InlinePanel(
+            "image_comparisons",
+            label="Image Comparisons",
+            help_text="To use this, you must select Image Comparison from the page layout.",
+        ),
     ]
 
 
@@ -296,7 +209,7 @@ class ExhibitHomeTag(TaggedItemBase):
 
 class ImageComparison(Orderable):
     page = ParentalKey(
-        ExhibitHome, on_delete=models.CASCADE, related_name="image_comparisons"
+        ExhibitPage, on_delete=models.CASCADE, related_name="image_comparisons"
     )
     first_image = models.ForeignKey(
         "wagtailimages.Image",
@@ -304,7 +217,7 @@ class ImageComparison(Orderable):
         blank=False,
         on_delete=models.SET_NULL,
         related_name="+",
-        help_text="Exhibit landing page image",
+        help_text="First image to compare",
     )
     first_image_caption = models.CharField(
         max_length=500,
@@ -318,7 +231,7 @@ class ImageComparison(Orderable):
         blank=False,
         on_delete=models.SET_NULL,
         related_name="+",
-        help_text="Exhibit landing page image",
+        help_text="Second image to compare",
     )
     second_image_caption = models.CharField(
         max_length=500,
