@@ -11,14 +11,34 @@ services:
       - DJANGO_SECRET_KEY=thisisnotasecretkey
       - DJANGO_ALLOWED_HOSTS=localhost
       - DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost
-      - SQLITE_PATH=/db/db.sqlite3
-    volumes:
-      - dj-sqlite:/db
+      - DB_HOST=db
+      - DB_PORT=5432
+      - DB_NAME=connthreads
+      - DB_USER=connthreads
+      - DB_PASS=password
     command: >
       sh -c "
         poetry run python manage.py migrate &&
         poetry run python manage.py runserver 0.0.0.0:8000
       "
+    volumes:
+      - dj-data:/app/media
+
+  db:
+    image: postgres:16
+    volumes:
+      - pg-data:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=connthreads
+      - POSTGRES_USER=connthreads
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_HOST=db
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U connthreads"]
+      interval: 2s
+      timeout: 5s
+      retries: 3
 
 volumes:
-  dj-sqlite:
+  dj-data:
+  pg-data:

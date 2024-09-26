@@ -16,7 +16,11 @@ services:
       - DJANGO_SECRET_KEY={{ template.env.secret_key }}
       - DJANGO_ALLOWED_HOSTS={{ template.env.allowed_hosts }}
       - DJANGO_CSRF_TRUSTED_ORIGINS={{ template.env.trusted_origins }}
-      - SQLITE_PATH={{ template.env.sqlite_path }}
+      - DB_HOST=db
+      - DB_PORT={{ template.env.host_db_port }}
+      - DB_NAME={{ template.env.db_name }}
+      - DB_USER={{ template.env.db_user }}
+      - DB_PASSWORD={{ template.env.db_pass }}
     command: >
       sh -c "
         poetry run python manage.py migrate &&
@@ -34,6 +38,33 @@ services:
     {% endif %}
     {% endif %}
 
+  {% set service = 'db' %}
+
+  db:
+    image: postgres:12
+    restart: unless-stopped
+    environment:
+      - POSTGRES_DB={{ template.env.db_name }}
+      - POSTGRES_USER={{ template.env.db_user }}
+      - POSTGRES_PASSWORD={{ template.env.db_pass }}
+      - POSTGRES_HOST=db
+    {% if template.volumes is defined %}
+    {% set vols = (template.volumes | selectattr('service', 'eq', service)) %}
+    {% if vols is iterable and vols | length > 0 %}
+
+    volumes:
+    {% for vol in vols %}
+
+      - {{ vol.name }}:{{ vol.container_path }}
+    {% endfor %}
+    {% endif %}
+    {% endif %}
+
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U {{ template.env.db_user }}"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
 # external volumes managed and defined by ansible
 volumes:
