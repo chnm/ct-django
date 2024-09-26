@@ -164,14 +164,6 @@ class ExhibitPage(Page):
         on_delete=models.SET_NULL,
         related_name="+",
     )
-    is_end_of_exhibit = models.BooleanField(
-        default=False,
-        help_text="Is this the last page of the exhibit? If checked, yes.",
-    )
-    is_chapter_intro_page = models.BooleanField(
-        default=False,
-        help_text="Is this the first page of a chapter? If checked, yes.",
-    )
 
     content_panels = Page.content_panels + [
         FieldPanel("layout"),
@@ -180,8 +172,6 @@ class ExhibitPage(Page):
         FieldPanel("body"),
         FieldPanel("link_to_next_page"),
         FieldPanel("link_to_previous_page"),
-        FieldPanel("is_end_of_exhibit"),
-        FieldPanel("is_chapter_intro_page"),
         InlinePanel(
             "image_comparisons",
             label="Image Comparisons",
