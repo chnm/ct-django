@@ -23,7 +23,7 @@ urlpatterns = [
     # Wagtail URLs
     path("cms/", include(wagtailadmin_urls)),
     path("documents/", include(wagtaildocs_urls)),
-    path("pages/", include(wagtail_urls)),
+    path("exhibits/", include(wagtail_urls)),
     path("about/", about, name="about"),
     path("concepts/", concepts, name="concepts"),
     path("events/", events, name="event"),
