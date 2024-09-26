@@ -183,6 +183,14 @@ STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
 
 # Media files
+STORAGES = {
+    "default": {
+        "BACKEND": "django.core.files.storage.FileSystemStorage",
+    },
+    "staticfiles": {
+        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+    },
+}
 OBJ_STORAGE = env("OBJ_STORAGE", default=False)
 if OBJ_STORAGE:
     AWS_ACCESS_KEY_ID = env("OBJ_STORAGE_ACCESS_KEY_ID")
