@@ -16,6 +16,11 @@ services:
       - DB_NAME=connthreads
       - DB_USER=connthreads
       - DB_PASS=password
+      - OBJ_STORAGE=True
+      - OBJ_STORAGE_ACCESS_KEY_ID=connthreads-dev-key
+      - OBJ_STORAGE_SECRET_ACCESS_KEY=connthreads-secret-key
+      - OBJ_STORAGE_BUCKET_NAME=connthreads-dev
+      - OBJ_STORAGE_ENDPOINT_URL=https://obj.rrchnm.org
     command: >
       sh -c "
         poetry run python manage.py migrate &&
