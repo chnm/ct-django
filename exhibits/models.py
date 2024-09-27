@@ -9,14 +9,27 @@ from wagtail.search import index
 
 
 class GeneralPage(Page):
+    # LAYOUTS_CHOICES = [
+    #     ("one_column", "One Column"),
+    #     ("two_column", "Two Column"),
+    #     ("three_column", "Three Column"),
+    #     ("five_column", "Five Column"),
+    # ]
     body = RichTextField(blank=True, help_text="General site pages.")
     sidebar = RichTextField(blank=True, help_text="Sidebar content for the page.")
+    # layout = models.CharField(
+    #     max_length=11,
+    #     choices=LAYOUTS_CHOICES,
+    #     default="one_column",
+    #     help_text="Select the layout for this page.",
+    # )
 
     search_fields = Page.search_fields + [
         index.SearchField("body"),
     ]
 
     content_panels = Page.content_panels + [
+        # FieldPanel("layout"),
         FieldPanel("body"),
         FieldPanel("sidebar"),
     ]
