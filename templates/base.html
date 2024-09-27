@@ -36,13 +36,14 @@
           </div>
           <div class="inline-flex items-center justify-center">
             <div class="flex flex-shrink-0 items-center">
-              <a href="{% url 'index' %}"><img class="h-24 w-auto" src="{% static "/img/logo.png" %}" alt="Connecting Threads"></a>
-            </div>
+              <a href="{% url 'index' %}" class="flex items-center space-x-2">
+                <img class="h-24 w-auto" src="{% static "/img/logo-ct.png" %}" alt="Connecting Threads">
+              </a>            </div>
             <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
               <div class="flex space-x-4">
                 <a href="/database/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Database</a>
                 <a href="/lessons/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Lesson Plans</a>
-                <a href="#" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Zotero</a>
+                <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Bibliography</a>
                 <a href="/concepts/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Concepts</a>
                 <a href="/events/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Launch Event</a>
                 <a href="/about/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">About</a>
@@ -57,7 +58,7 @@
         <div class="space-y-1 px-2 pb-3 pt-2">
           <a href="/database/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Database</a>
           <a href="/lessons/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Lesson Plans</a>
-          <a href="#" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Zotero</a>
+          <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Bibliography</a>
           <a href="/concepts/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Concepts</a>
           <a href="/events/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Launch Event</a>
           <a href="/about/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">About</a>
@@ -78,11 +79,11 @@
 
     <footer class="pt-5 my-5 text-gray-500 border-t">
       <div class="flex flex-wrap justify-center items-center">
-        <img src="{% static "/img/neh-logo.png" %}" alt="National Endowment for the Humanities" class="w-40 h-auto mx-4 mb-4">
+        <img src="{% static "/img/neh-logo.png" %}" alt="National Endowment for the Humanities" class="w-60 h-auto mx-4 mb-4">
         <img src="{% static "/img/ukri-ahrc-square-logo.png" %}" alt="Arts and Humanities Research Council" class="w-20 h-auto mx-4 mb-4">
-        <img src="{% static "/img/rrchnm-logo.png" %}" alt="Roy Rosenzweig Center for History and New media" class="w-40 h-auto mx-4 mb-4">
-        <img src="{% static "/img/gmu-logo.png" %}" alt="George Mason University" class="w-20 h-auto mx-4 mb-4">
-        <img src="{% static "/img/edinburgh-logo.png" %}" alt="Edinburgh University" class="w-40 h-auto mx-4 mb-4">
+        <img src="{% static "/img/rrchnm-logo.png" %}" alt="Roy Rosenzweig Center for History and New media" class="w-60 h-auto mx-4 mb-4">
+        <img src="{% static "/img/gmu-logo.png" %}" alt="George Mason University" class="w-60 h-auto mx-4 mb-4">
+        <img src="{% static "/img/edinburgh-logo.png" %}" alt="Edinburgh University" class="w-60 h-auto mx-4 mb-4">
       </div>
 
       <div class="container mx-auto px-4">
