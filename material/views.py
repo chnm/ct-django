@@ -7,6 +7,7 @@ from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
 from taggit.models import Tag
 
+from exhibits.models import ExhibitHome
 from material.filters import TextileFilter
 from material.models import PrimaryTextileType, SecondaryTextileType, TextileRecord
 from material.tables import TextileTable
@@ -15,7 +16,8 @@ logger = logging.getLogger(__name__)
 
 
 def index(request):
-    return render(request, "index.html")
+    exhibits = ExhibitHome.objects.live().public().order_by("exhibit_display_order")
+    return render(request, "index.html", {"exhibits": exhibits})
 
 
 def keyword_search(request):
