@@ -1,11 +1,11 @@
 {% extends 'base.html' %}
-{% load static %}
+{% load static wagtailcore_tags wagtailimages_tags %}
 
 {% block title %}Connecting Threads{% endblock title %}
 
 {% block index %}
   <!-- Hero Section -->
-  <div class="relative h-screen bg-cover bg-center" style="background-image: url('{% static "/img/1-Agostino_Brunias_-_A_Linen_Market_with_a_Linen-stall_and_Vegetable_Seller_in_the_West_Indies_-_Google_Art_Project.jpeg" %}');">
+  <div class="relative h-screen bg-cover bg-center" style="background-image: url('{% static "/img/CT_Exhibition_Opening_Image.original.jpg" %}');">
     <div class="absolute inset-0 bg-black opacity-50"></div>
     <div class="relative z-10 flex flex-col items-center justify-center h-full text-center text-white">
       <h1 class="text-4xl md:text-6xl font-bold">Connecting Threads</h1>
@@ -27,30 +27,16 @@
     <div class="container mx-auto px-4 text-center">
       <h2 class="text-3xl md:text-3xl font-bold mb-8">Explore the story by choosing one of the regions below:</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        <div class="relative group">
-          <a href="/exhibits/madras-in-south-india/">
-            <img src="{% static "/img/2_4850(IS)_VA_resized.jpeg" %}" alt="Preview 1" class="w-full h-auto">
-            <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in South India</div>
-          </a>
-        </div>
-        <div class="relative group">
-          <a href="/exhibits/madras-in-the-caribbean/">
-            <img src="{% static "/img/2_4850(IS)_VA_resized.jpeg" %}" alt="Preview 2" class="w-full h-auto">
-            <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in the Greater Caribbean</div>
-          </a>
-        </div>
-        <div class="relative group">
-          <a href="/exhibits/madras-in-europe/">
-            <img src="{% static "/img/2_4850(IS)_VA_resized.jpeg" %}" alt="Preview 3" class="w-full h-auto">
-            <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras in Europe</div>
-          </a>
-        </div>
-        <div class="relative group">
-          <a href="/exhibits/madras-legacies/">
-            <img src="{% static "/img/2_4850(IS)_VA_resized.jpeg" %}" alt="Preview 4" class="w-full h-auto">
-            <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">Madras Legacies</div>
-          </a>
-        </div>
+        {% for exhibit in exhibits %}
+          <div class="relative group">
+            <div class="w-full h-64 relative">
+              <a href="{{ exhibit.full_url }}">
+                {% image exhibit.image original class="w-full h-full object-cover" %}
+                <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">{{ exhibit.title }}</div>
+              </a>
+            </div>
+          </div>
+        {% endfor %}
       </div>
     </div>
   </section>
