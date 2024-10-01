@@ -139,7 +139,6 @@ class ExhibitPage(Page):
         ("half_and_half", "Half and Half"),
         ("full_screen", "Full Screen"),
         ("wide_image", "Wide Image"),
-        ("comparison_image", "Comparison Image"),
     ]
 
     layout = models.CharField(
@@ -147,6 +146,10 @@ class ExhibitPage(Page):
         choices=LAYOUT_CHOICES,
         default="left_image_one_third",
         help_text="Select the layout for this exhibit page.",
+    )
+    display_title = models.BooleanField(
+        default=True,
+        help_text="Display the title on the page or not. Checked means yes.",
     )
     image = models.ForeignKey(
         "wagtailimages.Image",
@@ -180,6 +183,7 @@ class ExhibitPage(Page):
 
     content_panels = Page.content_panels + [
         FieldPanel("layout"),
+        FieldPanel("display_title"),
         FieldPanel("image"),
         FieldPanel("image_caption"),
         FieldPanel("body"),
@@ -188,7 +192,7 @@ class ExhibitPage(Page):
         InlinePanel(
             "image_comparisons",
             label="Image Comparisons",
-            help_text="To use this, you must select Image Comparison from the page layout.",
+            help_text="The recommended page layout for displaying image comparisons are any of the two-thirds layouts or wide screen layouts.",
         ),
     ]
 
