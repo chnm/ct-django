@@ -8,7 +8,24 @@
     <!-- Left Column: Image -->
     {% if page.layout == 'left_image_one_third' %}
       <div class="lg:w-1/3">
-        {% if page.image %}
+        {% if page.image_comparisons.all %}
+          {% for comparison in page.image_comparisons.all %}
+            {% image comparison.first_image original as img1 %}
+            {% image comparison.second_image original as img2 %}
+            <div class="relative w-full h-screen">
+              <img-comparison-slider class="w-full h-full">
+                <img slot="first" class="object-scale-down h-screen m-auto" src="{{ img1.url }}" loading="lazy">
+                <img slot="second" class="object-scale-down h-screen m-auto" src="{{ img2.url }}" loading="lazy">
+                <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
+                  <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
+                </svg>
+                </img-comparison-slider>
+              </div>
+          {% endfor %}
+          <h3>image slider test</h3>
+          <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
+        {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
           {% if page.image_caption %}
             <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
@@ -16,56 +33,20 @@
             </div>
           {% endif %}
         {% endif %}
+
         {% for item in page.gallery_images.all %}
           <div style="float: inline-start; margin: 10px">
             {% image item.image fill-320x240 %}
             <p>{{ item.caption }}</p>
           </div>
         {% endfor %}
-
-        {% if page.image_comparisons.all %}
-          {% for comparison in page.image_comparisons.all %}
-            {% image comparison.first_image original as img1 %}
-            {% image comparison.second_image original as img2 %}
-            <div class="image-comparison">
-              <img-comparison-slider class="slider-with-animated-handle">
-                <img slot="first" width="100%" src="{{ img1.url }}">
-                <img slot="second" width="100%" src="{{ img2.url }}">
-                <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
-                  <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
-                </svg>
-                </img-comparison-slider>
-              </div>
-          {% endfor %}
-        {% endif %}
-
-        {% with tags=page.tags.all %}
-          {% if tags %}
-            <div class="tags">
-              <h3>Tags</h3>
-              {% for tag in tags %}
-                <a href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-
-        {% if page.image_comparisons.all %}
-          <h3>image slider test</h3>
-          <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"
-          ></script>
-          <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css"
-          />
-        {% endif %}
       </div>
         <!-- Right Column: Content -->
       <div class="lg:w-2/3 flex flex-col justify-between overflow-y-auto h-screen">
         <div class="prose p-8 flex-grow">
-          <h1>{{ page.title }}</h1>
+          {% if page.display_title %}
+            <h1>{{ page.title }}</h1>
+          {% endif %}
           <div class="text-justify">
             {{ page.body|richtext }}
           </div>
@@ -100,8 +81,9 @@
       <!-- Right Image One Third Layout -->
       <div class="lg:w-2/3 flex flex-col justify-between overflow-y-auto h-screen">
         <div class="prose p-8 flex-grow">
-          <h1>{{ page.title }}</h1>
-          <div class="text-justify">
+          {% if page.display_title %}
+            <h1>{{ page.title }}</h1>
+          {% endif %}          <div class="text-justify">
             {{ page.body|richtext }}
           </div>
         </div>
@@ -131,65 +113,24 @@
       </div>
       <!-- Right Column: Image -->
       <div class="lg:w-1/3">
-        {% if page.image %}
-          {% image page.image original class="w-full h-screen object-cover" %}
-          {% if page.image_caption %}
-            <div class="absolute bottom-0 right-0 bg-black bg-opacity-50 text-white p-2">
-              {{ page.image_caption }}
-            </div>
-          {% endif %}
-        {% endif %}
-
-        {% for item in page.gallery_images.all %}
-          <div style="float: inline-start; margin: 10px">
-            {% image item.image fill-320x240 %}
-            <p>{{ item.caption }}</p>
-          </div>
-        {% endfor %}
-
         {% if page.image_comparisons.all %}
           {% for comparison in page.image_comparisons.all %}
             {% image comparison.first_image original as img1 %}
             {% image comparison.second_image original as img2 %}
-            <div class="image-comparison">
-              <img-comparison-slider class="slider-with-animated-handle">
-                <img slot="first" width="100%" src="{{ img1.url }}">
-                <img slot="second" width="100%" src="{{ img2.url }}">
+            <div class="relative w-full h-screen">
+              <img-comparison-slider class="w-full h-full">
+                <img slot="first" class="object-scale-down h-screen m-auto" src="{{ img1.url }}" loading="lazy">
+                <img slot="second" class="object-scale-down h-screen m-auto" src="{{ img2.url }}" loading="lazy">
                 <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
                   <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
                 </svg>
                 </img-comparison-slider>
               </div>
           {% endfor %}
-        {% endif %}
-
-        {% with tags=page.tags.all %}
-          {% if tags %}
-            <div class="tags">
-              <h3>Tags</h3>
-              {% for tag in tags %}
-                <a href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-
-        {% if page.image_comparisons.all %}
           <h3>image slider test</h3>
-          <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"
-          ></script>
-          <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css"
-          />
-        {% endif %}
-      </div>
-    {% elif page.layout == 'left_image_two_thirds' %}
-      <!-- Left Image Two Thirds Layout -->
-      <div class="lg:w-2/3">
-        {% if page.image %}
+          <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
+        {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
           {% if page.image_caption %}
             <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
@@ -197,57 +138,56 @@
             </div>
           {% endif %}
         {% endif %}
+
         {% for item in page.gallery_images.all %}
           <div style="float: inline-start; margin: 10px">
             {% image item.image fill-320x240 %}
             <p>{{ item.caption }}</p>
           </div>
         {% endfor %}
-
+      </div>
+    {% elif page.layout == 'left_image_two_thirds' %}
+      <!-- Left Image Two Thirds Layout -->
+      <div class="lg:w-2/3">
         {% if page.image_comparisons.all %}
           {% for comparison in page.image_comparisons.all %}
             {% image comparison.first_image original as img1 %}
             {% image comparison.second_image original as img2 %}
-            <div class="image-comparison">
-              <img-comparison-slider class="slider-with-animated-handle">
-                <img slot="first" width="100%" src="{{ img1.url }}">
-                <img slot="second" width="100%" src="{{ img2.url }}">
+            <div class="relative w-full h-screen">
+              <img-comparison-slider class="w-full h-full">
+                <img slot="first" class="object-scale-down h-screen m-auto" src="{{ img1.url }}" loading="lazy">
+                <img slot="second" class="object-scale-down h-screen m-auto" src="{{ img2.url }}" loading="lazy">
                 <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
                   <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
                 </svg>
                 </img-comparison-slider>
               </div>
           {% endfor %}
-        {% endif %}
-
-        {% with tags=page.tags.all %}
-          {% if tags %}
-            <div class="tags">
-              <h3>Tags</h3>
-              {% for tag in tags %}
-                <a href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
-              {% endfor %}
+          <h3>image slider test</h3>
+          <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
+        {% elif page.image %}
+          {% image page.image original class="w-full h-screen object-cover" %}
+          {% if page.image_caption %}
+            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
+              {{ page.image_caption }}
             </div>
           {% endif %}
-        {% endwith %}
-
-        {% if page.image_comparisons.all %}
-          <h3>image slider test</h3>
-          <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"
-          ></script>
-          <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css"
-          />
         {% endif %}
+
+        {% for item in page.gallery_images.all %}
+          <div style="float: inline-start; margin: 10px">
+            {% image item.image fill-320x240 %}
+            <p>{{ item.caption }}</p>
+          </div>
+        {% endfor %}
       </div>
       <!-- Right Column: Content -->
       <div class="lg:w-1/3 flex flex-col justify-between overflow-y-auto h-screen">
         <div class="prose p-8 flex-grow">
-          <h1>{{ page.title }}</h1>
-          <div class="text-justify">
+          {% if page.display_title %}
+            <h1>{{ page.title }}</h1>
+          {% endif %}          <div class="text-justify">
             {{ page.body|richtext }}
           </div>
         </div>
@@ -280,8 +220,9 @@
       <!-- Right Image Two Thirds Layout -->
       <div class="lg:w-1/3 flex flex-col justify-between overflow-y-auto h-screen">
         <div class="prose p-8 flex-grow">
-          <h1>{{ page.title }}</h1>
-          <div class="text-justify">
+          {% if page.display_title %}
+            <h1>{{ page.title }}</h1>
+          {% endif %}          <div class="text-justify">
             {{ page.body|richtext }}
           </div>
         </div>
@@ -311,7 +252,24 @@
       </div>
       <!-- Right Column: Image -->
       <div class="lg:w-2/3">
-        {% if page.image %}
+        {% if page.image_comparisons.all %}
+          {% for comparison in page.image_comparisons.all %}
+            {% image comparison.first_image original as img1 %}
+            {% image comparison.second_image original as img2 %}
+            <div class="relative w-full h-screen">
+              <img-comparison-slider class="w-full h-full">
+                <img slot="first" class="object-scale-down h-screen m-auto" src="{{ img1.url }}" loading="lazy">
+                <img slot="second" class="object-scale-down h-screen m-auto" src="{{ img2.url }}" loading="lazy">
+                <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
+                  <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
+                </svg>
+                </img-comparison-slider>
+              </div>
+          {% endfor %}
+          <h3>image slider test</h3>
+          <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
+        {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
           {% if page.image_caption %}
             <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
@@ -326,53 +284,15 @@
             <p>{{ item.caption }}</p>
           </div>
         {% endfor %}
-
-        {% if page.image_comparisons.all %}
-          {% for comparison in page.image_comparisons.all %}
-            {% image comparison.first_image original as img1 %}
-            {% image comparison.second_image original as img2 %}
-            <div class="image-comparison">
-              <img-comparison-slider class="slider-with-animated-handle">
-                <img slot="first" width="100%" src="{{ img1.url }}">
-                <img slot="second" width="100%" src="{{ img2.url }}">
-                <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
-                  <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
-                </svg>
-                </img-comparison-slider>
-              </div>
-          {% endfor %}
-        {% endif %}
-
-        {% with tags=page.tags.all %}
-          {% if tags %}
-            <div class="tags">
-              <h3>Tags</h3>
-              {% for tag in tags %}
-                <a href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
-              {% endfor %}
-            </div>
-          {% endif %}
-        {% endwith %}
-
-        {% if page.image_comparisons.all %}
-          <h3>image slider test</h3>
-          <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"
-          ></script>
-          <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css"
-          />
-        {% endif %}
       </div>
     {% elif page.layout == 'half_and_half' %}
       <!-- Half and Half Layout -->
       <!-- Left Column: Content -->
       <div class="lg:w-1/2 flex flex-col justify-between overflow-y-auto h-screen">
         <div class="prose p-8 flex-grow">
-          <h1>{{ page.title }}</h1>
-          <div class="text-justify">
+          {% if page.display_title %}
+            <h1>{{ page.title }}</h1>
+          {% endif %}          <div class="text-justify">
             {{ page.body|richtext }}
           </div>
         </div>
@@ -402,15 +322,30 @@
       </div>
     <!-- Right Column: Image -->
       <div class="lg:w-1/2">
-        {% if page.image %}
-          <div class="relative">
-            {% image page.image original class="w-full h-screen object-cover" %}
-            {% if page.image_caption %}
-              <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-                {{ page.image_caption }}
+        {% if page.image_comparisons.all %}
+          {% for comparison in page.image_comparisons.all %}
+            {% image comparison.first_image original as img1 %}
+            {% image comparison.second_image original as img2 %}
+            <div class="relative w-full h-screen">
+              <img-comparison-slider class="w-full h-full">
+                <img slot="first" class="object-scale-down h-screen m-auto" src="{{ img1.url }}" loading="lazy">
+                <img slot="second" class="object-scale-down h-screen m-auto" src="{{ img2.url }}" loading="lazy">
+                <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
+                  <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
+                </svg>
+                </img-comparison-slider>
               </div>
-            {% endif %}
-          </div>
+          {% endfor %}
+          <h3>image slider test</h3>
+          <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
+        {% elif page.image %}
+          {% image page.image original class="w-full h-screen object-cover" %}
+          {% if page.image_caption %}
+            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
+              {{ page.image_caption }}
+            </div>
+          {% endif %}
         {% endif %}
 
         {% for item in page.gallery_images.all %}
@@ -419,146 +354,118 @@
             <p>{{ item.caption }}</p>
           </div>
         {% endfor %}
-
+      </div>
+    {% elif page.layout == 'full_screen' %}
+      <!-- Full Screen Layout -->
+      <div class="relative w-full h-screen">
         {% if page.image_comparisons.all %}
           {% for comparison in page.image_comparisons.all %}
             {% image comparison.first_image original as img1 %}
             {% image comparison.second_image original as img2 %}
-            <div class="image-comparison">
-              <img-comparison-slider class="slider-with-animated-handle">
-                <img slot="first" width="100%" src="{{ img1.url }}">
-                <img slot="second" width="100%" src="{{ img2.url }}">
+            <div class="relative w-full h-screen">
+              <img-comparison-slider class="w-full h-full">
+                <img slot="first" class="w-full h-full object-cover" src="{{ img1.url }}" loading="lazy">
+                <img slot="second" class="w-full h-full object-cover" src="{{ img2.url }}" loading="lazy">
                 <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
                   <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
                 </svg>
                 </img-comparison-slider>
               </div>
           {% endfor %}
-        {% endif %}
-
-        {% with tags=page.tags.all %}
-          {% if tags %}
-            <div class="tags">
-              <h3>Tags</h3>
-              {% for tag in tags %}
-                <a href="{% slugurl 'tags' %}?tag={{ tag }}"><button type="button">{{ tag }}</button></a>
-              {% endfor %}
+          <h3>image slider test</h3>
+          <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
+        {% elif page.image %}
+          {% image page.image original class="w-full h-screen object-cover" %}
+          {% if page.image_caption %}
+            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
+              {{ page.image_caption }}
             </div>
           {% endif %}
-        {% endwith %}
-
-        {% if page.image_comparisons.all %}
-          <h3>image slider test</h3>
-          <script
-            defer
-            src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"
-          ></script>
-          <link
-            rel="stylesheet"
-            href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css"
-          />
         {% endif %}
       </div>
-    {% elif page.layout == 'full_screen' %}
-      <!-- Full Screen Layout -->
-      <div class="relative w-full h-screen">
-        {% if page.image %}
-          <div class="relative w-full h-full">
-            {% image page.image original class="w-full h-full object-cover" %}
-            {% if page.image_caption %}
-              <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-                {{ page.image_caption }}
-              </div>
-            {% endif %}
-          </div>
-        {% endif %}
-        <div class="absolute inset-0 flex items-center justify-center">
-          <div class="bg-white bg-opacity-90 p-8 rounded shadow-lg max-w-3xl mx-auto">
-            <h1 class="text-center">{{ page.title }}</h1>
-            <div class="prose text-justify">
-              {{ page.body|richtext }}
-            </div>
+
+      {% for item in page.gallery_images.all %}
+        <div style="float: inline-start; margin: 10px">
+          {% image item.image fill-320x240 %}
+          <p>{{ item.caption }}</p>
+        </div>
+      {% endfor %}
+      <div class="absolute inset-0 flex items-center justify-center">
+        <div class="bg-white bg-opacity-90 p-8 rounded shadow-lg max-w-3xl mx-auto">
+          {% if page.display_title %}
+            <h1>{{ page.title }}</h1>
+          {% endif %}            <div class="prose text-justify">
+            {{ page.body|richtext }}
           </div>
         </div>
-        <div class="absolute bottom-0 left-0 w-full p-4">
-          <div class="flex justify-center items-center mb-4 space-x-4">
-            {% if page.link_to_next_page %}
-              <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                Next
-              </a>
-            {% elif page.is_end_of_exhibit %}
-              <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                Take me to the beginning
-              </a>
-            {% endif %}
-            {% if page.link_to_previous_page %}
-              <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                Previous
-              </a>
-            {% endif %}
-            <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+      </div>
+      <div class="absolute bottom-0 left-0 w-full p-4">
+        <div class="flex justify-center items-center mb-4 space-x-4">
+          {% if page.link_to_next_page %}
+            <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+              Next
+            </a>
+          {% elif page.is_end_of_exhibit %}
+            <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
               Take me to the beginning
             </a>
-          </div>
+          {% endif %}
+          {% if page.link_to_previous_page %}
+            <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+              Previous
+            </a>
+          {% endif %}
+          <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+            Take me to the beginning
+          </a>
         </div>
+      </div>
       </div>
     {% elif page.layout == 'wide_image' %}
       <!-- Wide Image Layout -->
       <div class="w-full min-h-screen flex flex-col">
         <div class="prose p-8 mx-auto max-w-screen-xl flex-grow">
-          <h1 class="text-center">{{ page.title }}</h1>
-          <div class="text-justify">
+          {% if page.display_title %}
+            <h1>{{ page.title }}</h1>
+          {% endif %}          <div class="text-justify">
             {{ page.body|richtext }}
           </div>
         </div>
-        {% if page.image %}
-          <div class="relative">
-            {% image page.image original class="w-full object-cover" %}
-            {% if page.image_caption %}
-              <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-                {{ page.image_caption }}
+        {% if page.image_comparisons.all %}
+          {% for comparison in page.image_comparisons.all %}
+            {% image comparison.first_image original as img1 %}
+            {% image comparison.second_image original as img2 %}
+            <div class="relative w-full h-screen">
+              <img-comparison-slider class="w-full h-full">
+                <img slot="first" class="w-full h-full object-cover" src="{{ img1.url }}" loading="lazy">
+                <img slot="second" class="w-full h-full object-cover" src="{{ img2.url }}" loading="lazy">
+                <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
+                  <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
+                </svg>
+                </img-comparison-slider>
               </div>
-            {% endif %}
-            <div class="absolute bottom-0 left-0 w-full p-4">
-              <div class="flex justify-center items-center mb-4 space-x-4">
-                {% if page.link_to_next_page %}
-                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                    Next
-                  </a>
-                {% elif page.is_end_of_exhibit %}
-                  <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                    Take me to the beginning
-                  </a>
-                {% endif %}
-                {% if page.link_to_previous_page %}
-                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                    Previous
-                  </a>
-                {% endif %}
-                <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Take me to the beginning
-                </a>
-              </div>
+          {% endfor %}
+          <h3>image slider test</h3>
+          <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
+          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
+        {% elif page.image %}
+          {% image page.image original class="w-full h-screen object-cover" %}
+          {% if page.image_caption %}
+            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
+              {{ page.image_caption }}
             </div>
-          </div>
+          {% endif %}
         {% endif %}
       </div>
-    {% elif page.layout == 'comparison_image' %}
-      {% if page.image_comparisons.all %}
-        {% for comparison in page.image_comparisons.all %}
-          {% image comparison.first_image original as img1 %}
-          {% image comparison.second_image original as img2 %}
-          <div class="image-comparison">
-            <img-comparison-slider class="slider-with-animated-handle">
-              <img slot="first" width="100%" src="{{ img1.url }}">
-              <img slot="second" width="100%" src="{{ img2.url }}">
-              <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100" viewBox="-8 -3 16 6">
-                <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1" fill="#fff" vector-effect="non-scaling-stroke"></path>
-              </svg>
-              </img-comparison-slider>
-            </div>
-        {% endfor %}
-      {% endif %}
+
+      {% for item in page.gallery_images.all %}
+        <div style="float: inline-start; margin: 10px">
+          {% image item.image fill-320x240 %}
+          <p>{{ item.caption }}</p>
+        </div>
+      {% endfor %}
+      </div>
     {% endif %}
   </div>
 {% endblock content %}
