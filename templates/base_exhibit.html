@@ -20,22 +20,33 @@
       <main class="flex-grow">
         {% block content %}{% endblock content %}
       </main>
-      <footer class="bg-gray-800 text-white p-4">
-        <div class="container mx-auto">
-          <div class="flex justify-between items-center">
-            <div class="flex space-x-4 ml-auto">
-              <a href="/" class="text-white hover:underline">Home</a>
-              <a href="/database/" class="text-white hover:underline">Database</a>
-              <a href="/lessons/" class="text-white hover:underline">Lesson Plans</a>
-              <a href="#" class="text-white hover:underline">Zotero</a>
-              <a href="/concepts/" class="text-white hover:underline">Concepts</a>
-              <a href="/events/" class="text-white hover:underline">Launch Event</a>
-              <a href="/about/" class="text-white hover:underline">About</a>
+      <div x-data="{ open: false }" class="fixed bottom-0 left-0 w-full">
+        <div class="flex justify-center">
+          <button @click="open = !open" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-full w-32 h-2 mb-2"></button>
+        </div>
+        <footer x-show="open" x-transition:enter="transition ease-out duration-300 transform"
+                x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
+                x-transition:leave="transition ease-in duration-300 transform"
+                x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
+                class="bg-gray-800 text-white p-4">
+          <div class="container mx-auto">
+            <div class="flex justify-between items-center">
+              <div class="flex space-x-4 ml-auto">
+                <a href="/" class="text-white hover:underline">Home</a>
+                <a href="/database/" class="text-white hover:underline">Database</a>
+                <a href="/lessons/" class="text-white hover:underline">Lesson Plans</a>
+                <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="text-white hover:underline">Bibliography</a>
+                <a href="/concepts/" class="text-white hover:underline">Concepts</a>
+                <a href="/events/" class="text-white hover:underline">Launch Event</a>
+                <a href="/about/" class="text-white hover:underline">About</a>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
+      </div>
+      <!-- </footer> -->
     </div>
-    {% block extrajs %}{% endblock extrajs %}
-  </body>
+  </div>
+  {% block extrajs %}{% endblock extrajs %}
+</body>
 </html>
