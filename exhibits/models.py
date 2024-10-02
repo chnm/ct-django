@@ -136,13 +136,15 @@ class ExhibitPage(Page):
         ("right_image_one_third", "Right Image, One Third"),
         ("left_image_two_thirds", "Left Image, Two Thirds"),
         ("right_image_two_thirds", "Right Image, Two Thirds"),
+        ("three_column_images_left", "Three Column, Images on Left"),
+        ("three_column_images_right", "Three Column, Images on Right"),
         ("half_and_half", "Half and Half"),
         ("full_screen", "Full Screen"),
         ("wide_image", "Wide Image"),
     ]
 
     layout = models.CharField(
-        max_length=22,
+        max_length=25,
         choices=LAYOUT_CHOICES,
         default="left_image_one_third",
         help_text="Select the layout for this exhibit page.",
@@ -154,7 +156,7 @@ class ExhibitPage(Page):
     image = models.ForeignKey(
         "wagtailimages.Image",
         null=True,
-        blank=False,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
         help_text="Image for the exhibit page.",
@@ -162,7 +164,39 @@ class ExhibitPage(Page):
     image_caption = models.CharField(
         max_length=500,
         blank=True,
-        help_text="Caption for the exhibit page image.",
+        help_text="Use this field for single column or two-column layouts.",
+        verbose_name="Image caption",
+    )
+    image_zoomable = models.BooleanField(
+        default=False,
+        help_text="Check this box if you want the image to be zoomable.",
+    )
+    image_first_column = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="First image for three-column layouts.",
+    )
+    image_first_column_caption = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Caption for the first image.",
+        verbose_name="Image caption",
+    )
+    image_second_column = models.ForeignKey(
+        "wagtailimages.Image",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+        help_text="Second image for three-column layouts.",
+    )
+    image_second_column_caption = models.CharField(
+        max_length=500,
+        blank=True,
+        help_text="Caption for the second image.",
         verbose_name="Image caption",
     )
     body = RichTextField(blank=True)
@@ -180,15 +214,40 @@ class ExhibitPage(Page):
         on_delete=models.SET_NULL,
         related_name="+",
     )
+    link_to_subsection = models.ForeignKey(
+        "wagtailcore.Page",
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name="+",
+    )
 
     content_panels = Page.content_panels + [
         FieldPanel("layout"),
         FieldPanel("display_title"),
-        FieldPanel("image"),
-        FieldPanel("image_caption"),
+        MultiFieldPanel(
+            [
+                FieldPanel("image"),
+                FieldPanel("image_caption"),
+                FieldPanel("image_zoomable"),
+            ],
+            heading="Single Image",
+            help_text="These fields are for the single column or two-column page layouts.",
+        ),
+        MultiFieldPanel(
+            [
+                FieldPanel("image_first_column"),
+                FieldPanel("image_first_column_caption"),
+                FieldPanel("image_second_column"),
+                FieldPanel("image_second_column_caption"),
+            ],
+            heading="Three Column Image Layout",
+            help_text="These fields are for the three-column page layouts.",
+        ),
         FieldPanel("body"),
         FieldPanel("link_to_next_page"),
         FieldPanel("link_to_previous_page"),
+        FieldPanel("link_to_subsection"),
         InlinePanel(
             "image_comparisons",
             label="Image Comparisons",

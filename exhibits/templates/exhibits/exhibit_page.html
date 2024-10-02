@@ -1,11 +1,12 @@
 {% extends 'base_exhibit.html' %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load static wagtailcore_tags wagtailimages_tags %}
 
-{% block title %}{{ page.title }}{% endblock title %}
+{% block title %}Connecting Threads | {{ page.title }}{% endblock title %}
 
 {% block content %}
   <div class="flex flex-col lg:flex-row min-h-screen">
     <!-- Left Column: Image -->
+     {# ================= image, left column ======================= #}
     {% if page.layout == 'left_image_one_third' %}
       <div class="lg:w-1/3">
         {% if page.image_comparisons.all %}
@@ -22,16 +23,41 @@
                 </img-comparison-slider>
               </div>
           {% endfor %}
-          <h3>image slider test</h3>
           <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
         {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
-          {% if page.image_caption %}
-            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-              {{ page.image_caption }}
+          <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 left-0 m-4 hidden md:block">
+            <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+              <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                Caption
+              </button>
+              <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                View Full Image
+              </button>
             </div>
-          {% endif %}
+            <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+              <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                &times;
+              </button>
+              <p class="text-sm">
+                {{ page.image_caption }}
+              </p>
+            </div>
+            <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+              <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                  <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                </button>
+                <div class="overflow-hidden">
+                  {% image page.image original class="w-full h-auto" %}
+                </div>
+                <p class="text-sm mt-2 text-center">
+                  {{ page.image_caption }}
+                </p>
+              </div>
+            </div>
+          </div>
         {% endif %}
 
         {% for item in page.gallery_images.all %}
@@ -52,31 +78,27 @@
           </div>
         </div>
 
-        <footer class="bg-gray-200 text-white p-4">
+        <footer class="p-4">
           <div class="container mx-auto">
             <div class="flex justify-center items-center mb-4 space-x-4">
-              {% if page.link_to_next_page %}
-                <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Next
-                </a>
-              {% elif page.is_end_of_exhibit %}
-                <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Take me to the beginning
-                </a>
-              {% endif %}
               {% if page.link_to_previous_page %}
-                <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+                <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Previous
                 </a>
               {% endif %}
-              <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                Take me to the beginning
-              </a>
+              {% if page.link_to_next_page %}
+                <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  Next
+                </a>
+              {% endif %}
             </div>
           </div>
         </footer>
       </div>
       </div>
+
+      {# ================== one third, image right =================== #}
+
     {% elif page.layout == 'right_image_one_third' %}
       <!-- Right Image One Third Layout -->
       <div class="lg:w-2/3 flex flex-col justify-between overflow-y-auto h-screen">
@@ -87,26 +109,19 @@
             {{ page.body|richtext }}
           </div>
         </div>
-        <footer class="bg-gray-200 text-white p-4">
+        <footer class="p-4">
           <div class="container mx-auto">
             <div class="flex justify-center items-center mb-4 space-x-4">
-              {% if page.link_to_next_page %}
-                <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Next
-                </a>
-              {% elif page.is_end_of_exhibit %}
-                <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Take me to the beginning
-                </a>
-              {% endif %}
               {% if page.link_to_previous_page %}
-                <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+                <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Previous
                 </a>
               {% endif %}
-              <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                Take me to the beginning
-              </a>
+              {% if page.link_to_next_page %}
+                <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  Next
+                </a>
+              {% endif %}
             </div>
           </div>
         </footer>
@@ -127,16 +142,41 @@
                 </img-comparison-slider>
               </div>
           {% endfor %}
-          <h3>image slider test</h3>
           <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
         {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
-          {% if page.image_caption %}
-            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-              {{ page.image_caption }}
+          <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 right-0 m-4 hidden md:block">
+            <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+              <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                Caption
+              </button>
+              <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                View Full Image
+              </button>
             </div>
-          {% endif %}
+            <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+              <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                &times;
+              </button>
+              <p class="text-sm">
+                {{ page.image_caption }}
+              </p>
+            </div>
+            <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+              <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                  <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                </button>
+                <div class="overflow-hidden">
+                  {% image page.image original class="w-full h-auto" %}
+                </div>
+                <p class="text-sm mt-2 text-center">
+                  {{ page.image_caption }}
+                </p>
+              </div>
+            </div>
+          </div>
         {% endif %}
 
         {% for item in page.gallery_images.all %}
@@ -146,6 +186,217 @@
           </div>
         {% endfor %}
       </div>
+
+      {# ============ three column, images left ======================= #}
+
+    {% elif page.layout == 'three_column_images_left' %}
+      <div class="flex flex-wrap">
+        <div class="w-full lg:w-1/3 relative">
+          {% if page.image_first_column %}
+            {% image page.image_first_column original class="w-full h-screen object-cover" %}
+            <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 left-0 m-4 hidden md:block">
+              <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+                <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  Caption
+                </button>
+                <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  View Full Image
+                </button>
+              </div>
+              <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                  &times;
+                </button>
+                <p class="text-sm">
+                  {{ page.image_first_column_caption }}
+                </p>
+              </div>
+              <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                  <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                    <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                  </button>
+                  <div class="overflow-hidden">
+                    {% image page.image_first_column original class="w-full h-auto" %}
+                  </div>
+                  <p class="text-sm mt-2 text-center">
+                    {{ page.image_first_column_caption }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="w-full lg:w-1/3 relative">
+          {% if page.image_second_column %}
+            {% image page.image_second_column original class="w-full h-screen object-cover" %}
+            <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 left-0 m-4 hidden md:block">
+              <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+                <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  Caption
+                </button>
+                <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  View Full Image
+                </button>
+              </div>
+              <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                  &times;
+                </button>
+                <p class="text-sm">
+                  {{ page.image_second_column_caption }}
+                </p>
+              </div>
+              <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                  <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                    <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                  </button>
+                  <div class="overflow-hidden">
+                    {% image page.image_second_column original class="w-full h-auto" %}
+                  </div>
+                  <p class="text-sm mt-2 text-center">
+                    {{ page.image_second_column_caption }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="w-full lg:w-1/3 p-4 flex flex-col">
+          <div class="prose p-8 flex-grow">
+            {% if page.display_title %}
+              <h1>{{ page.title }}</h1>
+            {% endif %}
+            <div class="text-justify">
+              {{ page.body|richtext }}
+            </div>
+          </div>
+          <footer class="p-4 mt-auto">
+            <div class="container mx-auto">
+              <div class="flex justify-center items-center mb-4 space-x-4">
+                {% if page.link_to_previous_page %}
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Previous
+                  </a>
+                {% endif %}
+                {% if page.link_to_next_page %}
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Next
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </footer>
+        </div>
+      </div>
+
+      {# ===================== three column, images right ================== #}
+
+    {% elif page.layout == 'three_column_images_right' %}
+      <div class="flex flex-wrap">
+        <div class="w-full lg:w-1/3 p-4 flex flex-col">
+          <div class="prose p-8 flex-grow">
+            {% if page.display_title %}
+              <h1>{{ page.title }}</h1>
+            {% endif %}
+            <div class="text-justify">
+              {{ page.body|richtext }}
+            </div>
+          </div>
+          <footer class="p-4">
+            <div class="container mx-auto">
+              <div class="flex justify-center items-center mb-4 space-x-4">
+                {% if page.link_to_previous_page %}
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Previous
+                  </a>
+                {% endif %}
+                {% if page.link_to_next_page %}
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Next
+                  </a>
+                {% endif %}
+              </div>
+            </div>
+          </footer>
+        </div>
+        <div class="w-full lg:w-1/3 relative">
+          {% if page.image_first_column %}
+            {% image page.image_first_column original class="w-full h-screen object-cover" %}
+            <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 left-0 m-4 hidden md:block">
+              <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+                <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  Caption
+                </button>
+                <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  View Full Image
+                </button>
+              </div>
+              <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                  &times;
+                </button>
+                <p class="text-sm">
+                  {{ page.image_first_column_caption }}
+                </p>
+              </div>
+              <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                  <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                    <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                  </button>
+                  <div class="overflow-hidden">
+                    {% image page.image_first_column original class="w-full h-auto" %}
+                  </div>
+                  <p class="text-sm mt-2 text-center">
+                    {{ page.image_first_column_caption }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+        <div class="w-full lg:w-1/3 relative">
+          {% if page.image_second_column %}
+            {% image page.image_second_column original class="w-full h-screen object-cover" %}
+            <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 left-0 m-4 hidden md:block">
+              <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+                <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  Caption
+                </button>
+                <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  View Full Image
+                </button>
+              </div>
+              <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                  &times;
+                </button>
+                <p class="text-sm">
+                  {{ page.image_second_column_caption }}
+                </p>
+              </div>
+              <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                  <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                    <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                  </button>
+                  <div class="overflow-hidden">
+                    {% image page.image_second_column original class="w-full h-auto" %}
+                  </div>
+                  <p class="text-sm mt-2 text-center">
+                    {{ page.image_second_column_caption }}
+                  </p>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+
+    {# =================== two thirds, left images ========================== #}
+
     {% elif page.layout == 'left_image_two_thirds' %}
       <!-- Left Image Two Thirds Layout -->
       <div class="lg:w-2/3">
@@ -163,16 +414,41 @@
                 </img-comparison-slider>
               </div>
           {% endfor %}
-          <h3>image slider test</h3>
           <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
         {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
-          {% if page.image_caption %}
-            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-              {{ page.image_caption }}
+          <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 left-0 m-4 hidden md:block">
+            <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+              <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                Caption
+              </button>
+              <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                View Full Image
+              </button>
             </div>
-          {% endif %}
+            <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+              <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                &times;
+              </button>
+              <p class="text-sm">
+                {{ page.image_caption }}
+              </p>
+            </div>
+            <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+              <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                  <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                </button>
+                <div class="overflow-hidden">
+                  {% image page.image original class="w-full h-auto" %}
+                </div>
+                <p class="text-sm mt-2 text-center">
+                  {{ page.image_caption }}
+                </p>
+              </div>
+            </div>
+          </div>
         {% endif %}
 
         {% for item in page.gallery_images.all %}
@@ -192,26 +468,19 @@
           </div>
         </div>
 
-        <footer class="bg-gray-200 text-white p-4">
+        <footer class="p-4">
           <div class="container mx-auto">
             <div class="flex justify-center items-center mb-4 space-x-4">
-              {% if page.link_to_next_page %}
-                <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Next
-                </a>
-              {% elif page.is_end_of_exhibit %}
-                <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Take me to the beginning
-                </a>
-              {% endif %}
               {% if page.link_to_previous_page %}
-                <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+                <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Previous
                 </a>
               {% endif %}
-              <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                Take me to the beginning
-              </a>
+              {% if page.link_to_next_page %}
+                <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  Next
+                </a>
+              {% endif %}
             </div>
           </div>
         </footer>
@@ -226,26 +495,31 @@
             {{ page.body|richtext }}
           </div>
         </div>
-        <footer class="bg-gray-200 text-white p-4">
+        <footer class="p-2">
           <div class="container mx-auto">
-            <div class="flex justify-center items-center mb-4 space-x-4">
-              {% if page.link_to_next_page %}
-                <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Next
-                </a>
-              {% elif page.is_end_of_exhibit %}
-                <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+            <div class="flex flex-col items-center mb-2 space-y-2">
+              <div class="flex space-x-2"> <!-- TODO: DONE -->
+                {% if page.link_to_previous_page %}
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Previous
+                  </a>
+                {% endif %}
+                {% if page.link_to_next_page %}
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Next
+                  </a>
+                {% endif %}
+              </div>
+              <div class="flex flex-col items-center space-y-2">
+                {% if page.link_to_subsection %}
+                  <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Read next subsection
+                  </a>
+                {% endif %}
+                <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Take me to the beginning
                 </a>
-              {% endif %}
-              {% if page.link_to_previous_page %}
-                <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Previous
-                </a>
-              {% endif %}
-              <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                Take me to the beginning
-              </a>
+              </div>
             </div>
           </div>
         </footer>
@@ -266,14 +540,43 @@
                 </img-comparison-slider>
               </div>
           {% endfor %}
-          <h3>image slider test</h3>
           <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
         {% elif page.image %}
-          {% image page.image original class="w-full h-screen object-cover" %}
-          {% if page.image_caption %}
-            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-              {{ page.image_caption }}
+          {% if page.image_zoomable %}
+            <div id="zoom_image" class="w-full h-screen"></div>
+          {% else %}
+            {% image page.image original class="w-full h-screen object-cover" %}
+            <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 right-0 m-4 hidden md:block">
+              <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+                <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  Caption
+                </button>
+                <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  View Full Image
+                </button>
+              </div>
+              <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                  &times;
+                </button>
+                <p class="text-sm">
+                  {{ page.image_caption }}
+                </p>
+              </div>
+              <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                  <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                    <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                  </button>
+                  <div class="overflow-hidden">
+                    {% image page.image original class="w-full h-auto" %}
+                  </div>
+                  <p class="text-sm mt-2 text-center">
+                    {{ page.image_caption }}
+                  </p>
+                </div>
+              </div>
             </div>
           {% endif %}
         {% endif %}
@@ -287,35 +590,40 @@
       </div>
     {% elif page.layout == 'half_and_half' %}
       <!-- Half and Half Layout -->
-      <!-- Left Column: Content -->
       <div class="lg:w-1/2 flex flex-col justify-between overflow-y-auto h-screen">
         <div class="prose p-8 flex-grow">
           {% if page.display_title %}
             <h1>{{ page.title }}</h1>
-          {% endif %}          <div class="text-justify">
+          {% endif %}
+          <div class="text-justify">
             {{ page.body|richtext }}
           </div>
         </div>
-        <footer class="bg-gray-200 text-white p-4">
+        <footer class="p-4 mt-auto">
           <div class="container mx-auto">
-            <div class="flex justify-center items-center mb-4 space-x-4">
-              {% if page.link_to_next_page %}
-                <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Next
-                </a>
-              {% elif page.is_end_of_exhibit %}
-                <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+            <div class="flex flex-col items-center mb-2 space-y-2">
+              <div class="flex space-x-2">
+                {% if page.link_to_previous_page %}
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Previous
+                  </a>
+                {% endif %}
+                {% if page.link_to_next_page %}
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Next
+                  </a>
+                {% endif %}
+              </div>
+              <div class="flex flex-col items-center space-y-2">
+                <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Take me to the beginning
                 </a>
-              {% endif %}
-              {% if page.link_to_previous_page %}
-                <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                  Previous
-                </a>
-              {% endif %}
-              <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-                Take me to the beginning
-              </a>
+                {% if page.link_to_subsection %}
+                  <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Read next subsection
+                  </a>
+                {% endif %}
+              </div>
             </div>
           </div>
         </footer>
@@ -336,16 +644,41 @@
                 </img-comparison-slider>
               </div>
           {% endfor %}
-          <h3>image slider test</h3>
           <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
         {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
-          {% if page.image_caption %}
-            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-              {{ page.image_caption }}
+          <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 right-0 m-4 hidden md:block">
+            <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
+              <button @click="openCaption = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                Caption
+              </button>
+              <button @click="openImage = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                View Full Image
+              </button>
             </div>
-          {% endif %}
+            <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+              <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
+                &times;
+              </button>
+              <p class="text-sm">
+                {{ page.image_caption }}
+              </p>
+            </div>
+            <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+              <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4">
+                <button @click="openImage = false" class="absolute top-2 right-2 text-black">
+                  <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                </button>
+                <div class="overflow-hidden">
+                  {% image page.image original class="w-full h-auto" %}
+                </div>
+                <p class="text-sm mt-2 text-center">
+                  {{ page.image_caption }}
+                </p>
+              </div>
+            </div>
+          </div>
         {% endif %}
 
         {% for item in page.gallery_images.all %}
@@ -372,14 +705,25 @@
                 </img-comparison-slider>
               </div>
           {% endfor %}
-          <h3>image slider test</h3>
           <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
         {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
           {% if page.image_caption %}
-            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-              {{ page.image_caption }}
+            <div x-data="{ open: false }" class="fixed top-0 right-0 m-4 hidden md:block z-50">
+              <div class="flex justify-end" :class="{ 'hidden': open }" x-transition x-cloak>
+                <button @click="open = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded z-50">
+                  Caption
+                </button>
+              </div>
+              <div :class="{ 'hidden': !open }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative z-50">
+                <button @click="open = false" class="absolute top-2 right-2 text-white z-50">
+                  &times;
+                </button>
+                <p class="text-sm">
+                  {{ page.image_caption }}
+                </p>
+              </div>
             </div>
           {% endif %}
         {% endif %}
@@ -401,24 +745,29 @@
         </div>
       </div>
       <div class="absolute bottom-0 left-0 w-full p-4">
-        <div class="flex justify-center items-center mb-4 space-x-4">
-          {% if page.link_to_next_page %}
-            <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-              Next
-            </a>
-          {% elif page.is_end_of_exhibit %}
-            <a href="{% pageurl page.get_parent %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+        <div class="flex flex-col items-center mb-2 space-y-2">
+          <div class="flex space-x-2"> <!-- TODO: DONE -->
+            {% if page.link_to_previous_page %}
+              <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                Previous
+              </a>
+            {% endif %}
+            {% if page.link_to_next_page %}
+              <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                Next
+              </a>
+            {% endif %}
+          </div>
+          <div class="flex flex-col items-center space-y-2">
+            {% if page.link_to_subsection %}
+              <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                Read next subsection
+              </a>
+            {% endif %}
+            <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
               Take me to the beginning
             </a>
-          {% endif %}
-          {% if page.link_to_previous_page %}
-            <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-              Previous
-            </a>
-          {% endif %}
-          <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
-            Take me to the beginning
-          </a>
+          </div>
         </div>
       </div>
       </div>
@@ -446,14 +795,55 @@
                 </img-comparison-slider>
               </div>
           {% endfor %}
-          <h3>image slider test</h3>
           <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
         {% elif page.image %}
           {% image page.image original class="w-full h-screen object-cover" %}
+          <div class="absolute bottom-0 left-0 w-full p-4">
+            <footer class="p-4 mt-auto">
+              <div class="container mx-auto">
+                <div class="flex flex-col items-center mb-2 space-y-2">
+                  <div class="flex space-x-2">
+                    {% if page.link_to_previous_page %}
+                      <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                        Previous
+                      </a>
+                    {% endif %}
+                    {% if page.link_to_next_page %}
+                      <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                        Next
+                      </a>
+                    {% endif %}
+                  </div>
+                  <div class="flex flex-col items-center space-y-2">
+                    <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                      Take me to the beginning
+                    </a>
+                    {% if page.link_to_subsection %}
+                      <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                        Read next subsection
+                      </a>
+                    {% endif %}
+                  </div>
+                </div>
+              </div>
+            </footer>
+          </div>
           {% if page.image_caption %}
-            <div class="absolute bottom-0 left-0 bg-black bg-opacity-50 text-white p-2">
-              {{ page.image_caption }}
+            <div x-data="{ open: false }" class="fixed bottom-0 right-0 m-4 hidden md:block">
+              <div class="flex justify-end" :class="{ 'hidden': open }" x-transition x-cloak>
+                <button @click="open = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                  Caption
+                </button>
+              </div>
+              <div :class="{ 'hidden': !open }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                <button @click="open = false" class="absolute top-2 right-2 text-white">
+                  &times;
+                </button>
+                <p class="text-sm">
+                  {{ page.image_caption }}
+                </p>
+              </div>
             </div>
           {% endif %}
         {% endif %}
@@ -469,3 +859,23 @@
     {% endif %}
   </div>
 {% endblock content %}
+
+{% block extrajs %}
+  {% if page.image_zoomable %}
+    <script type="text/javascript" src="{% static 'js/openseadragon/openseadragon.min.js' %}"></script>
+    <script>
+      document.addEventListener('DOMContentLoaded', function () {
+        const imageUrl = "{{ page.image.file.url }}";
+        console.log(imageUrl);
+        OpenSeadragon({
+          id: "zoom_image",
+          tileSources: {
+            type: 'image',
+            url: imageUrl
+          },
+          prefixUrl: "{% static 'js/openseadragon/images/' %}"
+        });
+      });
+    </script>
+  {% endif %}
+{% endblock extrajs %}
