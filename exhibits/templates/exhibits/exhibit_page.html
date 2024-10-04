@@ -86,36 +86,32 @@
 
         <footer class="p-4">
           <div class="container mx-auto">
-            <div class="flex flex-col items-center mb-2 space-y-2"></div>
-            <div class="flex space-x-2"> <!-- TODO: DONE -->
-              {% if page.link_to_previous_page %}
-                <a href="{% pageurl page.link_to_previous_page %}"
-                   class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
-                  Previous
+            <div class="flex flex-col items-center mb-2 space-y-2">
+              <div class="flex space-x-2">
+                {% if page.link_to_previous_page %}
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Previous
+                  </a>
+                {% endif %}
+                {% if page.link_to_next_page %}
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Next
+                  </a>
+                {% endif %}
+              </div>
+              <div class="flex flex-col items-center space-y-2">
+                {% if page.link_to_subsection %}
+                  <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                    Skip to next section
+                  </a>
+                {% endif %}
+                <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  Take me to the beginning
                 </a>
-              {% endif %}
-              {% if page.link_to_next_page %}
-                <a href="{% pageurl page.link_to_next_page %}"
-                   class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
-                  Next
-                </a>
-              {% endif %}
-            </div>
-            <div class="flex flex-col items-center space-y-2">
-              {% if page.link_to_subsection %}
-                <a href="{% pageurl page.link_to_subsection %}"
-                   class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
-                  Skip to next section
-                </a>
-              {% endif %}
-              <a href="/#exhibits"
-                 class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
-                Take me to the beginning
-              </a>
+              </div>
             </div>
           </div>
-        </div>
-      </footer>
+        </footer>
       </div>
       </div>
 
@@ -226,71 +222,6 @@
           </div>
         {% endfor %}
       </div>
-      </div>
-<!-- Right Column: Image -->
-      <div class="lg:w-1/3">
-        {% if page.image_comparisons.all %}
-          {% for comparison in page.image_comparisons.all %}
-            {% image comparison.first_image original as img1 %}
-            {% image comparison.second_image original as img2 %}
-            <div class="relative w-full h-screen">
-              <img-comparison-slider class="w-full h-full">
-                <img slot="first" class="object-scale-down h-screen m-auto" src="{{ img1.url }}" loading="lazy">
-                <img slot="second" class="object-scale-down h-screen m-auto" src="{{ img2.url }}" loading="lazy">
-                <svg slot="handle" class="custom-animated-handle" xmlns="http://www.w3.org/2000/svg" width="100"
-                     viewBox="-8 -3 16 6">
-                  <path stroke="#fff" d="M -5 -2 L -7 0 L -5 2 M -5 -2 L -5 2 M 5 -2 L 7 0 L 5 2 M 5 -2 L 5 2" stroke-width="1"
-                        fill="#fff" vector-effect="non-scaling-stroke"></path>
-                </svg>
-                </img-comparison-slider>
-              </div>
-          {% endfor %}
-          <script defer src="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/index.js"></script>
-          <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
-        {% elif page.image %}
-          {% image page.image original class="w-full h-screen object-cover" %}
-          <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 right-0 m-4 hidden md:block">
-            <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
-              <button @click="openCaption = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
-                Caption
-              </button>
-              <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
-                View Full Image
-              </button>
-            </div>
-            <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                 class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
-              <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
-                &times;
-              </button>
-              <p class="text-sm">
-                {{ page.image_caption }}
-              </p>
-            </div>
-            <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                 class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
-              <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
-                <button @click="openImage = false" class="absolute top-2 right-2 text-black">
-                  <span
-                    class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
-                </button>
-                <div class="flex justify-center items-center overflow-hidden">
-                  {% image page.image original class="w-auto max-h-[80vh]" %}
-                </div>
-                <p class="text-sm mt-2 text-center">
-                  {{ page.image_caption }}
-                </p>
-              </div>
-            </div>
-          </div>
-        {% endif %}
-
-        {% for item in page.gallery_images.all %}
-          <div style="float: inline-start; margin: 10px">
-            {% image item.image fill-320x240 %}
-            <p>{{ item.caption }}</p>
-          </div>
-        {% endfor %}
       </div>
 
 {# ============ three column, images left ======================= #}
