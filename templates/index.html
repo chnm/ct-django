@@ -28,14 +28,17 @@
       <h2 class="text-3xl md:text-3xl font-bold mb-8">Explore the story by choosing one of the regions below:</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
         {% for exhibit in exhibits %}
-          <div class="relative group">
-            <div class="w-full h-64 relative">
-              <a href="{{ exhibit.full_url }}">
-                {% image exhibit.image original class="w-full h-full object-cover" %}
-                <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">{{ exhibit.title }}</div>
-              </a>
+        {# TODO: This is a hacky fix we'll want to properly resolve at some point. #}
+          {% if exhibit.title != "Exhibits" %}
+            <div class="relative group">
+              <div class="w-full h-64 relative">
+                <a href="{{ exhibit.full_url }}">
+                  {% image exhibit.image original class="w-full h-full object-cover" %}
+                  <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">{{ exhibit.title }}</div>
+                </a>
+              </div>
             </div>
-          </div>
+          {% endif %}
         {% endfor %}
       </div>
     </div>
