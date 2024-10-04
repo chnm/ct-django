@@ -214,6 +214,7 @@ WAGTAIL_SITE_NAME = "Connecting Threads"
 WAGTAIL_BASE_URL = "http://localhost:8000"
 WAGTAILADMIN_BASE_URL = "http://localhost:8000"
 WAGTAILEMBEDS_RESPONSIVE_HTML = True
+WAGTAILIMAGES_MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20mb
 
 LOGGING = {
     "version": 1,
