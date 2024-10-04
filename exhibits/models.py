@@ -26,6 +26,7 @@ class GeneralPage(Page):
 
     search_fields = Page.search_fields + [
         index.SearchField("body"),
+        index.SearchField("sidebar"),
     ]
 
     content_panels = Page.content_panels + [
@@ -169,6 +170,7 @@ class ExhibitPage(Page):
     )
     image_zoomable = models.BooleanField(
         default=False,
+        verbose_name="Enable zoom for image",
         help_text="Check this box if you want the image to be zoomable.",
     )
     image_first_column = models.ForeignKey(
@@ -185,6 +187,11 @@ class ExhibitPage(Page):
         help_text="Caption for the first image.",
         verbose_name="Image caption",
     )
+    image_first_column_zoomable = models.BooleanField(
+        default=False,
+        verbose_name="Enable zoom for first image",
+        help_text="Check this box if you want the first image to be zoomable.",
+    )
     image_second_column = models.ForeignKey(
         "wagtailimages.Image",
         null=True,
@@ -198,6 +205,11 @@ class ExhibitPage(Page):
         blank=True,
         help_text="Caption for the second image.",
         verbose_name="Image caption",
+    )
+    image_second_column_zoomable = models.BooleanField(
+        default=False,
+        verbose_name="Enable zoom for second image",
+        help_text="Check this box if you want the second image to be zoomable.",
     )
     body = RichTextField(blank=True)
     link_to_next_page = models.ForeignKey(
