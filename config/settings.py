@@ -213,6 +213,7 @@ else:
 WAGTAIL_SITE_NAME = "Connecting Threads"
 WAGTAIL_BASE_URL = "http://localhost:8000"
 WAGTAILADMIN_BASE_URL = "http://localhost:8000"
+WAGTAILEMBEDS_RESPONSIVE_HTML = True
 
 LOGGING = {
     "version": 1,

@@ -22,7 +22,9 @@
       </main>
       <div x-data="{ open: false }" class="fixed bottom-0 left-0 w-full">
         <div class="flex justify-center">
-          <button @click="open = !open" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-full w-32 h-2 mb-2"></button>
+          <button @click="open = !open" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-full w-32 h-6 mb-2 flex items-center justify-center">
+            <i :class="{ 'rotate-180': open }" class="fas fa-chevron-up transition-transform transform"></i>
+          </button>
         </div>
         <footer x-show="open" x-transition:enter="transition ease-out duration-300 transform"
                 x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
