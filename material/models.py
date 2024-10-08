@@ -90,6 +90,7 @@ class TextileRecord(models.Model):
         help_text="Check this box if the record is publicly viewable. Unchecked will keep the record hidden.",
     )
     year = models.IntegerField(blank=True, null=True)
+    archive = models.CharField(max_length=765, blank=True, null=True)
     primary_textile_types = models.ManyToManyField(
         "PrimaryTextileType", related_name="textile_records", blank=True, default=[]
     )
