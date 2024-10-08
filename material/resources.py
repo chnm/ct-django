@@ -81,6 +81,7 @@ class TextileRecordResource(resources.ModelResource):
     raise_errors = False
     # Define fields to map spreadsheet columns
     year = fields.Field(attribute="year", column_name="year")
+    archive = fields.Field(attribute="archive", column_name="archive")
     textile_specifications = fields.Field(
         attribute="textile_specifications", column_name="textile_specifications"
     )
@@ -155,6 +156,7 @@ class TextileRecordResource(resources.ModelResource):
         fields = (
             "id",
             "year",
+            "archive",
             "textile_specifications",
             "circulation",
             "summary_of_record",
@@ -200,6 +202,7 @@ class TextileRecordResource(resources.ModelResource):
     def get_or_create_textile_record(self, row):
         defaults = {
             "year": row.get("year"),
+            "archive": row.get("archive"),
             "textile_specifications": row.get("textile_specifications"),
             "circulation": row.get("circulation"),
             "summary_of_record": row.get("summary_of_record"),

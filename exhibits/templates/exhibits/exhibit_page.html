@@ -923,40 +923,6 @@
           <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/img-comparison-slider@8/dist/styles.css" />
         {% elif page.image %}
           {% image page.image original class="w-full max-h-[80vh] object-contain" %}
-          <div class="absolute bottom-0 left-0 w-full p-4">
-            <footer class="p-4 mt-auto">
-              <div class="container mx-auto">
-                <div class="flex flex-col items-center mb-2 space-y-2">
-                  <div class="flex space-x-2">
-                    {% if page.link_to_previous_page %}
-                      <a href="{% pageurl page.link_to_previous_page %}"
-                         class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
-                        Previous
-                      </a>
-                    {% endif %}
-                    {% if page.link_to_next_page %}
-                      <a href="{% pageurl page.link_to_next_page %}"
-                         class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
-                        Next
-                      </a>
-                    {% endif %}
-                  </div>
-                  <div class="flex flex-col items-center space-y-2">
-                    <a href="/#exhibits"
-                       class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
-                      Take me to the beginning
-                    </a>
-                    {% if page.link_to_subsection %}
-                      <a href="{% pageurl page.link_to_subsection %}"
-                         class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
-                        Skip to next section
-                      </a>
-                    {% endif %}
-                  </div>
-                </div>
-              </div>
-            </footer>
-          </div>
           {% if page.image_caption %}
             <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 right-0 m-4 hidden md:block">
               <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
@@ -990,6 +956,40 @@
                     {{ page.image_caption }}
                   </p>
                 </div>
+              </div>
+              <div class="navigation-elements mt-4">
+                <footer class="p-4 mt-auto">
+                  <div class="container mx-auto">
+                    <div class="flex flex-col items-center mb-2 space-y-2">
+                      <div class="flex space-x-2">
+                        {% if page.link_to_previous_page %}
+                          <a href="{% pageurl page.link_to_previous_page %}"
+                             class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                            Previous
+                          </a>
+                        {% endif %}
+                        {% if page.link_to_next_page %}
+                          <a href="{% pageurl page.link_to_next_page %}"
+                             class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                            Next
+                          </a>
+                        {% endif %}
+                      </div>
+                      <div class="flex flex-col items-center space-y-2">
+                        <a href="/#exhibits"
+                           class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                          Take me to the beginning
+                        </a>
+                        {% if page.link_to_subsection %}
+                          <a href="{% pageurl page.link_to_subsection %}"
+                             class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                            Skip to next section
+                          </a>
+                        {% endif %}
+                      </div>
+                    </div>
+                  </div>
+                </footer>
               </div>
             </div>
           {% endif %}

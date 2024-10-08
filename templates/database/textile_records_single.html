@@ -9,6 +9,9 @@
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Left Column -->
         <div class="prose">
+            {% if item.archive %}
+                <p><em>The following data is derived from the {{item.archive}}</em>.</p>
+            {% endif %}
             <h2 class="text-xl mb-4">Summary</h2>
             <div class="font-serif text-lg mb-4">
                 {% if item.summary_of_record %}
