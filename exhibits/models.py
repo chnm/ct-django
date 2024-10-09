@@ -36,6 +36,24 @@ class GeneralPage(Page):
     ]
 
 
+class GeneralPageThreeColumn(Page):
+    column_one = RichTextField(blank=True, help_text="Column one content.")
+    column_two = RichTextField(blank=True, help_text="Column two content.")
+    column_three = RichTextField(blank=True, help_text="Column three content.")
+
+    search_fields = Page.search_fields + [
+        index.SearchField("column_one"),
+        index.SearchField("column_two"),
+        index.SearchField("column_three"),
+    ]
+
+    content_panels = Page.content_panels + [
+        FieldPanel("column_one"),
+        FieldPanel("column_two"),
+        FieldPanel("column_three"),
+    ]
+
+
 class ExhibitHome(Page):
     image = models.ForeignKey(
         "wagtailimages.Image",
