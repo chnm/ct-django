@@ -967,7 +967,7 @@
             </div>
           {% endif %}
         </div>
-        <div class="absolute top-0 right-0 m-4 hidden md:block mt-16">
+        <div class="mt-4 md:absolute md:top-0 md:right-0 md:m-4 md:mt-12 pb-10">
           <div class="flex flex-col items-center mb-2 space-y-2">
             <div class="flex space-x-2">
               {% if page.link_to_previous_page %}
@@ -996,15 +996,14 @@
               {% endif %}
             </div>
           </div>
-        </div>
 
-        {% for item in page.gallery_images.all %}
-          <div style="float: inline-start; margin: 10px">
-            {% image item.image fill-320x240 %}
-            <p>{{ item.caption }}</p>
-          </div>
-        {% endfor %}
-      </div>
+          {% for item in page.gallery_images.all %}
+            <div style="float: inline-start; margin: 10px">
+              {% image item.image fill-320x240 %}
+              <p>{{ item.caption }}</p>
+            </div>
+          {% endfor %}
+        </div>
     {% endif %}
   </div>
 {% endblock content %}
