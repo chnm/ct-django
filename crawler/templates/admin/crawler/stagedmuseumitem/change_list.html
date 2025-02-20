@@ -1,0 +1,23 @@
+{% extends "admin/change_list.html" %}
+{% load i18n admin_urls %}
+
+{% block object-tools-items %}
+    {% if has_add_permission %}
+        <li>
+            <a href="{% url 'admin:fetch-all' %}" class="button">
+                {% trans "Fetch All Museums" %}
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'admin:fetch-cooper-hewitt' %}" class="button">
+                {% trans "Fetch Cooper-Hewitt" %}
+            </a>
+        </li>
+        <li>
+            <a href="{% url 'admin:fetch-vam' %}" class="button">
+                {% trans "Fetch V&A" %}
+            </a>
+        </li>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

@@ -30,6 +30,8 @@ CSRF_TRUSTED_ORIGINS = env.list(
     "DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"]
 )
 
+COOPER_HEWITT_API_KEY = env("THREADBARE_KEY", default="")
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -45,7 +47,6 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "material",
     "django_htmx",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
@@ -65,8 +66,11 @@ INSTALLED_APPS = [
     "fontawesomefree",
     "django_tables2",
     "django_filters",
+    # local apps
     "theme",
+    "material",
     "exhibits",
+    "crawler",
 ]
 
 MIDDLEWARE = [
@@ -121,6 +125,37 @@ ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # or 'optional', 'none'
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"  # URL to redirect to after logging out
 LOGIN_REDIRECT_URL = "/"  # URL to redirect to after logging in
 
+# settings.py
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "debug.log",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "crawler": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
+
 WSGI_APPLICATION = "config.wsgi.application"
 
 
@@ -163,7 +198,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 
