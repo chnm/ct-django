@@ -27,6 +27,9 @@ django-filter = "^24.2"
 fontawesomefree = "^6.6.0"
 django-storages = "^1.14.4"
 boto3 = "^1.35.27"
+backoff = "^2.2.1"
+ratelimit = "^2.2.1"
+requests = "^2.32.3"
 
 
 [tool.poetry.group.dev.dependencies]
