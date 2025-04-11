@@ -8,7 +8,7 @@ readme = "README.md"
 
 [tool.poetry.dependencies]
 python = "^3.11"
-django = "^5.0.6"
+django = "^5.0.14"
 django-htmx = "^1.17.3"
 django-environ = "^0.11.2"
 django-tailwind = "^3.8.0"
