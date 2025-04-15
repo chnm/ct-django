@@ -5,6 +5,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>{% block title %}Connecting Threads{% endblock %}</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Noto+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&display=swap" rel="stylesheet">
     {% tailwind_css %}
     {% block css %}
       <link rel="stylesheet" href="{% static 'css/style.css' %}" />
@@ -31,53 +35,58 @@
     </script>
     <!-- End Matomo Code -->
   </head>
-  <body class="bg-gray-100">
-    <nav class="bg-gray-100">
-      <div class="mx-auto max-w-7xl px-2 sm:px-6 lg:px-8">
+  <body class="bg-primary-50">
+    <nav class="bg-primary text-white shadow-md">
+      <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="relative flex h-28 items-center justify-between">
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
-                <!-- Mobile menu button-->
-            <button type="button" class="relative inline-flex items-center justify-center rounded-md p-2 text-red-500 hover:bg-gray-700 hover:text-white focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white" aria-controls="mobile-menu" aria-expanded="false">
+            <!-- Mobile menu button-->
+            <button type="button"
+                    class="relative inline-flex items-center justify-center rounded-md p-2 text-accent hover:bg-primary-700 hover:text-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent"
+                    aria-controls="mobile-menu"
+                    aria-expanded="false"
+                    onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
               <span class="absolute -inset-0.5"></span>
               <span class="sr-only">Open main menu</span>
-                  {# icon when menu is closed #}
+              <!-- Icon when menu is closed -->
               <svg class="block h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5" />
               </svg>
-                  {# icon when menu is open #}
+              <!-- Icon when menu is open -->
               <svg class="hidden h-6 w-6" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" aria-hidden="true">
                 <path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12" />
               </svg>
             </button>
           </div>
-          <div class="inline-flex items-center justify-center">
+          <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div class="flex flex-shrink-0 items-center">
               <a href="{% url 'index' %}" class="flex items-center space-x-2">
                 <img class="h-24 w-auto" src="{% static "/img/logo-ct.png" %}" alt="Connecting Threads">
-              </a>            </div>
-            <div class="hidden sm:ml-6 sm:flex sm:space-x-4">
+              </a>
+            </div>
+            <div class="hidden sm:ml-6 sm:flex sm:items-center">
               <div class="flex space-x-4">
-                <a href="/database/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Database</a>
-                <a href="/lessons/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Lesson Plans</a>
-                <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Bibliography</a>
-                <a href="/concepts/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Concepts</a>
-                <a href="/events/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Launch Event</a>
-                <a href="/about/" class="rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">About</a>
+                <a href="/database/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Database</a>
+                <a href="/lessons/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Lesson Plans</a>
+                <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Bibliography</a>
+                <a href="/concepts/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Concepts</a>
+                <a href="/events/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Launch Event</a>
+                <a href="/about/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">About</a>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      {# mobile menu, show/hide based on menu state #}
-      <div class="sm:hidden" id="mobile-menu">
-        <div class="space-y-1 px-2 pb-3 pt-2">
-          <a href="/database/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Database</a>
-          <a href="/lessons/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Lesson Plans</a>
-          <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Bibliography</a>
-          <a href="/concepts/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Concepts</a>
-          <a href="/events/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">Launch Event</a>
-          <a href="/about/" class="block rounded-md px-3 py-2 text-base font-medium text-gray-700 hover:underline">About</a>
+      <!-- Mobile menu, toggle classes based on menu state -->
+      <div class="sm:hidden hidden bg-primary-700" id="mobile-menu">
+        <div class="space-y-1 px-4 py-3">
+          <a href="/database/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Database</a>
+          <a href="/lessons/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Lesson Plans</a>
+          <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Bibliography</a>
+          <a href="/concepts/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Concepts</a>
+          <a href="/events/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Launch Event</a>
+          <a href="/about/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">About</a>
         </div>
       </div>
     </nav>
@@ -88,25 +97,26 @@
         {# The exhibit pages do not use the container #}
     {% block exhibit %}{% endblock exhibit %}
 
-    <div class="container mx-auto py-8">
+    <div class="container mx-auto py-8 px-4 md:px-8">
       <main>{% block content %} {% endblock content %}</main>
     </div>
 
+    <footer class="mt-12 text-primary-700 bg-white shadow-inner">
+      <div class="max-w-7xl mx-auto pt-8 pb-6">
+        <div class="flex flex-wrap justify-center items-center px-4 md:px-8 gap-8">
+          <img src="{% static "/img/neh-logo.jpg" %}" alt="National Endowment for the Humanities" class="w-48 h-auto mx-2">
+          <img src="{% static "/img/ukri-ahrc-square-logo.png" %}" alt="Arts and Humanities Research Council" class="w-20 h-auto mx-2">
+          <img src="{% static "/img/rrchnm-logo.png" %}" alt="Roy Rosenzweig Center for History and New media" class="w-48 h-auto mx-2">
+          <img src="{% static "/img/gmu-logo.png" %}" alt="George Mason University" class="w-48 h-auto mx-2">
+          <img src="{% static "/img/edinburgh-logo.png" %}" alt="Edinburgh University" class="w-48 h-auto mx-2">
+          <img src="{% static "/img/va-red.png" %}" alt="V&A Museum" class="w-20 h-auto mx-2">
+        </div>
 
-    <footer class="pt-5 my-5 text-gray-500 border-t bg-white">
-      <div class="flex flex-wrap justify-center items-center">
-        <img src="{% static "/img/neh-logo.jpg" %}" alt="National Endowment for the Humanities" class="w-60 h-auto mx-4 mb-4">
-        <img src="{% static "/img/ukri-ahrc-square-logo.png" %}" alt="Arts and Humanities Research Council" class="w-20 h-auto mx-4 mb-4">
-        <img src="{% static "/img/rrchnm-logo.png" %}" alt="Roy Rosenzweig Center for History and New media" class="w-60 h-auto mx-4 mb-4">
-        <img src="{% static "/img/gmu-logo.png" %}" alt="George Mason University" class="w-60 h-auto mx-4 mb-4">
-        <img src="{% static "/img/edinburgh-logo.png" %}" alt="Edinburgh University" class="w-60 h-auto mx-4 mb-4">
-        <img src="{% static "/img/va-red.png" %}" alt="V&A Museum" class="w-20 h-auto mx-4 mb-4">
-      </div>
-
-      <div class="container mx-auto px-4">
-        <p class="text-center">
-          Connecting Threads is generously funded in part by the <a href="https://www.neh.gov" class="text-gray-800 hover:underline">National Endowment for the Humanities</a> and the <a href="https://www.ukri.org/councils/ahrc/" class="text-gray-800 hover:underline">Arts and Humanities Research Council</a>, and developed by the <a href="https://rrchnm.org" class="text-gray-800 hover:underline">Roy Rosenzweig Center for History and New Media</a> at George Mason University.
-        </p>
+        <div class="mt-8 px-6 border-t border-primary-100 pt-6">
+          <p class="text-center text-sm md:text-base">
+            Connecting Threads is generously funded in part by the <a href="https://www.neh.gov" class="text-secondary hover:text-secondary-600 font-medium">National Endowment for the Humanities</a> and the <a href="https://www.ukri.org/councils/ahrc/" class="text-secondary hover:text-secondary-600 font-medium">Arts and Humanities Research Council</a>, and developed by the <a href="https://rrchnm.org" class="text-secondary hover:text-secondary-600 font-medium">Roy Rosenzweig Center for History and New Media</a> at George Mason University.
+          </p>
+        </div>
       </div>
     </footer>
 
