@@ -16,6 +16,7 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
         "archive",
         "fetch_status",
         "is_reviewed",
+        "published",
         "initial_date_fetched",
         "date_updated",
     ]
@@ -25,8 +26,14 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
         "published",
     ]
     search_fields = ["title", "description", "id"]
-    readonly_fields = ["initial_date_fetched", "date_updated", "api_response"]
-    actions = ["mark_as_reviewed"]
+    readonly_fields = [
+        "initial_date_fetched",
+        "date_updated",
+        "api_response",
+        "published",
+        "published_to",
+    ]
+    actions = ["mark_as_reviewed", "publish_to_textile_records"]
     change_list_template = "admin/crawler/stagedmuseumitem/change_list.html"
 
     def get_urls(self):
@@ -103,3 +110,41 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
         messages.success(request, f"{queryset.count()} items marked as reviewed")
 
     mark_as_reviewed.short_description = "Mark selected items as reviewed"
+
+    def publish_to_textile_records(self, request, queryset):
+        published_count = 0
+        errors = []
+
+        for item in queryset:
+            if not item.is_reviewed:
+                errors.append(
+                    f"Item {item.id} - {item.title} must be reviewed before publishing"
+                )
+                continue
+
+            if item.published:
+                errors.append(f"Item {item.id} - {item.title} is already published")
+                continue
+
+            try:
+                item.publish(request.user)
+                published_count += 1
+            except Exception as e:
+                errors.append(
+                    f"Error publishing item {item.id} - {item.title}: {str(e)}"
+                )
+
+        if published_count:
+            messages.success(
+                request,
+                f"Successfully published {published_count} items to TextileRecord",
+            )
+
+        if errors:
+            messages.error(
+                request, "Some items could not be published:\n" + "\n".join(errors)
+            )
+
+    publish_to_textile_records.short_description = (
+        "Publish selected items to TextileRecord"
+    )

@@ -1,6 +1,10 @@
 from django.core.exceptions import ValidationError
 from django.db import models
 from django.db.models import JSONField
+from django.db.models.signals import post_delete
+from django.dispatch import receiver
+
+from material.models import TextileRecord
 
 
 class StagedMuseumItem(models.Model):
@@ -73,23 +77,58 @@ class StagedMuseumItem(models.Model):
     def publish(self, user):
         """
         Publish this item to the production database
+        Creates a new TextileRecord and moves data from staging to production
         """
         if not self.is_reviewed:
             raise ValidationError("Item must be reviewed before publishing")
 
-        cleaned_data = self.clean_data()
+        if self.published and self.published_to:
+            # Already published, return existing item
+            return self.published_to
 
-        # Create or update the production item
-        production_item, created = TextileRecord.objects.update_or_create(
-            record_creator=self.archive,
-            defaults=cleaned_data,
-        )
+        # Prepare data for TextileRecord creation
+        record_data = {
+            # Required fields
+            "is_public": True,  # Make it public by default once approved
+            "creator": "crawler",  # Set creator to crawler
+            # Map fields from StagedMuseumItem to TextileRecord where possible
+            "archive": self.archive,
+            "year": self.date,
+            "source_reference": self.url,
+            "description_of_source": self.description,
+            "source_type": self.item_type if self.item_type else "Museum Collection",
+            "summary_of_record": self.title,  # Use title as summary
+            "record_creator": user.username if user else None,
+        }
 
+        # Create a new TextileRecord with the data
+        textile_record = TextileRecord.objects.create(**record_data)
+
+        # Link the staged item to the new record
         self.published = True
-        self.published_to = production_item
+        self.published_to = textile_record
         self.save()
 
-        return production_item
+        return textile_record
 
     def __str__(self):
         return self.title
+
+    def unpublish(self):
+        """
+        Mark the item as unpublished
+        """
+        self.published = False
+        self.published_to = None
+        self.save()
+
+
+@receiver(post_delete, sender=TextileRecord)
+def handle_textile_record_deletion(sender, instance, **kwargs):
+    """
+    When a TextileRecord is deleted, find any associated StagedMuseumItem and mark it as unpublished
+    """
+    # Try to find StagedMuseumItem instances that were linked to this TextileRecord
+    staged_items = StagedMuseumItem.objects.filter(published_to=instance)
+    for item in staged_items:
+        item.unpublish()
