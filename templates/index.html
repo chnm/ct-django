@@ -7,20 +7,28 @@
   <!-- Hero Section -->
   <div class="relative h-screen bg-cover bg-center" style="background-image: url('{% static "/img/CT_Exhibition_Opening_Image.original.jpg" %}');">
     <div class="absolute inset-0 bg-black opacity-50"></div>
-    <div class="relative z-10 flex flex-col items-center justify-center h-full text-center text-white">
-      <h1 class="text-4xl md:text-6xl font-bold">Connecting Threads</h1>
-      <p class="mt-4 text-lg md:text-2xl">Fashioning Madras in India and the Caribbean</p>
+    <div class="relative z-10 flex items-center justify-center h-full text-white">
+      <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
+        <!-- Title Column -->
+        <div class="text-center md:text-left">
+          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">{{ about_snippet.title }}</h1>
+          <p class="text-lg md:text-2xl">{{ about_snippet.subtitle }}</p>
+        </div>
+
+        <!-- About Column -->
+        <div class="text-base md:text-lg prose prose-invert">
+          {{ about_snippet.content|safe }}
+        </div>
+      </div>
+
+      <!-- Scroll indicator - moved higher up from bottom -->
+      <div class="absolute bottom-16 md:bottom-24 left-0 right-0 flex justify-center">
+        <svg class="w-8 h-8 text-white animate-bounce" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
+          <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
+        </svg>
+      </div>
     </div>
   </div>
-
-  <!-- Introduction Section -->
-  <section class="py-16 bg-white min-h-full flex items-center">
-    <div class="container mx-auto px-4 text-center prose">
-      <p>Connecting Threads is a collaborative digital history project dedicated to amplifying the contributions of Indian weavers and African Caribbean consumers to global histories of dress.</p>
-      <p>Drawing on the work of an interdisciplinary team of researchers, the project has re-examined the history of the Madras handkerchief, an internationally popular dress accessory made of brightly coloured checked cotton.</p>
-      <p>This exhibition uses Connecting Threads research to explore the influence of Madras handkerchiefs on 18th and 19th century dress. The story begins with the origins of Madras in South India before exploring Madras fashions in the Greater Caribbean, and the impact of those fashions in Europe and beyond.</p>
-    </div>
-  </section>
 
   <!-- Explore Section -->
   <section id="exhibits" class="py-16 bg-gray-100 min-h-full flex items-center">

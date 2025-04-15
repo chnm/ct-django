@@ -6,6 +6,7 @@ from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.fields import RichTextField
 from wagtail.models import Orderable, Page
 from wagtail.search import index
+from wagtail.snippets.models import register_snippet
 
 
 class GeneralPage(Page):
@@ -345,3 +346,29 @@ class ImageComparison(Orderable):
         FieldPanel("second_image_caption"),
         FieldPanel("slider_value"),
     ]
+
+
+@register_snippet
+class HomeAboutSnippet(models.Model):
+    """
+    Snippet for the about text displayed on the home page
+    """
+
+    title = models.CharField(max_length=255, help_text="Title for the about section")
+    subtitle = models.CharField(
+        max_length=255, help_text="Subtitle for the about section", blank=True
+    )
+    content = RichTextField(help_text="The main content of the about section")
+
+    panels = [
+        FieldPanel("title"),
+        FieldPanel("subtitle"),
+        FieldPanel("content"),
+    ]
+
+    def __str__(self):
+        return self.title
+
+    class Meta:
+        verbose_name = "Home Page About Text"
+        verbose_name_plural = "Home Page About Texts"
