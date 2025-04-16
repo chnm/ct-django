@@ -2,21 +2,21 @@
   <div class="flex justify-between flex-wrap py-2">
     <div>
       {% if table.page.has_previous %}
-        <a href="?{% querystring table.prefixed_page_field=table.page.previous_page_number %}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Previous</a>
+        <a href="?{% querystring table.prefixed_page_field=table.page.previous_page_number %}" class="px-4 py-2 bg-neutral-200 text-madras-indigo rounded hover:bg-neutral-300">Previous</a>
       {% endif %}
     </div>
     <div>
       {% for num in table.paginator.page_range %}
         {% if table.page.number == num %}
-          <span class="px-4 py-2 bg-blue-500 text-white rounded">{{ num }}</span>
+          <span class="px-4 py-2 bg-madras-red text-white rounded">{{ num }}</span>
         {% else %}
-          <a href="?{% querystring table.prefixed_page_field=num %}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">{{ num }}</a>
+          <a href="?{% querystring table.prefixed_page_field=num %}" class="px-4 py-2 bg-neutral-200 text-madras-indigo rounded hover:bg-neutral-300">{{ num }}</a>
         {% endif %}
       {% endfor %}
     </div>
     <div>
       {% if table.page.has_next %}
-        <a href="?{% querystring table.prefixed_page_field=table.page.next_page_number %}" class="px-4 py-2 bg-gray-300 text-gray-800 rounded hover:bg-gray-400">Next</a>
+        <a href="?{% querystring table.prefixed_page_field=table.page.next_page_number %}" class="px-4 py-2 bg-neutral-200 text-madras-indigo rounded hover:bg-neutral-300">Next</a>
       {% endif %}
     </div>
   </div>

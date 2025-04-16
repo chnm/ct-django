@@ -15,14 +15,14 @@
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
     {% block extrahead %}{% endblock extrahead %}
   </head>
-  <body class="bg-gray-100">
+  <body>
     <div class="min-h-screen flex flex-col">
       <main class="flex-grow">
         {% block content %}{% endblock content %}
       </main>
       <div x-data="{ open: false }" class="fixed bottom-0 left-0 w-full">
         <div class="flex justify-center">
-          <button @click="open = !open" class="bg-gray-400 hover:bg-gray-500 text-white font-bold py-2 px-4 rounded-full w-32 h-6 mb-2 flex items-center justify-center">
+          <button @click="open = !open" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-2 px-4 rounded-full w-32 h-6 mb-2 flex items-center justify-center">
             <i :class="{ 'rotate-180': open }" class="fas fa-chevron-up transition-transform transform"></i>
           </button>
         </div>
@@ -30,17 +30,17 @@
                 x-transition:enter-start="translate-y-full" x-transition:enter-end="translate-y-0"
                 x-transition:leave="transition ease-in duration-300 transform"
                 x-transition:leave-start="translate-y-0" x-transition:leave-end="translate-y-full"
-                class="bg-gray-800 text-white p-4">
+                class="bg-madras-indigo text-white p-4">
           <div class="container mx-auto">
             <div class="flex justify-between items-center">
               <div class="flex space-x-4 ml-auto">
-                <a href="/" class="text-white hover:underline">Home</a>
-                <a href="/database/" class="text-white hover:underline">Database</a>
-                <a href="/lessons/" class="text-white hover:underline">Lesson Plans</a>
-                <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="text-white hover:underline">Bibliography</a>
-                <a href="/concepts/" class="text-white hover:underline">Concepts</a>
-                <a href="/events/" class="text-white hover:underline">Launch Event</a>
-                <a href="/about/" class="text-white hover:underline">About</a>
+                <a href="/" class="text-white hover:text-madras-mustard">Home</a>
+                <a href="/database/" class="text-white hover:text-madras-mustard">Database</a>
+                <a href="/lessons/" class="text-white hover:text-madras-mustard">Lesson Plans</a>
+                <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="text-white hover:text-madras-mustard">Bibliography</a>
+                <a href="/concepts/" class="text-white hover:text-madras-mustard">Concepts</a>
+                <a href="/events/" class="text-white hover:text-madras-mustard">Launch Event</a>
+                <a href="/about/" class="text-white hover:text-madras-mustard">About</a>
               </div>
             </div>
           </div>

@@ -35,14 +35,19 @@
     </script>
     <!-- End Matomo Code -->
   </head>
-  <body class="bg-primary-50">
-    <nav class="bg-primary text-white shadow-md">
+  <body class="{% block body_class %}{% endblock %}">
+    {% block nav_hero %}
+      <div class="relative h-28 bg-cover bg-center" style="background-image: url('{% static "/img/CT_Exhibition_Opening_Image.original.jpg" %}');">
+        <div class="absolute inset-0 bg-black opacity-75"></div>
+      </div>
+    {% endblock %}
+    <nav class="{% block nav_class %}text-white absolute top-0 left-0 w-full z-10 shadow-md{% endblock %}">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="relative flex h-28 items-center justify-between">
           <div class="absolute inset-y-0 left-0 flex items-center sm:hidden">
             <!-- Mobile menu button-->
             <button type="button"
-                    class="relative inline-flex items-center justify-center rounded-md p-2 text-accent hover:bg-primary-700 hover:text-accent focus:outline-none focus:ring-2 focus:ring-inset focus:ring-accent"
+                    class="relative inline-flex items-center justify-center rounded-md p-2 text-white bg-black bg-opacity-20 hover:bg-black hover:bg-opacity-40 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white shadow-md"
                     aria-controls="mobile-menu"
                     aria-expanded="false"
                     onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
@@ -61,17 +66,18 @@
           <div class="flex flex-1 items-center justify-center sm:items-stretch sm:justify-start">
             <div class="flex flex-shrink-0 items-center">
               <a href="{% url 'index' %}" class="flex items-center space-x-2">
-                <img class="h-24 w-auto" src="{% static "/img/logo-ct.png" %}" alt="Connecting Threads">
+                <img class="h-24 w-auto drop-shadow-md" src="{% static "/img/logo-ct.png" %}" alt="Connecting Threads">
               </a>
             </div>
             <div class="hidden sm:ml-6 sm:flex sm:items-center">
               <div class="flex space-x-4">
-                <a href="/database/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Database</a>
-                <a href="/lessons/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Lesson Plans</a>
-                <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Bibliography</a>
-                <a href="/concepts/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Concepts</a>
-                <a href="/events/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">Launch Event</a>
-                <a href="/about/" class="px-3 py-2 text-base font-medium text-white hover:bg-primary-700 hover:text-accent rounded-md transition-colors">About</a>
+                <a href="/" class="px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-40 rounded-md transition-colors">Home</a>
+                <a href="/database/" class="px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-40 rounded-md transition-colors">Database</a>
+                <a href="/lessons/" class="px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-40 rounded-md transition-colors">Lesson Plans</a>
+                <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-40 rounded-md transition-colors">Bibliography</a>
+                <a href="/concepts/" class="px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-40 rounded-md transition-colors">Concepts</a>
+                <a href="/events/" class="px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-40 rounded-md transition-colors">Launch Event</a>
+                <a href="/about/" class="px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-40 rounded-md transition-colors">About</a>
               </div>
             </div>
           </div>
@@ -79,14 +85,15 @@
       </div>
 
       <!-- Mobile menu, toggle classes based on menu state -->
-      <div class="sm:hidden hidden bg-primary-700" id="mobile-menu">
+      <div class="sm:hidden hidden bg-black bg-opacity-75" id="mobile-menu">
         <div class="space-y-1 px-4 py-3">
-          <a href="/database/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Database</a>
-          <a href="/lessons/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Lesson Plans</a>
-          <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Bibliography</a>
-          <a href="/concepts/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Concepts</a>
-          <a href="/events/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">Launch Event</a>
-          <a href="/about/" class="block px-3 py-2 text-base font-medium text-white hover:bg-primary-600 hover:text-accent rounded-md transition-colors">About</a>
+          <a href="/" class="block px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-80 rounded-md transition-colors">Home</a>
+          <a href="/database/" class="block px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-80 rounded-md transition-colors">Database</a>
+          <a href="/lessons/" class="block px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-80 rounded-md transition-colors">Lesson Plans</a>
+          <a href="https://www.zotero.org/groups/5683082/connecting_threads._bibliography/library" class="block px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-80 rounded-md transition-colors">Bibliography</a>
+          <a href="/concepts/" class="block px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-80 rounded-md transition-colors">Concepts</a>
+          <a href="/events/" class="block px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-80 rounded-md transition-colors">Launch Event</a>
+          <a href="/about/" class="block px-3 py-2 text-base font-medium text-white hover:bg-black hover:bg-opacity-80 rounded-md transition-colors">About</a>
         </div>
       </div>
     </nav>
@@ -97,11 +104,11 @@
         {# The exhibit pages do not use the container #}
     {% block exhibit %}{% endblock exhibit %}
 
-    <div class="container mx-auto py-8 px-4 md:px-8">
+    <div class="container mx-auto py-8 px-4 md:px-8 mt-28">
       <main>{% block content %} {% endblock content %}</main>
     </div>
 
-    <footer class="mt-12 text-primary-700 bg-white shadow-inner">
+    <footer class="mt-12 text-madras-earth bg-white shadow-inner">
       <div class="max-w-7xl mx-auto pt-8 pb-6">
         <div class="flex flex-wrap justify-center items-center px-4 md:px-8 gap-8">
           <img src="{% static "/img/neh-logo.jpg" %}" alt="National Endowment for the Humanities" class="w-48 h-auto mx-2">
@@ -112,9 +119,9 @@
           <img src="{% static "/img/va-red.png" %}" alt="V&A Museum" class="w-20 h-auto mx-2">
         </div>
 
-        <div class="mt-8 px-6 border-t border-primary-100 pt-6">
+        <div class="mt-8 px-6 border-t border-madras-red pt-6">
           <p class="text-center text-sm md:text-base">
-            Connecting Threads is generously funded in part by the <a href="https://www.neh.gov" class="text-secondary hover:text-secondary-600 font-medium">National Endowment for the Humanities</a> and the <a href="https://www.ukri.org/councils/ahrc/" class="text-secondary hover:text-secondary-600 font-medium">Arts and Humanities Research Council</a>, and developed by the <a href="https://rrchnm.org" class="text-secondary hover:text-secondary-600 font-medium">Roy Rosenzweig Center for History and New Media</a> at George Mason University.
+            Connecting Threads is generously funded in part by the <a href="https://www.neh.gov" class="text-madras-teal hover:text-secondary-600 font-medium">National Endowment for the Humanities</a> and the <a href="https://www.ukri.org/councils/ahrc/" class="text-madras-teal hover:text-secondary-600 font-medium">Arts and Humanities Research Council</a>, and developed by the <a href="https://rrchnm.org" class="text-madras-teal hover:text-secondary-600 font-medium">Roy Rosenzweig Center for History and New Media</a> at George Mason University.
           </p>
         </div>
       </div>
