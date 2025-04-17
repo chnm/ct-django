@@ -1,0 +1,289 @@
+{% extends 'admin/base.html' %}
+
+{% load i18n unfold %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block title %}
+    {% trans 'Dashboard' %} | {{ site_title|default:_('Django site admin') }}
+{% endblock %}
+
+{% block extrahead %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+{% endblock %}
+
+{% block branding %}
+    {% include "unfold/helpers/site_branding.html" %}
+{% endblock %}
+
+{% block content %}
+    {% include "unfold/helpers/messages.html" %}
+
+    {% component "unfold/components/container.html" %}
+        <div class="flex flex-col gap-8 mb-12">
+            <div class="flex flex-col gap-4 sm:flex-row">
+                {% component "unfold/components/navigation.html" with items=navigation %}{% endcomponent %}
+                {% component "unfold/components/navigation.html" with class="sm:ml-auto" items=filters %}{% endcomponent %}
+            </div>
+
+            <!-- Summary Statistics -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                {% component "unfold/components/card.html" %}
+                    <div class="flex flex-col">
+                        <span class="text-sm text-font-secondary-light dark:text-font-secondary-dark">Total Records</span>
+                        <span class="text-3xl font-semibold">{{ textile_record_count }}</span>
+                        <span class="text-xs text-font-secondary-light dark:text-font-secondary-dark mt-1">
+                            {{ textile_recent_count }} new in last 7 days
+                        </span>
+                    </div>
+                {% endcomponent %}
+
+                {% component "unfold/components/card.html" %}
+                    <div class="flex flex-col">
+                        <span class="text-sm text-font-secondary-light dark:text-font-secondary-dark">Public Records</span>
+                        <span class="text-3xl font-semibold">{{ public_record_count }}</span>
+                        <span class="text-xs text-font-secondary-light dark:text-font-secondary-dark mt-1">
+                            {{ public_percentage }}% of total records
+                        </span>
+                    </div>
+                {% endcomponent %}
+
+                {% component "unfold/components/card.html" %}
+                    <div class="flex flex-col">
+                        <span class="text-sm text-font-secondary-light dark:text-font-secondary-dark">Images</span>
+                        <span class="text-3xl font-semibold">{{ image_count }}</span>
+                        <span class="text-xs text-font-secondary-light dark:text-font-secondary-dark mt-1">
+                            {{ public_image_count }} public ({{ public_image_percentage }}%)
+                        </span>
+                    </div>
+                {% endcomponent %}
+
+                {% component "unfold/components/card.html" %}
+                    <div class="flex flex-col">
+                        <span class="text-sm text-font-secondary-light dark:text-font-secondary-dark">Pending Review</span>
+                        <span class="text-3xl font-semibold">{{ pending_review_count }}</span>
+                        <span class="text-xs text-font-secondary-light dark:text-font-secondary-dark mt-1">
+                            Total staged items: {{ staged_item_count }}
+                        </span>
+                    </div>
+                {% endcomponent %}
+            </div>
+
+            <!-- Public vs Private Records Chart -->
+            <div class="flex flex-col gap-8 lg:flex-row">
+                {% component "unfold/components/card.html" with title=_("Public vs Private Records") class="lg:w-1/2" %}
+                    <div style="height: 250px">
+                        <canvas id="publicPrivateChart"></canvas>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const ctx = document.getElementById('publicPrivateChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: ['Public', 'Private'],
+                                    datasets: [{
+                                        data: [{{ public_record_count }}, {{ textile_record_count|default:0 }} - {{ public_record_count|default:0 }}],
+                                        backgroundColor: [
+                                            'rgba(54, 162, 235, 0.8)',
+                                            'rgba(255, 99, 132, 0.8)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    </script>
+                {% endcomponent %}
+
+                <!-- Circulation Distribution Chart -->
+                {% component "unfold/components/card.html" with title=_("Circulation Distribution") class="lg:w-1/2" %}
+                    <div style="height: 250px">
+                        <canvas id="circulationChart"></canvas>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const ctx = document.getElementById('circulationChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'doughnut',
+                                data: {
+                                    labels: [{% for type, percent in circulation_counts %}'{{ type }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                                    datasets: [{
+                                        data: [{% for type, percent in circulation_counts %}{{ percent }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                                        backgroundColor: [
+                                            'rgba(54, 162, 235, 0.8)',
+                                            'rgba(255, 99, 132, 0.8)',
+                                            'rgba(255, 206, 86, 0.8)',
+                                            'rgba(75, 192, 192, 0.8)',
+                                            'rgba(153, 102, 255, 0.8)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    </script>
+                {% endcomponent %}
+            </div>
+
+            <!-- Textile Types Chart -->
+            {% component "unfold/components/card.html" with title=_("Top Textile Types") %}
+                <div style="height: 300px">
+                    <canvas id="textileTypesChart"></canvas>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const ctx = document.getElementById('textileTypesChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: [{% for name, count, percent in textile_types %}'{{ name }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                                datasets: [{
+                                    label: 'Number of Records',
+                                    data: [{% for name, count, percent in textile_types %}{{ count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                                    backgroundColor: 'rgba(54, 162, 235, 0.8)',
+                                    borderColor: 'rgba(54, 162, 235, 1)',
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    }
+                                }
+                            }
+                        });
+                    });
+                </script>
+            {% endcomponent %}
+
+            <div class="flex flex-col gap-8 lg:flex-row">
+                <!-- Content Source Distribution -->
+                {% component "unfold/components/card.html" with class="lg:w-1/2" title=_("Content Source Distribution") %}
+                    <div style="height: 250px">
+                        <canvas id="creatorChart"></canvas>
+                    </div>
+                    <script>
+                        document.addEventListener('DOMContentLoaded', function() {
+                            const ctx = document.getElementById('creatorChart').getContext('2d');
+                            new Chart(ctx, {
+                                type: 'pie',
+                                data: {
+                                    labels: [{% for creator, count, percent in creator_counts %}'{{ creator }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                                    datasets: [{
+                                        data: [{% for creator, count, percent in creator_counts %}{{ count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                                        backgroundColor: [
+                                            'rgba(75, 192, 192, 0.8)',
+                                            'rgba(153, 102, 255, 0.8)',
+                                            'rgba(255, 159, 64, 0.8)',
+                                            'rgba(255, 99, 132, 0.8)'
+                                        ],
+                                        borderWidth: 1
+                                    }]
+                                },
+                                options: {
+                                    responsive: true,
+                                    maintainAspectRatio: false,
+                                    plugins: {
+                                        legend: {
+                                            position: 'bottom'
+                                        }
+                                    }
+                                }
+                            });
+                        });
+                    </script>
+                {% endcomponent %}
+
+                <!-- Geographic Distribution -->
+                {% component "unfold/components/card.html" with class="lg:w-1/2" title=_("Top Origin Areas") %}
+                    <div class="overflow-x-auto">
+                        <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                            <thead>
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-font-secondary-light dark:text-font-secondary-dark uppercase tracking-wider">Area</th>
+                                    <th class="px-4 py-2 text-right text-xs font-medium text-font-secondary-light dark:text-font-secondary-dark uppercase tracking-wider">Count</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-border-light dark:divide-border-dark">
+                                {% for area_name, count in from_areas %}
+                                <tr>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm">{{ area_name }}</td>
+                                    <td class="px-4 py-2 whitespace-nowrap text-sm text-right">{{ count }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="mt-4 text-sm text-font-secondary-light dark:text-font-secondary-dark">
+                        Showing top 5 origin areas for textile records
+                    </div>
+                {% endcomponent %}
+            </div>
+
+            <!-- Recent Records -->
+            {% component "unfold/components/card.html" with title=_("Recent Records") %}
+                <div class="overflow-x-auto">
+                    <table class="min-w-full divide-y divide-border-light dark:divide-border-dark">
+                        <thead>
+                            <tr>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-font-secondary-light dark:text-font-secondary-dark uppercase tracking-wider">ID</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-font-secondary-light dark:text-font-secondary-dark uppercase tracking-wider">Year</th>
+                                <th class="px-4 py-2 text-left text-xs font-medium text-font-secondary-light dark:text-font-secondary-dark uppercase tracking-wider">Summary</th>
+                                <th class="px-4 py-2 text-center text-xs font-medium text-font-secondary-light dark:text-font-secondary-dark uppercase tracking-wider">Public</th>
+                                <th class="px-4 py-2 text-right text-xs font-medium text-font-secondary-light dark:text-font-secondary-dark uppercase tracking-wider">Last Updated</th>
+                            </tr>
+                        </thead>
+                        <tbody class="divide-y divide-border-light dark:divide-border-dark">
+                            {% for record in recent_records %}
+                            <tr>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm">{{ record.id }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm">{{ record.year|default:"-" }}</td>
+                                <td class="px-4 py-2 text-sm truncate max-w-xs">{{ record.summary_of_record|default:"-"|truncatechars:60 }}</td>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm text-center">
+                                    {% if record.is_public %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                        Yes
+                                    </span>
+                                    {% else %}
+                                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                        No
+                                    </span>
+                                    {% endif %}
+                                </td>
+                                <td class="px-4 py-2 whitespace-nowrap text-sm text-right">{{ record.updated_at|date:"M d, Y" }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            {% endcomponent %}
+        </div>
+    {% endcomponent %}
+{% endblock %}
