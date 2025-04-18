@@ -1,3 +1,27 @@
+/* Global typography */
+body {
+  font-family: "Optima", "Candara", "Noto Sans", "source-sans-pro", sans-serif;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: "Optima", "Candara", "Noto Sans", "source-sans-pro", sans-serif;
+  font-weight: 500; /* Medium weight for headings */
+}
+
+/* Additional typography enhancements */
+.prose h1,
+.prose h2,
+.prose h3,
+.prose h4 {
+  font-weight: 600; /* Semi-bold weight for prose headings */
+  color: #023047; /* Dark blue from our palette */
+}
+
 /* carousel styling */
 
 .custom-animated-handle {
@@ -63,9 +87,9 @@
 /* Hover and active states */
 .pagination li a:hover,
 .pagination li.active a {
-  background-color: #007bff;
+  background-color: #219ebc; /* Our blue color */
   color: #ffffff;
-  border-color: #007bff;
+  border-color: #219ebc;
 }
 
 /* Assuming a 'disabled' class for li elements for disabled links */
@@ -87,7 +111,7 @@
 
 /* Style for even rows */
 tr:nth-child(even) {
-  background-color: #e9e9e9; /* Slightly darker gray color */
+  background-color: #f0f5f8; /* Light version of our dark blue */
 }
 
 /* Indicator */
@@ -113,7 +137,7 @@ tr:nth-child(even) {
 }
 
 .progress .indeterminate {
-  background-color: blue;
+  background-color: #219ebc; /* Our blue color */
 }
 
 .progress .indeterminate:before {
@@ -189,4 +213,17 @@ tr:nth-child(even) {
   left: 0;
   width: 100%;
   height: 100%;
+}
+
+/* We're using Tailwind's animate-bounce class instead */
+
+/* Prose styling for dark backgrounds */
+.prose-invert {
+  color: white;
+}
+
+.prose-invert p {
+  color: rgba(255, 255, 255, 0.9);
+  margin-top: 0.75em;
+  margin-bottom: 0.75em;
 }

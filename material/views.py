@@ -1,5 +1,6 @@
 import logging
 
+from django.db import models
 from django.db.models import Max, Min
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
@@ -7,7 +8,7 @@ from django_filters.views import FilterView
 from django_tables2 import SingleTableMixin
 from taggit.models import Tag
 
-from exhibits.models import ExhibitHome
+from exhibits.models import ExhibitHome, HomeAboutSnippet
 from material.filters import TextileFilter
 from material.models import PrimaryTextileType, SecondaryTextileType, TextileRecord
 from material.tables import TextileTable
@@ -17,7 +18,35 @@ logger = logging.getLogger(__name__)
 
 def index(request):
     exhibits = ExhibitHome.objects.live().public().order_by("exhibit_display_order")
-    return render(request, "index.html", {"exhibits": exhibits})
+    # Get the first HomeAboutSnippet (or create a default one if none exists)
+    try:
+        about_snippet = HomeAboutSnippet.objects.first()
+        if not about_snippet:
+            # Create a default snippet if none exists
+            about_snippet = HomeAboutSnippet.objects.create(
+                title="Connecting Threads",
+                subtitle="Fashioning Madras in India and the Caribbean",
+                content="""
+                <p>Connecting Threads is a collaborative digital history project dedicated to amplifying the contributions of Indian weavers and African Caribbean consumers to global histories of dress.</p>
+                <p>Drawing on the work of an interdisciplinary team of researchers, the project has re-examined the history of the Madras handkerchief, an internationally popular dress accessory made of brightly coloured checked cotton.</p>
+                <p>This exhibition explores the influence of Madras handkerchiefs on 18th and 19th century dress, from its origins in South India to Madras fashions in the Greater Caribbean and beyond.</p>
+                """,
+            )
+    except:
+        # In case of any issues, provide a fallback snippet
+        about_snippet = {
+            "title": "Connecting Threads",
+            "subtitle": "Fashioning Madras in India and the Caribbean",
+            "content": """
+            <p>Connecting Threads is a collaborative digital history project dedicated to amplifying the contributions of Indian weavers and African Caribbean consumers to global histories of dress.</p>
+            <p>Drawing on the work of an interdisciplinary team of researchers, the project has re-examined the history of the Madras handkerchief, an internationally popular dress accessory made of brightly coloured checked cotton.</p>
+            <p>This exhibition explores the influence of Madras handkerchiefs on 18th and 19th century dress, from its origins in South India to Madras fashions in the Greater Caribbean and beyond.</p>
+            """,
+        }
+
+    return render(
+        request, "index.html", {"exhibits": exhibits, "about_snippet": about_snippet}
+    )
 
 
 def keyword_search(request):
@@ -88,7 +117,8 @@ class TextileTableView(SingleTableMixin, FilterView):
     paginate_by = 25
     table_class = TextileTable
     filterset_class = TextileFilter
-    queryset = TextileRecord.objects.filter(is_public=True)  # Show only public records
+    # Only show public records that are properly reviewed
+    queryset = TextileRecord.objects.filter(is_public=True)
 
     def get_template_names(self):
         if self.request.htmx:
@@ -104,14 +134,34 @@ class TextileTableView(SingleTableMixin, FilterView):
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
+        # Use only public records for filter options
+        textile_records = TextileRecord.objects.filter(is_public=True)
+
         years = (
-            TextileRecord.objects.values_list("year", flat=True)
-            .distinct()
-            .order_by("year")
+            textile_records.values_list("year", flat=True).distinct().order_by("year")
         )
+
+        # Find earliest and latest years for the year range slider
+        from material.filters import extract_year_range
+
+        min_year = 1500  # Default minimum year
+        max_year = 2000  # Default maximum year
+
+        # Find actual min/max years from the data
+        for year_str in years:
+            if year_str:
+                start_year, end_year = extract_year_range(year_str)
+                if start_year and start_year < min_year:
+                    min_year = start_year
+                if end_year and end_year > max_year:
+                    max_year = end_year
+
+        # Round to nearest century boundaries for cleaner UI
+        min_year = (min_year // 100) * 100
+        max_year = ((max_year // 100) + 1) * 100
         keywords = Tag.objects.all().values_list("name", flat=True).order_by("name")
         source_types = (
-            TextileRecord.objects.values_list("source_type", flat=True)
+            textile_records.values_list("source_type", flat=True)
             .exclude(source_type__isnull=True)
             .distinct()
             .order_by("source_type")
@@ -119,9 +169,22 @@ class TextileTableView(SingleTableMixin, FilterView):
         circulation_choices = TextileRecord.CIRCULATION_CHOICES
         circulation_types = [(abbr, full) for abbr, full in circulation_choices]
 
+        # Get current year range values from request, if any
+        current_year_range = self.request.GET.get(
+            "year_range", f"{min_year}-{max_year}"
+        )
+        try:
+            current_min, current_max = map(int, current_year_range.split("-"))
+        except (ValueError, AttributeError):
+            current_min, current_max = min_year, max_year
+
         context["years"] = years
         context["keywords"] = keywords
         context["selected_keyword"] = self.request.GET.get("keyword")
         context["source_types"] = source_types
         context["circulation_types"] = circulation_types
+        context["min_year"] = min_year
+        context["max_year"] = max_year
+        context["current_min_year"] = current_min
+        context["current_max_year"] = current_max
         return context

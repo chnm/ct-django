@@ -32,15 +32,15 @@
           <div x-data="{ openCaption: false, openImage: false }" class="absolute top-0 left-0 m-4 hidden md:block">
             <div class="flex justify-end space-x-2" :class="{ 'hidden': openCaption || openImage }" x-transition x-cloak>
               <button @click="openCaption = true"
-                      class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+                      class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                 Caption
               </button>
-              <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+              <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                 View Full Image
               </button>
             </div>
             <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                 class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                 class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
               <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                 &times;
               </button>
@@ -49,11 +49,11 @@
               </p>
             </div>
             <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                 class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                 class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
               <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                 <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                   <span
-                    class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                    class="bg-madras-red hover:bg-primary-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
                 </button>
                 <div class="flex justify-center items-center overflow-hidden">
                   {% image page.image original class="w-auto max-h-[80vh]" %}
@@ -89,23 +89,23 @@
             <div class="flex flex-col items-center mb-2 space-y-2">
               <div class="flex space-x-2">
                 {% if page.link_to_previous_page %}
-                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Previous
                   </a>
                 {% endif %}
                 {% if page.link_to_next_page %}
-                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Next
                   </a>
                 {% endif %}
               </div>
               <div class="flex flex-col items-center space-y-2">
                 {% if page.link_to_subsection %}
-                  <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_subsection %}" class="bg-madras-teal hover:bg-secondary-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Skip to next section
                   </a>
                 {% endif %}
-                <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                <a href="/#exhibits" class="bg-madras-earth hover:bg-neutral-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Take me to the beginning
                 </a>
               </div>
@@ -135,23 +135,23 @@
             <div class="flex flex-col items-center mb-2 space-y-2">
               <div class="flex space-x-2">
                 {% if page.link_to_previous_page %}
-                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Previous
                   </a>
                 {% endif %}
                 {% if page.link_to_next_page %}
-                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Next
                   </a>
                 {% endif %}
               </div>
               <div class="flex flex-col items-center space-y-2">
                 {% if page.link_to_subsection %}
-                  <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_subsection %}" class="bg-madras-teal hover:bg-secondary-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Skip to next section
                   </a>
                 {% endif %}
-                <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                <a href="/#exhibits" class="bg-madras-earth hover:bg-neutral-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Take me to the beginning
                 </a>
               </div>
@@ -186,11 +186,11 @@
                 <button @click="openCaption = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
                   Caption
                 </button>
-                <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+                <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                   View Full Image
                 </button>
               </div>
-              <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+              <div :class="{ 'hidden': !openCaption }" x-transition x-cloak class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
                 <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                   &times;
                 </button>
@@ -198,7 +198,7 @@
                   {{ page.image_caption }}
                 </p>
               </div>
-              <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+              <div :class="{ 'hidden': !openImage }" x-transition x-cloak class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
                 <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                   <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                     <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
@@ -237,12 +237,12 @@
                         class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
                   Caption
                 </button>
-                <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+                <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                   View Full Image
                 </button>
               </div>
               <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                   class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                   class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
                 <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                   &times;
                 </button>
@@ -251,11 +251,11 @@
                 </p>
               </div>
               <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                   class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                   class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
                 <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                   <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                     <span
-                      class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                      class="bg-madras-red hover:bg-primary-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
                   </button>
                   <div class="flex justify-center items-center overflow-hidden">
                     {% image page.image_first_column original class="w-auto max-h-[80vh]" %}
@@ -277,12 +277,12 @@
                         class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
                   Caption
                 </button>
-                <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+                <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                   View Full Image
                 </button>
               </div>
               <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                   class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                   class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
                 <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                   &times;
                 </button>
@@ -291,11 +291,11 @@
                 </p>
               </div>
               <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                   class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                   class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
                 <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                   <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                     <span
-                      class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                      class="bg-madras-red hover:bg-primary-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
                   </button>
                   <div class="flex justify-center items-center overflow-hidden">
                     {% image page.image_second_column original class="w-auto max-h-[80vh]" %}
@@ -407,12 +407,12 @@
                         class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
                   Caption
                 </button>
-                <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+                <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                   View Full Image
                 </button>
               </div>
               <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                   class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                   class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
                 <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                   &times;
                 </button>
@@ -421,11 +421,11 @@
                 </p>
               </div>
               <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                   class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                   class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
                 <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                   <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                     <span
-                      class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                      class="bg-madras-red hover:bg-primary-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
                   </button>
                   <div class="flex justify-center items-center overflow-hidden">
                     {% image page.image_first_column original class="w-auto max-h-[80vh]" %}
@@ -447,12 +447,12 @@
                         class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
                   Caption
                 </button>
-                <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+                <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                   View Full Image
                 </button>
               </div>
               <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                   class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                   class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
                 <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                   &times;
                 </button>
@@ -461,11 +461,11 @@
                 </p>
               </div>
               <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                   class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                   class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
                 <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                   <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                     <span
-                      class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                      class="bg-madras-red hover:bg-primary-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
                   </button>
                   <div class="flex justify-center items-center overflow-hidden">
                     {% image page.image_second_column original class="w-auto max-h-[80vh]" %}
@@ -510,12 +510,12 @@
               <button @click="openCaption = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
                 Caption
               </button>
-              <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+              <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                 View Full Image
               </button>
             </div>
             <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                 class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                 class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
               <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                 &times;
               </button>
@@ -524,11 +524,11 @@
               </p>
             </div>
             <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                 class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                 class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
               <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                 <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                   <span
-                    class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                    class="bg-madras-red hover:bg-primary-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
                 </button>
                 <div class="flex justify-center items-center overflow-hidden">
                   {% image page.image original class="w-auto max-h-[80vh]" %}
@@ -563,23 +563,23 @@
             <div class="flex flex-col items-center mb-2 space-y-2">
               <div class="flex space-x-2">
                 {% if page.link_to_previous_page %}
-                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Previous
                   </a>
                 {% endif %}
                 {% if page.link_to_next_page %}
-                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Next
                   </a>
                 {% endif %}
               </div>
               <div class="flex flex-col items-center space-y-2">
                 {% if page.link_to_subsection %}
-                  <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_subsection %}" class="bg-madras-teal hover:bg-secondary-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Skip to next section
                   </a>
                 {% endif %}
-                <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                <a href="/#exhibits" class="bg-madras-earth hover:bg-neutral-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Take me to the beginning
                 </a>
               </div>
@@ -602,23 +602,23 @@
             <div class="flex flex-col items-center mb-2 space-y-2">
               <div class="flex space-x-2">
                 {% if page.link_to_previous_page %}
-                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_previous_page %}" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Previous
                   </a>
                 {% endif %}
                 {% if page.link_to_next_page %}
-                  <a href="{% pageurl page.link_to_next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_next_page %}" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Next
                   </a>
                 {% endif %}
               </div>
               <div class="flex flex-col items-center space-y-2">
                 {% if page.link_to_subsection %}
-                  <a href="{% pageurl page.link_to_subsection %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                  <a href="{% pageurl page.link_to_subsection %}" class="bg-madras-teal hover:bg-secondary-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                     Skip to next section
                   </a>
                 {% endif %}
-                <a href="/#exhibits" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-1 px-3 rounded-full text-sm">
+                <a href="/#exhibits" class="bg-madras-earth hover:bg-neutral-600 text-white font-bold py-1 px-3 rounded-full text-sm">
                   Take me to the beginning
                 </a>
               </div>
@@ -656,12 +656,12 @@
                 <button @click="openCaption = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
                   Caption
                 </button>
-                <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+                <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                   View Full Image
                 </button>
               </div>
               <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                   class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                   class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
                 <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                   &times;
                 </button>
@@ -670,11 +670,11 @@
                 </p>
               </div>
               <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                   class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                   class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
                 <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                   <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                     <span
-                      class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                      class="bg-madras-red hover:bg-primary-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
                   </button>
                   <div class="overflow-hidden">
                     {% image page.image original class="w-auto max-h-[80vh]" %}
@@ -766,12 +766,12 @@
               <button @click="openCaption = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
                 Caption
               </button>
-              <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+              <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                 View Full Image
               </button>
             </div>
             <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                 class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                 class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
               <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                 &times;
               </button>
@@ -780,11 +780,11 @@
               </p>
             </div>
             <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                 class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                 class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
               <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                 <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                   <span
-                    class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
+                    class="bg-madras-red hover:bg-primary-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>
                 </button>
                 <div class="flex justify-center items-center overflow-hidden">
                   {% image page.image original class="w-auto max-h-[80vh]" %}
@@ -835,7 +835,7 @@
                 </button>
               </div>
               <div :class="{ 'hidden': !open }" x-transition x-cloak
-                   class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative z-50">
+                   class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative z-50">
                 <button @click="open = false" class="absolute top-2 right-2 text-white z-50">
                   &times;
                 </button>
@@ -932,14 +932,14 @@
               </button>
             {% endif %}
             {% if page.image %}
-              <button @click="openImage = true" class="bg-slate-500 bg-opacity-50 hover:bg-opacity-100 hover:bg-slate-700 text-white text-sm font-bold py-2 px-4 rounded">
+              <button @click="openImage = true" class="bg-madras-indigo bg-opacity-50 hover:bg-opacity-100 hover:bg-supporting-600 text-white text-sm font-bold py-2 px-4 rounded">
                 View Full Image
               </button>
             {% endif %}
           </div>
           {% if page.image_caption %}
             <div :class="{ 'hidden': !openCaption }" x-transition x-cloak
-                 class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+                 class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
               <button @click="openCaption = false" class="absolute top-2 right-2 text-white">
                 &times;
               </button>
@@ -950,7 +950,7 @@
           {% endif %}
           {% if page.image %}
             <div :class="{ 'hidden': !openImage }" x-transition x-cloak
-                 class="fixed inset-0 bg-black bg-opacity-75 flex items-center justify-center z-50">
+                 class="fixed inset-0 bg-madras-indigo bg-opacity-75 flex items-center justify-center z-50">
               <div class="relative bg-white p-4 rounded shadow-lg w-11/12 lg:w-3/4 max-h-screen overflow-y-auto">
                 <button @click="openImage = false" class="absolute top-2 right-2 text-black">
                   <span class="bg-slate-700 hover:bg-red-800 rounded p-2 flex items-center justify-center w-8 h-8 text-white">&times;</span>

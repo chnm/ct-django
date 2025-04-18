@@ -15,6 +15,29 @@ from material.views import (
     record_details,
     textile_records_single,
 )
+from material.admin_dashboard import get_admin_stats
+
+# Override the default admin index template
+admin.site.index_template = "admin/index.html"
+
+# Add our custom context processor to the admin site
+original_index = admin.site.index
+
+
+def custom_index(request, extra_context=None):
+    # Get the dashboard stats
+    stats_context = get_admin_stats(request)
+
+    # Combine with any existing extra_context
+    extra_context = extra_context or {}
+    extra_context.update(stats_context)
+
+    # Call the original index view
+    return original_index(request, extra_context=extra_context)
+
+
+# Replace the index view with our custom one
+admin.site.index = custom_index
 
 urlpatterns = [
     path("", index, name="index"),

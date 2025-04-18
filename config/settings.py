@@ -1,5 +1,7 @@
 import os
 from pathlib import Path
+from django.utils.translation import gettext_lazy as _
+from django.urls import reverse_lazy
 
 import environ
 from dotenv import load_dotenv
@@ -30,11 +32,16 @@ CSRF_TRUSTED_ORIGINS = env.list(
     "DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"]
 )
 
+COOPER_HEWITT_API_KEY = env("THREADBARE_KEY", default="")
+
 # Application definition
 
 INSTALLED_APPS = [
-    "admin_interface",
-    "colorfield",
+    "unfold",
+    "unfold.contrib.filters",
+    "unfold.contrib.forms",
+    "unfold.contrib.inlines",
+    "unfold.contrib.import_export",
     "django.contrib.admin",
     "django.contrib.auth",
     "django.contrib.contenttypes",
@@ -45,7 +52,6 @@ INSTALLED_APPS = [
     "allauth",
     "allauth.account",
     "allauth.socialaccount",
-    "material",
     "django_htmx",
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
@@ -65,8 +71,11 @@ INSTALLED_APPS = [
     "fontawesomefree",
     "django_tables2",
     "django_filters",
+    # local apps
     "theme",
+    "material",
     "exhibits",
+    "crawler",
 ]
 
 MIDDLEWARE = [
@@ -110,9 +119,143 @@ AUTHENTICATION_BACKENDS = (
     "allauth.account.auth_backends.AuthenticationBackend",
 )
 
-# django-admin-interface configuration
+# Django Unfold configuration
 X_FRAME_OPTIONS = "SAMEORIGIN"
 SILENCED_SYSTEM_CHECKS = ["security.W019"]
+
+# Unfold customization options
+UNFOLD = {
+    "SITE_TITLE": "Connecting Threads Admin",
+    "SITE_HEADER": "Connecting Threads",
+    "SITE_URL": "/",
+    "SIDEBAR": {
+        "show_search": True,
+        "show_all_applications": False,
+        "navigation": [
+            {
+                "title": _("Dashboard"),
+                "items": [
+                    {
+                        "title": _("Dashboard"),
+                        "icon": "dashboard",
+                        "link": reverse_lazy("admin:index"),
+                    },
+                ],
+            },
+            {
+                "title": _("Collection Data"),
+                "items": [
+                    {
+                        "title": _("Textile Records"),
+                        "icon": "inventory_2",
+                        "link": reverse_lazy("admin:material_textilerecord_changelist"),
+                    },
+                    {
+                        "title": _("Primary Textile Types"),
+                        "icon": "category",
+                        "link": reverse_lazy(
+                            "admin:material_primarytextiletype_changelist"
+                        ),
+                    },
+                    {
+                        "title": _("Secondary Textile Types"),
+                        "icon": "style",
+                        "link": reverse_lazy(
+                            "admin:material_secondarytextiletype_changelist"
+                        ),
+                    },
+                    {
+                        "title": _("Images"),
+                        "icon": "image",
+                        "link": reverse_lazy("admin:material_image_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Geographic Data"),
+                "items": [
+                    {
+                        "title": _("Areas"),
+                        "icon": "public",
+                        "link": reverse_lazy("admin:material_area_changelist"),
+                    },
+                    {
+                        "title": _("Places"),
+                        "icon": "location_on",
+                        "link": reverse_lazy("admin:material_place_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Metadata"),
+                "items": [
+                    {
+                        "title": _("Subjects"),
+                        "icon": "bookmarks",
+                        "link": reverse_lazy("admin:material_subject_changelist"),
+                    },
+                    {
+                        "title": _("Named Actors"),
+                        "icon": "people_alt",
+                        "link": reverse_lazy("admin:material_namedactor_changelist"),
+                    },
+                ],
+            },
+            {
+                "title": _("Web Crawler"),
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("Staged Museum Items"),
+                        "icon": "sync",
+                        "link": reverse_lazy(
+                            "admin:crawler_stagedmuseumitem_changelist"
+                        ),
+                    },
+                ],
+            },
+            {
+                "title": _("Wagtail CMS"),
+                "collapsible": True,
+                "items": [
+                    {
+                        "title": _("CMS Dashboard"),
+                        "icon": "edit",
+                        "link": "/cms/",
+                    },
+                ],
+            },
+            {
+                "title": _("System"),
+                "collapsible": True,
+                "collapsed": True,
+                "items": [
+                    {
+                        "title": _("Users"),
+                        "icon": "person",
+                        "link": reverse_lazy("admin:auth_user_changelist"),
+                    },
+                    {
+                        "title": _("Groups"),
+                        "icon": "group",
+                        "link": reverse_lazy("admin:auth_group_changelist"),
+                    },
+                    {
+                        "title": _("Django Models"),
+                        "icon": "apps",
+                        "link": "#",
+                        "children": [
+                            {
+                                "title": _("Authentication"),
+                                "link": reverse_lazy("admin:app_list", args=("auth",)),
+                            },
+                        ],
+                    },
+                ],
+            },
+        ],
+    },
+}
 
 # ALLAUTH configuration
 ACCOUNT_AUTHENTICATION_METHOD = "username"  # or 'email', or 'username_email'
@@ -120,6 +263,37 @@ ACCOUNT_EMAIL_REQUIRED = True
 ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # or 'optional', 'none'
 ACCOUNT_LOGOUT_REDIRECT_URL = "/"  # URL to redirect to after logging out
 LOGIN_REDIRECT_URL = "/"  # URL to redirect to after logging in
+
+# settings.py
+
+LOGGING = {
+    "version": 1,
+    "disable_existing_loggers": False,
+    "formatters": {
+        "verbose": {
+            "format": "{levelname} {asctime} {module} {message}",
+            "style": "{",
+        },
+    },
+    "handlers": {
+        "console": {
+            "class": "logging.StreamHandler",
+            "formatter": "verbose",
+        },
+        "file": {
+            "class": "logging.FileHandler",
+            "filename": "debug.log",
+            "formatter": "verbose",
+        },
+    },
+    "loggers": {
+        "crawler": {
+            "handlers": ["console", "file"],
+            "level": "INFO",
+            "propagate": True,
+        },
+    },
+}
 
 WSGI_APPLICATION = "config.wsgi.application"
 
@@ -163,7 +337,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "America/New_York"
 
 USE_I18N = True
 

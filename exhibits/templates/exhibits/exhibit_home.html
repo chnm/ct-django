@@ -11,14 +11,14 @@
       <div class="flex-grow flex flex-col justify-center items-center">
         <h1 class="text-4xl md:text-6xl font-bold mb-4">{{ page.title }}</h1>
         {% if page.next_page %}
-          <a href="{% pageurl page.next_page %}" class="bg-slate-500 hover:bg-slate-700 text-white font-bold py-2 px-4 rounded">
+          <a href="{% pageurl page.next_page %}" class="bg-madras-teal hover:bg-secondary-600 text-white font-bold py-2 px-4 rounded">
             {{ page.hero_text }}
           </a>
         {% endif %}
 
       </div>
       <div class="mb-8 space-y-4">
-        <a href="/#exhibits" class="bg-slate-600 hover:bg-slate-800 text-white font-bold py-2 px-4 rounded">
+        <a href="/#exhibits" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-2 px-4 rounded">
           Take me to the beginning
         </a>
       <!-- How to Cite Button for Mobile -->
@@ -26,11 +26,11 @@
           <div class="block md:hidden">
             <div x-data="{ open: false }" class="mt-4">
               <div class="flex justify-center" :class="{ 'hidden': open }" x-transition x-cloak>
-                <button @click="open = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+                <button @click="open = true" class="bg-madras-earth hover:bg-neutral-600 text-white font-bold py-2 px-4 rounded">
                   Cite this page
                 </button>
               </div>
-              <div :class="{ 'hidden': !open }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-full relative">
+              <div :class="{ 'hidden': !open }" x-transition x-cloak class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-full relative">
                 <button @click="open = false" class="absolute top-2 right-2 text-white">
                   &times;
                 </button>
@@ -49,11 +49,11 @@
   {% if page.citation_text %}
     <div x-data="{ open: false }" class="fixed bottom-0 left-0 m-4 hidden md:block">
       <div class="flex justify-end" :class="{ 'hidden': open }" x-transition x-cloak>
-        <button @click="open = true" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded">
+        <button @click="open = true" class="bg-madras-earth hover:bg-neutral-600 text-white font-bold py-2 px-4 rounded">
           Cite this page
         </button>
       </div>
-      <div :class="{ 'hidden': !open }" x-transition x-cloak class="mt-2 p-4 bg-gray-900 text-white rounded shadow-lg w-64 relative">
+      <div :class="{ 'hidden': !open }" x-transition x-cloak class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
         <button @click="open = false" class="absolute top-2 right-2 text-white">
           &times;
         </button>
