@@ -30,7 +30,7 @@ services:
       - dj-data:/app/media
 
   db:
-    image: postgres:16
+    image: postgres:17
     volumes:
       - pg-data:/var/lib/postgresql/data
     environment:
