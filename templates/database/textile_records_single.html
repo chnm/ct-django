@@ -97,6 +97,20 @@
         <!-- Right Column -->
         <div class="prose">
             <h2 class="text-xl mb-4">Images</h2>
+            {% if item.thumbnail_url %}
+                <div class="mb-4">
+                    <figure>
+                        <img src="{{ item.thumbnail_url }}" alt="Thumbnail for {{ item.summary_of_record }}" class="w-full h-auto">
+                        <figcaption class="text-center text-sm">
+                            Preview thumbnail from source
+                            {% if item.manifest_url %}
+                                <br><a href="{{ item.manifest_url }}" target="_blank" class="text-blue-600 hover:underline">View IIIF Manifest</a>
+                            {% endif %}
+                        </figcaption>
+                    </figure>
+                </div>
+            {% endif %}
+
             {% if item.images.all %}
                 <div class="grid grid-cols-1 gap-4">
                     {% for image in item.images.all %}
@@ -106,7 +120,7 @@
                         </figure>
                     {% endfor %}
                 </div>
-            {% else %}
+            {% elif not item.thumbnail_url %}
                 <p>No images are available for this item.</p>
             {% endif %}
 

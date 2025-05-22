@@ -1,4 +1,5 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin
@@ -141,6 +142,7 @@ class TextileRecordAdmin(ModelAdmin, ImportExportModelAdmin):
     resource_class = TextileRecordResource
     list_display = [
         "id",
+        "thumbnail_display",
         "year",
         "summary_of_record",
         "is_public",
@@ -160,9 +162,73 @@ class TextileRecordAdmin(ModelAdmin, ImportExportModelAdmin):
         "is_public",
         "creator",  # Add filter for creator to easily find crawler items
     ]
+    readonly_fields = ["thumbnail_full"]
     inlines = [NamedActorsInline, ImagesInline, ArchivalRecordInline]
     ordering = ["year"]
     actions = [make_public, make_private, unpublish_from_crawler]  # Add the new action
+    fieldsets = [
+        ("Preview", {"fields": ["thumbnail_full"]}),
+        (
+            "Record Information",
+            {
+                "fields": [
+                    "is_public",
+                    "creator",
+                    "record_creator",
+                    "year",
+                    "summary_of_record",
+                    "transcription",
+                ]
+            },
+        ),
+        (
+            "Textile Details",
+            {
+                "fields": [
+                    "primary_textile_types",
+                    "secondary_textile_types",
+                    "textile_specifications",
+                    "circulation",
+                ]
+            },
+        ),
+        (
+            "Subject Classification",
+            {"fields": ["primary_subjects", "secondary_subjects"]},
+        ),
+        ("Geography", {"fields": ["from_area", "from_place", "to_area", "to_place"]}),
+        ("Financial Details", {"fields": ["price", "currency"]}),
+        (
+            "Source Information",
+            {
+                "fields": [
+                    "source_type",
+                    "archive",
+                    "description_of_source",
+                    "source_reference",
+                ]
+            },
+        ),
+        ("Links", {"fields": ["manifest_url", "thumbnail_url"]}),
+    ]
+
+    @admin.display(description="Thumbnail")
+    def thumbnail_display(self, obj):
+        if obj.thumbnail_url:
+            return format_html(
+                '<img src="{}" style="max-height: 50px; max-width: 100px;" />',
+                obj.thumbnail_url,
+            )
+        return "No thumbnail"
+
+    @admin.display(description="Thumbnail Image")
+    def thumbnail_full(self, obj):
+        if obj.thumbnail_url:
+            return format_html(
+                '<img src="{}" style="max-height: 300px; max-width: 500px;" />',
+                obj.thumbnail_url,
+            )
+        return "No thumbnail available"
 
 
 @admin.register(Image)

@@ -92,6 +92,7 @@ class TextileRecord(models.Model):
     )
     year = models.CharField(blank=True, null=True)
     archive = models.CharField(max_length=765, blank=True, null=True)
+    # TODO: Rename category when DM is ready
     primary_textile_types = models.ManyToManyField(
         "PrimaryTextileType", related_name="textile_records", blank=True, default=[]
     )
@@ -147,6 +148,8 @@ class TextileRecord(models.Model):
     description_of_source = models.TextField(blank=True, null=True)
     record_creator = models.CharField(max_length=765, blank=True, null=True)
     source_reference = models.CharField(blank=True, null=True, max_length=765)
+    manifest_url = models.URLField(blank=True, null=True)
+    thumbnail_url = models.URLField(blank=True, null=True)
     crosslinks = models.ManyToManyField("self", blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)

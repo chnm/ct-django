@@ -7,8 +7,15 @@
         class="w-32 h-32 object-cover mx-auto"
       />
     </a>
+  {% elif record.thumbnail_url %}
+    <a href="{% url 'textile_single' item_id=record.id %}">
+      <img
+        src="{{ record.thumbnail_url }}"
+        alt="Thumbnail for {{ record.summary_of_record }}"
+        class="w-32 h-32 object-cover mx-auto"
+      />
+    </a>
   {% else %}
     <p>&mdash;</p>
   {% endif %}
 </div>
-
