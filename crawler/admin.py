@@ -13,6 +13,7 @@ from .services import MuseumAPIClient
 class StagedMuseumItemAdmin(ModelAdmin):
     list_display = [
         "id",
+        "thumbnail_display",
         "title",
         "archive",
         "fetch_status",
@@ -33,9 +34,44 @@ class StagedMuseumItemAdmin(ModelAdmin):
         "api_response",
         "published",
         "published_to",
+        "thumbnail_full",
     ]
     actions = ["mark_as_reviewed", "publish_to_textile_records"]
     change_list_template = "admin/crawler/stagedmuseumitem/change_list.html"
+
+    fieldsets = [
+        ("Preview", {"fields": ["thumbnail_full"]}),
+        (
+            "Item Information",
+            {
+                "fields": [
+                    "id",
+                    "title",
+                    "date",
+                    "description",
+                    "item_type",
+                    "medium",
+                    "country",
+                    "archive",
+                ]
+            },
+        ),
+        ("Links", {"fields": ["url", "manifest", "thumbnail"]}),
+        ("API Data", {"fields": ["api_response"]}),
+        (
+            "Review Status",
+            {
+                "fields": [
+                    "is_reviewed",
+                    "review_notes",
+                    "reviewed_by",
+                    "initial_date_fetched",
+                    "date_updated",
+                ]
+            },
+        ),
+        ("Publishing", {"fields": ["published", "published_to"]}),
+    ]
 
     def get_urls(self):
         urls = super().get_urls()
@@ -57,6 +93,24 @@ class StagedMuseumItemAdmin(ModelAdmin):
             ),
         ]
         return custom_urls + urls
+
+    @admin.display(description="Thumbnail")
+    def thumbnail_display(self, obj):
+        if obj.thumbnail:
+            return format_html(
+                '<img src="{}" style="max-height: 50px; max-width: 100px;" />',
+                obj.thumbnail,
+            )
+        return "No thumbnail"
+
+    @admin.display(description="Thumbnail Image")
+    def thumbnail_full(self, obj):
+        if obj.thumbnail:
+            return format_html(
+                '<img src="{}" style="max-height: 300px; max-width: 500px;" />',
+                obj.thumbnail,
+            )
+        return "No thumbnail available"
 
     @admin.display(description="Fetch Status")
     def fetch_status(self, obj):

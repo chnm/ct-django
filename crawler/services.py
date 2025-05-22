@@ -30,6 +30,8 @@ class MuseumAPIClient:
         logger.info("Starting Cooper-Hewitt fetch process...")
 
         # Log the URL construction
+        # TODO: search the category not the keywords
+        #
         url = (
             "https://api.collection.cooperhewitt.org/rest/"
             "?method=cooperhewitt.exhibitions.getObjects"
@@ -75,6 +77,12 @@ class MuseumAPIClient:
                         "item_type": item.get("type", ""),
                         "medium": item.get("medium", ""),
                         "url": item["url"],
+                        "manifest": item.get("manifest_url", ""),  # Add manifest URL
+                        "thumbnail": item.get("images", [{}])[0]
+                        .get("b", {})
+                        .get("url", "")
+                        if item.get("images")
+                        else "",  # Add thumbnail URL
                         "country": item.get("country", ""),
                         "archive": "Cooper-Hewitt",
                         "api_response": item,
@@ -139,7 +147,7 @@ class MuseumAPIClient:
         # Construct the URL with parameters
         base_url = "https://api.vam.ac.uk/v2/objects/search"
         params = {
-            "q": "India textiles",
+            "id_category": "THES381162",
             "order_sort": "asc",
             "page": 1,
             "page_size": 100,
@@ -210,6 +218,12 @@ class MuseumAPIClient:
                         "medium": material,
                         "url": record.get("_images", {}).get(
                             "_iiif_image_base_url", ""
+                        ),
+                        "manifest": record.get("_images", {}).get(
+                            "_iiif_presentation_url", ""
+                        ),
+                        "thumbnail": record.get("_images", {}).get(
+                            "_primary_thumbnail", ""
                         ),
                         "country": place,
                         "archive": "Victoria and Albert Museum",

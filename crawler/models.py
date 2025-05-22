@@ -18,7 +18,9 @@ class StagedMuseumItem(models.Model):
     description = models.TextField(null=True, blank=True)
     item_type = models.CharField(blank=True, null=True, max_length=100)
     medium = models.CharField(blank=True, null=True, max_length=100)
-    url = models.URLField()
+    url = models.URLField(verbose_name="URL")
+    manifest = models.URLField(blank=True, default="", verbose_name="IIIF Manifest URL")
+    thumbnail = models.URLField(blank=True, default="", verbose_name="Thumbnail URL")
     country = models.CharField(blank=True, null=True, max_length=100)
     archive = models.CharField(blank=True, null=True, max_length=100)
     api_response = JSONField()
@@ -96,6 +98,8 @@ class StagedMuseumItem(models.Model):
             "year": self.date,
             "source_reference": self.url,
             "description_of_source": self.description,
+            "manifest_url": self.manifest,
+            "thumbnail_url": self.thumbnail,
             "source_type": self.item_type if self.item_type else "Museum Collection",
             "summary_of_record": self.title,  # Use title as summary
             "record_creator": user.username if user else None,
