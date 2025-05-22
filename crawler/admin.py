@@ -3,13 +3,14 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
 from django.utils.html import format_html
+from unfold.admin import ModelAdmin
 
 from .models import StagedMuseumItem
 from .services import MuseumAPIClient
 
 
 @admin.register(StagedMuseumItem)
-class StagedMuseumItemAdmin(admin.ModelAdmin):
+class StagedMuseumItemAdmin(ModelAdmin):
     list_display = [
         "id",
         "title",
@@ -42,29 +43,28 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
             path(
                 "fetch-cooper-hewitt/",
                 self.admin_site.admin_view(self.fetch_cooper_hewitt),
-                name="fetch-cooper-hewitt",
+                name="crawler_stagedmuseumitem_fetch-cooper-hewitt",
             ),
             path(
                 "fetch-vam/",
                 self.admin_site.admin_view(self.fetch_vam),
-                name="fetch-vam",
+                name="crawler_stagedmuseumitem_fetch-vam",
             ),
             path(
                 "fetch-all/",
                 self.admin_site.admin_view(self.fetch_all),
-                name="fetch-all",
+                name="crawler_stagedmuseumitem_fetch-all",
             ),
         ]
         return custom_urls + urls
 
+    @admin.display(description="Fetch Status")
     def fetch_status(self, obj):
         return format_html(
             '<span style="color: {};">●</span> {}',
             "green" if obj.api_response else "red",
             "Fetched" if obj.api_response else "Not fetched",
         )
-
-    fetch_status.short_description = "Fetch Status"
 
     def fetch_cooper_hewitt(self, request):
         try:
@@ -105,12 +105,12 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
             messages.error(request, f"Error fetching data: {str(e)}")
         return redirect("admin:crawler_stagedmuseumitem_changelist")
 
+    @admin.action(description="Mark selected items as reviewed")
     def mark_as_reviewed(self, request, queryset):
         queryset.update(is_reviewed=True, reviewed_by=request.user)
         messages.success(request, f"{queryset.count()} items marked as reviewed")
 
-    mark_as_reviewed.short_description = "Mark selected items as reviewed"
-
+    @admin.action(description="Publish selected items to TextileRecord")
     def publish_to_textile_records(self, request, queryset):
         published_count = 0
         errors = []
@@ -144,7 +144,3 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
             messages.error(
                 request, "Some items could not be published:\n" + "\n".join(errors)
             )
-
-    publish_to_textile_records.short_description = (
-        "Publish selected items to TextileRecord"
-    )

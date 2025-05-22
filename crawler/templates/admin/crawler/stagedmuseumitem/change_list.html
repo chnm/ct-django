@@ -2,16 +2,16 @@
 {% load i18n admin_urls unfold %}
 
 {% block content %}
-    <div class="sm:flex sm:items-center sm:justify-between mb-4">
-        <div class="flex space-x-2">
+    <div class="sm:flex sm:justify-between mb-4">
+        <div class="flex flex-col gap-4 justify-center w-full lg:flex-row">
             {% if has_add_permission %}
-                <a href="{% url 'admin:fetch-all' %}" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    {% trans "Fetch All Museums" %}
+                <a href="{% url 'admin:crawler_stagedmuseumitem_fetch-all' %}" class="bg-primary-600 flex flex-row font-medium gap-2 items-center h-9.5 justify-center px-3 py-2 rounded text-white w-full lg:w-auto pl-5">
+                    {% trans "Fetch All Data" %}
                 </a>
-                <a href="{% url 'admin:fetch-cooper-hewitt' %}" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                <a href="{% url 'admin:crawler_stagedmuseumitem_fetch-cooper-hewitt' %}" class="bg-primary-600 flex flex-row font-medium gap-2 items-center h-9.5 justify-center px-3 py-2 rounded text-white w-full lg:w-auto">
                     {% trans "Fetch Cooper-Hewitt" %}
                 </a>
-                <a href="{% url 'admin:fetch-vam' %}" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
+                <a href="{% url 'admin:crawler_stagedmuseumitem_fetch-vam' %}" class="bg-primary-600 flex flex-row font-medium gap-2 items-center h-9.5 justify-center px-3 py-2 rounded text-white w-full lg:w-auto">
                     {% trans "Fetch V&A" %}
                 </a>
             {% endif %}
