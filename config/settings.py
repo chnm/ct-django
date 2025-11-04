@@ -18,21 +18,16 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 env = environ.FileAwareEnv(DEBUG=(bool, False))
 
-# Update this existing value
 DEBUG = env("DEBUG")
-
-# Update this existing value
 SECRET_KEY = env(
     "DJANGO_SECRET_KEY",
     default="django-insecure meayau2fu^q2$7e4e&s41gsc12umxc2jopbaq^@$0xjd0twpb2",
 )
-
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
 CSRF_TRUSTED_ORIGINS = env.list(
     "DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"]
 )
 
-COOPER_HEWITT_API_KEY = env("THREADBARE_KEY", default="")
 
 # Application definition
 
@@ -53,6 +48,7 @@ INSTALLED_APPS = [
     "allauth.account",
     "allauth.socialaccount",
     "django_htmx",
+    # wagtail
     "wagtail.contrib.forms",
     "wagtail.contrib.redirects",
     "wagtail.embeds",
@@ -64,6 +60,7 @@ INSTALLED_APPS = [
     "wagtail.search",
     "wagtail.admin",
     "wagtail",
+    # libraries
     "modelcluster",
     "import_export",
     "taggit",
@@ -113,6 +110,19 @@ TEMPLATES = [
         },
     },
 ]
+
+# DEBUG
+# ------------------------------------------------------------------------------
+# django-debug-toolbar
+# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#prerequisites
+INSTALLED_APPS += ["debug_toolbar"]  # noqa: F405
+# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#middleware
+MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]  # noqa: F405
+# https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
+DEBUG_TOOLBAR_CONFIG = {
+    "DISABLE_PANELS": ["debug_toolbar.panels.redirects.RedirectsPanel"],
+    "SHOW_TEMPLATE_CONTEXT": True,
+}
 
 AUTHENTICATION_BACKENDS = (
     "django.contrib.auth.backends.ModelBackend",  # this is the default backend
@@ -296,6 +306,7 @@ LOGGING = {
 }
 
 WSGI_APPLICATION = "config.wsgi.application"
+ASGI_APPLICATION = "config.asgi.application"
 
 
 # Database
@@ -306,8 +317,8 @@ DATABASES = {
         "ENGINE": "django.db.backends.postgresql",
         "HOST": env("DB_HOST", default="localhost"),
         "PORT": env("DB_PORT", default="5432"),
-        "NAME": env("DB_NAME", default="connthreads"),
-        "USER": env("DB_USER", default="connthreads"),
+        "NAME": env("DB_NAME", default="connectingthreads"),
+        "USER": env("DB_USER", default="connectingthreads"),
         "PASSWORD": env("DB_PASS", default="password"),
     }
 }
@@ -336,25 +347,21 @@ AUTH_PASSWORD_VALIDATORS = [
 # https://docs.djangoproject.com/en/5.0/topics/i18n/
 
 LANGUAGE_CODE = "en-us"
-
 TIME_ZONE = "America/New_York"
 
 USE_I18N = True
-
 USE_TZ = True
-
 TAILWIND_APP_NAME = "theme"
 INTERNAL_IPS = [
     "127.0.0.1",
 ]
 
-
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
 STATIC_URL = "static/"
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
+STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
 
 # Media files
 STORAGES = {
@@ -440,5 +447,7 @@ LOGGING = {
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Application API settings
+COOPER_HEWITT_API_KEY = env("COOPER_HEWITT_API_KEY", default="")
