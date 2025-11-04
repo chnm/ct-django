@@ -12,19 +12,22 @@ class StagedMuseumItem(models.Model):
     Staging area for raw API data before cleanup and publishing
     """
 
-    id = models.CharField(max_length=100, primary_key=True)
+    id = models.CharField(max_length=100, primary_key=True, verbose_name="ID")
     title = models.CharField(max_length=500)
     date = models.CharField(blank=True, null=True, max_length=100)
     description = models.TextField(null=True, blank=True)
     item_type = models.CharField(blank=True, null=True, max_length=100)
     medium = models.CharField(blank=True, null=True, max_length=100)
-    url = models.URLField()
+    url = models.URLField(verbose_name="URL")
     country = models.CharField(blank=True, null=True, max_length=100)
     archive = models.CharField(blank=True, null=True, max_length=100)
+    manifest = models.URLField(blank=True, default="")
+    thumbnail = models.URLField(blank=True, default="")
+    image = models.ImageField(upload_to='staged_items/', blank=True, null=True, verbose_name="Downloaded Image")
     api_response = JSONField()
 
     # Staging-specific fields
-    is_reviewed = models.BooleanField(default=False)
+    is_reviewed = models.BooleanField(default=False, verbose_name="Item reviewed?")
     review_notes = models.TextField(blank=True)
     reviewed_by = models.ForeignKey(
         "auth.User",
@@ -36,7 +39,7 @@ class StagedMuseumItem(models.Model):
     initial_date_fetched = models.DateTimeField(auto_now_add=True)
     date_updated = models.DateTimeField(auto_now=True)
 
-    published = models.BooleanField(default=False)
+    published = models.BooleanField(default=False, verbose_name="Item published?")
     published_to = models.ForeignKey(
         "material.TextileRecord",
         null=True,

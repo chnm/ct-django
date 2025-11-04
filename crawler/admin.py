@@ -3,14 +3,20 @@ from django.contrib import admin, messages
 from django.shortcuts import redirect
 from django.urls import path
 from django.utils.html import format_html
+from import_export.admin import ImportExportModelAdmin
+from unfold.admin import ModelAdmin
+from unfold.decorators import display
 
 from .models import StagedMuseumItem
+from .resources import StagedMuseumItemResource
 from .services import MuseumAPIClient
 
 
 @admin.register(StagedMuseumItem)
-class StagedMuseumItemAdmin(admin.ModelAdmin):
+class StagedMuseumItemAdmin(ModelAdmin, ImportExportModelAdmin):
+    resource_class = StagedMuseumItemResource
     list_display = [
+        "thumbnail_preview",
         "id",
         "title",
         "archive",
@@ -32,9 +38,34 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
         "api_response",
         "published",
         "published_to",
+        "image",
     ]
     actions = ["mark_as_reviewed", "publish_to_textile_records"]
     change_list_template = "admin/crawler/stagedmuseumitem/change_list.html"
+    
+    fieldsets = (
+        ("Basic Information", {
+            "fields": ("id", "title", "description", "url", "image"),
+        }),
+        ("Museum Data", {
+            "fields": ("archive", "date", "item_type", "medium", "country"),
+        }),
+        ("Review Process", {
+            "fields": ("is_reviewed", "review_notes", "reviewed_by"),
+        }),
+        ("Publishing", {
+            "fields": ("published", "published_to"),
+            "classes": ("collapse",),
+        }),
+        ("Metadata", {
+            "fields": ("initial_date_fetched", "date_updated"),
+            "classes": ("collapse",),
+        }),
+        ("API Response", {
+            "fields": ("api_response",),
+            "classes": ("collapse",),
+        }),
+    )
 
     def get_urls(self):
         urls = super().get_urls()
@@ -57,6 +88,7 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
         ]
         return custom_urls + urls
 
+    @display(description="Fetch Status")
     def fetch_status(self, obj):
         return format_html(
             '<span style="color: {};">●</span> {}',
@@ -64,7 +96,22 @@ class StagedMuseumItemAdmin(admin.ModelAdmin):
             "Fetched" if obj.api_response else "Not fetched",
         )
 
-    fetch_status.short_description = "Fetch Status"
+    @display(description="Thumbnail")
+    def thumbnail_preview(self, obj):
+        if obj.image:
+            return format_html(
+                '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
+                obj.image.url
+            )
+        elif obj.thumbnail:
+            return format_html(
+                '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
+                obj.thumbnail
+            )
+        else:
+            return format_html(
+                '<div style="width: 60px; height: 60px; background-color: #f3f4f6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 12px;">No Image</div>'
+            )
 
     def fetch_cooper_hewitt(self, request):
         try:
