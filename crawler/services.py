@@ -1,9 +1,12 @@
 # crawler/services.py
 import logging
+import os
+from urllib.parse import urlparse
 
 import backoff
 import requests
 from django.conf import settings
+from django.core.files.base import ContentFile
 from ratelimit import limits, sleep_and_retry
 
 from .models import StagedMuseumItem
@@ -34,7 +37,7 @@ class MuseumAPIClient:
             "https://api.collection.cooperhewitt.org/rest/"
             "?method=cooperhewitt.exhibitions.getObjects"
             f"&access_token={settings.COOPER_HEWITT_API_KEY}"
-            "&query=India%20textiles"
+            "&query=Connecting%20Threads"
         )
         logger.info(
             f"Making request to Cooper-Hewitt API at: {url.replace(settings.COOPER_HEWITT_API_KEY, '[REDACTED]')}"
@@ -67,16 +70,35 @@ class MuseumAPIClient:
                         f"Processing item {index}/{total_items} (ID: {item.get('id')})"
                     )
 
-                    # Prepare the default values without review_notes first
+                    # Get image URLs
+                    images = item.get("images", [])
+                    thumbnail_url = ""
+                    if images:
+                        # Get the first image's thumbnail (size 'sq' is usually thumbnail)
+                        first_image = images[0]
+                        if "sq" in first_image:
+                            thumbnail_url = first_image["sq"]["url"]
+                        elif "z" in first_image:
+                            thumbnail_url = first_image["z"]["url"]
+                    
+                    # Prepare image download
+                    image_file = None
+                    if thumbnail_url:
+                        filename = f"{item.get('id', 'unknown')}.jpg"
+                        image_file = self.download_image(thumbnail_url, filename)
+
+                    # Prepare the default values
                     defaults = {
-                        "title": item["title"],
-                        "date": item["date"],
-                        "description": item.get("description"),
+                        "title": item.get("title", ""),
+                        "date": item.get("date", ""),
+                        "description": item.get("description", ""),
                         "item_type": item.get("type", ""),
                         "medium": item.get("medium", ""),
-                        "url": item["url"],
+                        "url": item.get("url", ""),
                         "country": item.get("country", ""),
-                        "archive": "Cooper-Hewitt",
+                        "archive": "Cooper-Hewitt, Smithsonian Design Museum",
+                        "manifest": "",  # Cooper-Hewitt doesn't seem to have IIIF manifests
+                        "thumbnail": thumbnail_url,
                         "api_response": item,
                         "is_reviewed": False,
                         "published": False,
@@ -84,8 +106,16 @@ class MuseumAPIClient:
 
                     # Use update_or_create to either update existing or create new
                     staged_item, created = StagedMuseumItem.objects.update_or_create(
-                        id=item["id"], defaults=defaults
+                        id=item.get("id"), defaults=defaults
                     )
+
+                    # Save the image if we have one
+                    if image_file:
+                        try:
+                            staged_item.image.save(image_file.name, image_file, save=False)
+                            logger.info(f"Successfully saved image for {item.get('id')}")
+                        except Exception as e:
+                            logger.error(f"Failed to save image for {item.get('id')}: {str(e)}")
 
                     # Update review notes after we know if it was created or updated
                     staged_item.review_notes = (
@@ -95,11 +125,11 @@ class MuseumAPIClient:
 
                     if created:
                         items_created += 1
-                        logger.info(f"Created new item: {item['id']} - {item['title']}")
+                        logger.info(f"Created new item: {item.get('id')} - {item.get('title', 'No title')}")
                     else:
                         items_updated += 1
                         logger.info(
-                            f"Updated existing item: {item['id']} - {item['title']}"
+                            f"Updated existing item: {item.get('id')} - {item.get('title', 'No title')}"
                         )
 
                 except Exception as e:
@@ -128,6 +158,25 @@ class MuseumAPIClient:
             logger.error(f"Unexpected error during fetch: {str(e)}")
             raise
 
+    def download_image(self, image_url, filename):
+        """
+        Download an image from a URL and return a Django ContentFile
+        """
+        try:
+            logger.info(f"Downloading image from: {image_url}")
+            response = self.session.get(image_url, timeout=30)
+            response.raise_for_status()
+            
+            # Create a ContentFile from the image data
+            return ContentFile(response.content, name=filename)
+            
+        except requests.exceptions.RequestException as e:
+            logger.error(f"Failed to download image {image_url}: {str(e)}")
+            return None
+        except Exception as e:
+            logger.error(f"Unexpected error downloading image {image_url}: {str(e)}")
+            return None
+
     @sleep_and_retry
     @limits(calls=100, period=60)
     @backoff.on_exception(
@@ -139,12 +188,11 @@ class MuseumAPIClient:
         # Construct the URL with parameters
         base_url = "https://api.vam.ac.uk/v2/objects/search"
         params = {
-            "q": "India textiles",
+            "id_category": "THES381162", #ConnThreads project tag
             "order_sort": "asc",
             "page": 1,
             "page_size": 100,
         }
-
         logger.info(f"Making request to V&A API at: {base_url} with params: {params}")
 
         try:
@@ -202,17 +250,31 @@ class MuseumAPIClient:
                         else ""
                     )
 
+                    # Construct V&A collections item page URL
+                    url = f"https://collections.vam.ac.uk/item/{record['systemNumber']}/"
+                    
+                    # Get manifest and thumbnail URLs
+                    manifest_url = record.get("_images", {}).get("_iiif_presentation_url", "")
+                    thumbnail_url = record.get("_images", {}).get("_primary_thumbnail", "")
+                    
+                    # Prepare image download
+                    image_file = None
+                    if thumbnail_url:
+                        # Use the thumbnail URL directly as it's more reliable
+                        filename = f"{record['systemNumber']}.jpg"
+                        image_file = self.download_image(thumbnail_url, filename)
+                    
                     # Prepare the default values
                     defaults = {
                         "title": record.get("_primaryTitle", ""),
                         "date": record.get("_primaryDate", ""),
                         "item_type": object_type,
                         "medium": material,
-                        "url": record.get("_images", {}).get(
-                            "_iiif_image_base_url", ""
-                        ),
+                        "url": url,
                         "country": place,
                         "archive": "Victoria and Albert Museum",
+                        "manifest": manifest_url,
+                        "thumbnail": thumbnail_url,
                         "api_response": record,
                         "is_reviewed": False,
                         "published": False,
@@ -222,6 +284,14 @@ class MuseumAPIClient:
                     staged_item, created = StagedMuseumItem.objects.update_or_create(
                         id=record["systemNumber"], defaults=defaults
                     )
+
+                    # Save the image if we have one
+                    if image_file:
+                        try:
+                            staged_item.image.save(image_file.name, image_file, save=False)
+                            logger.info(f"Successfully saved image for {record['systemNumber']}")
+                        except Exception as e:
+                            logger.error(f"Failed to save image for {record['systemNumber']}: {str(e)}")
 
                     # Update review notes after we know if it was created or updated
                     staged_item.review_notes = (
