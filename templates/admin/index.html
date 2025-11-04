@@ -183,6 +183,72 @@
                 </script>
             {% endcomponent %}
 
+            <!-- Record Sources Bar Chart -->
+            {% component "unfold/components/card.html" with title=_("Records by Source") %}
+                <div style="height: 300px">
+                    <canvas id="sourceChart"></canvas>
+                </div>
+                <script>
+                    document.addEventListener('DOMContentLoaded', function() {
+                        const ctx = document.getElementById('sourceChart').getContext('2d');
+                        new Chart(ctx, {
+                            type: 'bar',
+                            data: {
+                                labels: [{% for source, count, percent in source_counts %}'{{ source|escapejs }}'{% if not forloop.last %}, {% endif %}{% endfor %}],
+                                datasets: [{
+                                    label: 'Number of Records',
+                                    data: [{% for source, count, percent in source_counts %}{{ count }}{% if not forloop.last %}, {% endif %}{% endfor %}],
+                                    backgroundColor: [
+                                        'rgba(54, 162, 235, 0.8)',   // Blue for V&A
+                                        'rgba(255, 99, 132, 0.8)',   // Red for Cooper-Hewitt
+                                        'rgba(75, 192, 192, 0.8)',   // Teal for Local
+                                        'rgba(255, 206, 86, 0.8)',   // Yellow for other
+                                        'rgba(153, 102, 255, 0.8)',  // Purple for other
+                                        'rgba(255, 159, 64, 0.8)'    // Orange for other
+                                    ],
+                                    borderColor: [
+                                        'rgba(54, 162, 235, 1)',
+                                        'rgba(255, 99, 132, 1)',
+                                        'rgba(75, 192, 192, 1)',
+                                        'rgba(255, 206, 86, 1)',
+                                        'rgba(153, 102, 255, 1)',
+                                        'rgba(255, 159, 64, 1)'
+                                    ],
+                                    borderWidth: 1
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                maintainAspectRatio: false,
+                                scales: {
+                                    y: {
+                                        beginAtZero: true,
+                                        ticks: {
+                                            precision: 0
+                                        }
+                                    }
+                                },
+                                plugins: {
+                                    legend: {
+                                        display: false
+                                    },
+                                    tooltip: {
+                                        callbacks: {
+                                            label: function(context) {
+                                                const dataIndex = context.dataIndex;
+                                                const count = context.parsed.y;
+                                                const percentage = [{% for source, count, percent in source_counts %}{{ percent }}{% if not forloop.last %}, {% endif %}{% endfor %}][dataIndex];
+                                                return `${context.label}: ${count} records (${percentage}%)`;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        });
+                    });
+                </script>
+            {% endcomponent %}
+
             <div class="flex flex-col gap-8 lg:flex-row">
                 <!-- Content Source Distribution -->
                 {% component "unfold/components/card.html" with class="lg:w-1/2" title=_("Content Source Distribution") %}

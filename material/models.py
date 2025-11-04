@@ -19,6 +19,7 @@ class Area(models.Model):
 
 
 class Place(models.Model):
+    #
     id = models.AutoField(primary_key=True)
     city = models.CharField(max_length=765, unique=True, default="Unnamed City")
     country = models.CharField(max_length=765, blank=True, null=True)
@@ -86,6 +87,7 @@ class TextileRecord(models.Model):
     ]
 
     id = models.AutoField(primary_key=True)
+    id_manual = models.IntegerField(blank=True, null=True, verbose_name="Record ID")
     is_public = models.BooleanField(
         default=False,
         help_text="Check this box if the record is publicly viewable. Unchecked will keep the record hidden.",

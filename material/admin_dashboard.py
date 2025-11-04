@@ -82,7 +82,7 @@ def get_admin_stats(request=None):
 
     creator_counts = []
     for item in creator_data:
-        creator_type = item["creator"] or "Unknown"
+        creator_type = item["creator"] or "Local Import"
         count = item["count"]
         percentage = (
             (count / textile_record_count * 100) if textile_record_count > 0 else 0
@@ -129,6 +129,33 @@ def get_admin_stats(request=None):
             (type_obj.name, type_obj.record_count, round(percentage, 1))
         )
 
+    # Source/Archive distribution
+    archive_data = (
+        TextileRecord.objects.values("archive")
+        .annotate(count=Count("id"))
+        .order_by("-count")
+    )
+
+    source_counts = []
+    for item in archive_data:
+        archive_name = item["archive"]
+        count = item["count"]
+        
+        # Map archive names to friendly display names
+        if not archive_name:
+            display_name = "Local Import"
+        elif "Cooper" in archive_name:
+            display_name = "Cooper-Hewitt"
+        elif "Victoria" in archive_name or "V&A" in archive_name:
+            display_name = "Victoria & Albert Museum"
+        else:
+            display_name = archive_name or "Local Import"
+        
+        percentage = (
+            (count / textile_record_count * 100) if textile_record_count > 0 else 0
+        )
+        source_counts.append((display_name, count, round(percentage, 1)))
+
     return {
         "title": "Connecting Threads Dashboard",
         "textile_record_count": textile_record_count,
@@ -146,6 +173,7 @@ def get_admin_stats(request=None):
         "to_areas": to_areas,
         "recent_records": recent_records,
         "textile_types": textile_types,
+        "source_counts": source_counts,
     }
 
 

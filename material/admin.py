@@ -1,8 +1,10 @@
 from django.contrib import admin
+from django.utils.html import format_html
 
 from import_export.admin import ImportExportModelAdmin
 from unfold.admin import ModelAdmin
 from unfold.admin import TabularInline
+from unfold.decorators import display
 
 from material.models import (
     ArchivalRecord,
@@ -140,7 +142,8 @@ def unpublish_from_crawler(modeladmin, request, queryset):
 class TextileRecordAdmin(ModelAdmin, ImportExportModelAdmin):
     resource_class = TextileRecordResource
     list_display = [
-        "id",
+        "thumbnail_preview",
+        "id_manual",
         "year",
         "summary_of_record",
         "is_public",
@@ -163,6 +166,39 @@ class TextileRecordAdmin(ModelAdmin, ImportExportModelAdmin):
     inlines = [NamedActorsInline, ImagesInline, ArchivalRecordInline]
     ordering = ["year"]
     actions = [make_public, make_private, unpublish_from_crawler]  # Add the new action
+
+    @display(description="Thumbnail")
+    def thumbnail_preview(self, obj):
+        # Check for images related to this textile record
+        first_image = obj.images.filter(is_image_public=True).first()
+        if not first_image:
+            # Fallback to any image (even if not public for admin view)
+            first_image = obj.images.first()
+        
+        if first_image and first_image.image:
+            return format_html(
+                '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
+                first_image.image.url
+            )
+        else:
+            # Check if this record came from the crawler (has staged_source)
+            staged_sources = obj.staged_source.all()
+            if staged_sources.exists():
+                staged_item = staged_sources.first()
+                if staged_item.image:
+                    return format_html(
+                        '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
+                        staged_item.image.url
+                    )
+                elif staged_item.thumbnail:
+                    return format_html(
+                        '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
+                        staged_item.thumbnail
+                    )
+            
+            return format_html(
+                '<div style="width: 60px; height: 60px; background-color: #f3f4f6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 12px;">No Image</div>'
+            )
 
 
 @admin.register(Image)

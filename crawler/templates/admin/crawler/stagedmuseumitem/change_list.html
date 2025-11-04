@@ -3,21 +3,76 @@
 
 {% block content %}
     <div class="sm:flex sm:items-center sm:justify-between mb-4">
-        <div class="flex space-x-2">
+        <div class="flex gap-2">
             {% if has_add_permission %}
-                <a href="{% url 'admin:fetch-all' %}" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    {% trans "Fetch All Museums" %}
+                <a href="{% url 'admin:fetch-all' %}" 
+                   id="fetch-all-btn"
+                   class="fetch-btn inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                    <span class="btn-text">{% trans "Fetch All Data" %}</span>
+                    <span class="btn-loading hidden ml-2">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
                 </a>
-                <a href="{% url 'admin:fetch-cooper-hewitt' %}" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    {% trans "Fetch Cooper-Hewitt" %}
+                <a href="{% url 'admin:fetch-cooper-hewitt' %}" 
+                   id="fetch-cooper-hewitt-btn"
+                   class="fetch-btn inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                    <span class="btn-text">{% trans "Fetch Cooper-Hewitt" %}</span>
+                    <span class="btn-loading hidden ml-2">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
                 </a>
-                <a href="{% url 'admin:fetch-vam' %}" class="p-2 bg-blue-600 hover:bg-blue-700 text-white rounded">
-                    {% trans "Fetch V&A" %}
+                <a href="{% url 'admin:fetch-vam' %}" 
+                   id="fetch-vam-btn"
+                   class="fetch-btn inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
+                    <span class="btn-text">{% trans "Fetch V&A" %}</span>
+                    <span class="btn-loading hidden ml-2">
+                        <svg class="animate-spin h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                    </span>
                 </a>
             {% endif %}
         </div>
     </div>
     {{ block.super }}
+{% endblock %}
+
+{% block extrahead %}
+    {{ block.super }}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const fetchButtons = document.querySelectorAll('.fetch-btn');
+            
+            fetchButtons.forEach(button => {
+                button.addEventListener('click', function(e) {
+                    // Disable all fetch buttons
+                    fetchButtons.forEach(btn => {
+                        btn.classList.add('opacity-50', 'cursor-not-allowed');
+                        btn.classList.remove('hover:bg-primary-700');
+                    });
+                    
+                    // Show loading state for clicked button
+                    const btnText = this.querySelector('.btn-text');
+                    const btnLoading = this.querySelector('.btn-loading');
+                    
+                    if (btnText && btnLoading) {
+                        btnText.textContent = 'Fetching...';
+                        btnLoading.classList.remove('hidden');
+                    }
+                    
+                    // Disable the clicked button to prevent multiple clicks
+                    this.style.pointerEvents = 'none';
+                });
+            });
+        });
+    </script>
 {% endblock %}
 
 {% block object-tools-items %}

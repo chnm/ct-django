@@ -50,7 +50,7 @@ class ChoicesWidget(Widget):
         """Convert from the choice's display value to the actual value."""
         return self.reversed_choices.get(value, value)
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         """Convert from the actual value to the choice's display value."""
         return self.choices.get(value, value)
 
@@ -66,7 +66,7 @@ class TaggitWidget(Widget):
         tags = [Tag.objects.get_or_create(name=name)[0] for name in tag_names]
         return tags
 
-    def render(self, value, obj=None):
+    def render(self, value, obj=None, **kwargs):
         """Convert a list of Tag instances into a comma-separated string."""
         if not value:
             return ""
@@ -79,84 +79,115 @@ class TaggitWidget(Widget):
 
 class TextileRecordResource(resources.ModelResource):
     raise_errors = False
-    # Define fields to map spreadsheet columns
-    year = fields.Field(attribute="year", column_name="year")
-    archive = fields.Field(attribute="archive", column_name="archive")
+    
+    # Basic Information
+    id = fields.Field(attribute="id", column_name="Record ID")
+    id_manual = fields.Field(attribute="id_manual", column_name="Record ID")
+    is_public = fields.Field(attribute="is_public", column_name="Is Public")
+    year = fields.Field(attribute="year", column_name="Year/Date")
+    archive = fields.Field(attribute="archive", column_name="Archive")
+    creator = fields.Field(attribute="creator", column_name="Created By")
+    
+    # Textile Details
     textile_specifications = fields.Field(
-        attribute="textile_specifications", column_name="textile_specifications"
+        attribute="textile_specifications", column_name="Textile Specifications"
     )
     circulation = fields.Field(
         attribute="circulation",
-        column_name="circulation",
+        column_name="Circulation Type",
         widget=ChoicesWidget(TextileRecord.CIRCULATION_CHOICES),
     )
     summary_of_record = fields.Field(
-        attribute="summary_of_record", column_name="summary_of_record"
+        attribute="summary_of_record", column_name="Summary of Record"
     )
-    transcription = fields.Field(attribute="transcription", column_name="excerpt")
+    transcription = fields.Field(attribute="transcription", column_name="Transcription/Excerpt")
     keywords = fields.Field(
-        attribute="keywords", column_name="keywords", widget=TaggitWidget()
+        attribute="keywords", column_name="Keywords", widget=TaggitWidget()
     )
-    price = fields.Field(attribute="price", column_name="price")
-    currency = fields.Field(attribute="currency", column_name="currency")
+    
+    # Economic Information
+    price = fields.Field(attribute="price", column_name="Price")
+    currency = fields.Field(attribute="currency", column_name="Currency")
+    
+    # Textile Classifications
     primary_textile_types = fields.Field(
         attribute="primary_textile_types",
-        column_name="primary_textile_types",
-        widget=ManyToManyWidget(PrimaryTextileType, field="name"),
+        column_name="Primary Textile Types",
+        widget=ManyToManyWidget(PrimaryTextileType, field="name", separator="; "),
     )
     secondary_textile_types = fields.Field(
         attribute="secondary_textile_types",
-        column_name="secondary_textile_types",
-        widget=ManyToManyWidget(SecondaryTextileType, field="name"),
+        column_name="Secondary Textile Types",
+        widget=ManyToManyWidget(SecondaryTextileType, field="name", separator="; "),
     )
+    
+    # Subject Classifications
     subject_primary = fields.Field(
         attribute="primary_subjects",
-        column_name="subject_primary",
-        widget=ManyToManyWidget(Subject, field="name", separator=","),
+        column_name="Primary Subjects",
+        widget=ManyToManyWidget(Subject, field="name", separator="; "),
     )
     subject_secondary = fields.Field(
         attribute="secondary_subjects",
-        column_name="subject_secondary",
-        widget=ManyToManyWidget(Subject, field="name", separator=","),
+        column_name="Secondary Subjects",
+        widget=ManyToManyWidget(Subject, field="name", separator="; "),
     )
+    
+    # Geographic Information
     from_place = fields.Field(
         attribute="from_place",
-        column_name="originating_location_place",
+        column_name="Origin Place",
         widget=ForeignKeyWidget(Place, "city"),
     )
     to_place = fields.Field(
         attribute="to_place",
-        column_name="destination_location_place",
+        column_name="Destination Place",
         widget=ForeignKeyWidget(Place, "city"),
     )
     from_area = fields.Field(
         attribute="from_area",
-        column_name="originating_location_area",
+        column_name="Origin Area",
         widget=ForeignKeyWidget(Area, "name"),
     )
     to_area = fields.Field(
         attribute="to_area",
-        column_name="destination_location_area",
+        column_name="Destination Area",
         widget=ForeignKeyWidget(Area, "name"),
     )
-    source_type = fields.Field(attribute="source_type", column_name="source_type")
+    
+    # Source Information
+    source_type = fields.Field(attribute="source_type", column_name="Source Type")
     description_of_source = fields.Field(
-        attribute="description_of_source", column_name="description_of_source"
+        attribute="description_of_source", column_name="Source Description"
     )
     record_creator = fields.Field(
-        attribute="record_creator", column_name="record_creator"
+        attribute="record_creator", column_name="Record Creator"
     )
     source_reference = fields.Field(
-        attribute="source_reference", column_name="source_reference"
+        attribute="source_reference", column_name="Source Reference/URL"
     )
+    
+    # Additional tracking fields
+    date_added = fields.Field(attribute="date_added", column_name="Date Added")
+    date_updated = fields.Field(attribute="date_updated", column_name="Date Updated")
+    
+    # Related Images (custom export)
+    image_count = fields.Field(column_name="Number of Images")
+    primary_image_url = fields.Field(column_name="Primary Image URL")
+    
+    # Crawler Source Information (for items that came from crawler)
+    source_museum = fields.Field(column_name="Source Museum")
+    crawler_id = fields.Field(column_name="Original Museum ID")
 
     class Meta:
         model = TextileRecord
         import_id_fields = ("id",)
         fields = (
-            "id",
+            "id_manual",
+            "is_public", 
             "year",
             "archive",
+            "creator",
             "textile_specifications",
             "circulation",
             "summary_of_record",
@@ -168,15 +199,59 @@ class TextileRecordResource(resources.ModelResource):
             "secondary_textile_types",
             "subject_primary",
             "subject_secondary",
-            "originating_location_place",
-            "destination_location_place",
-            "originating_location_area",
-            "destination_location_area",
+            "from_place",
+            "to_place", 
+            "from_area",
+            "to_area",
             "source_type",
             "description_of_source",
             "record_creator",
             "source_reference",
+            "date_added",
+            "date_updated",
+            "image_count",
+            "primary_image_url",
+            "source_museum",
+            "crawler_id",
         )
+        
+    def dehydrate_image_count(self, obj):
+        """Count of images associated with this record"""
+        return obj.images.count()
+    
+    def dehydrate_primary_image_url(self, obj):
+        """URL of the first public image, or first image if none are public"""
+        first_image = obj.images.filter(is_image_public=True).first()
+        if not first_image:
+            first_image = obj.images.first()
+        
+        if first_image and first_image.image:
+            return first_image.image.url
+        
+        # Check if this record came from the crawler
+        staged_sources = obj.staged_source.all()
+        if staged_sources.exists():
+            staged_item = staged_sources.first()
+            if staged_item.image:
+                return staged_item.image.url
+            elif staged_item.thumbnail:
+                return staged_item.thumbnail
+        
+        return ""
+    
+    def dehydrate_source_museum(self, obj):
+        """Museum source if this record came from the crawler"""
+        staged_sources = obj.staged_source.all()
+        if staged_sources.exists():
+            return staged_sources.first().archive
+        return ""
+    
+    def dehydrate_crawler_id(self, obj):
+        """Original museum ID if this record came from the crawler"""
+        staged_sources = obj.staged_source.all()
+        if staged_sources.exists():
+            return staged_sources.first().id
+        return ""
 
     def before_import_row(self, row, **kwargs):
         try:
