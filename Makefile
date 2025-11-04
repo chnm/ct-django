@@ -1,24 +1,24 @@
 preview :
-	poetry run python3 manage.py runserver
+	uv run manage.py runserver
 
 # Compile TailwindCSS
 tailwind :
-	poetry run python3 manage.py tailwind start
+	uv run manage.py tailwind start
 
 # Django makemigrations
 mm :
-	poetry run python3 manage.py makemigrations
+	uv run manage.py makemigrations
 
 # Django migrate
 migrate :
-	poetry run python3 manage.py migrate
+	uv run manage.py migrate
 
 # Run Django tests
 test :
-	poetry run python3 manage.py test
+	uv run manage.py test
 
 shell :
-	poetry run python3 manage.py shell
+	uv run manage.py shell
 
 .PHONY : preview tailwind mm migrate test
 
