@@ -68,6 +68,7 @@ INSTALLED_APPS = [
     "fontawesomefree",
     "django_tables2",
     "django_filters",
+    "prose",
     # local apps
     "theme",
     "material",
@@ -161,17 +162,10 @@ UNFOLD = {
                         "link": reverse_lazy("admin:material_textilerecord_changelist"),
                     },
                     {
-                        "title": _("Primary Textile Types"),
+                        "title": _("Textile Types"),
                         "icon": "category",
                         "link": reverse_lazy(
-                            "admin:material_primarytextiletype_changelist"
-                        ),
-                    },
-                    {
-                        "title": _("Secondary Textile Types"),
-                        "icon": "style",
-                        "link": reverse_lazy(
-                            "admin:material_secondarytextiletype_changelist"
+                            "admin:material_textiletype_changelist"
                         ),
                     },
                     {
