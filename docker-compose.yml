@@ -23,8 +23,8 @@ services:
       - OBJ_STORAGE_ENDPOINT_URL=https://obj.rrchnm.org
     command: >
       sh -c "
-        poetry run python manage.py migrate &&
-        poetry run python manage.py runserver 0.0.0.0:8000
+        uv run manage.py migrate &&
+        uv run manage.py runserver 0.0.0.0:8000
       "
     volumes:
       - dj-data:/app/media
