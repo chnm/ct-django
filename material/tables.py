@@ -38,7 +38,7 @@ class TextileTable(tables.Table):
         <div class="flex justify-center items-center space-x-2">
             <button 
                 onclick="openModal('{{ record.id }}', '{% url 'textile_single' item_id=record.id %}')"
-                class="px-3 py-1 bg-secondary-100 text-secondary-700 rounded-md hover:bg-secondary-200 transition-colors"
+                class="px-3 py-1 bg-neutral-50 text-secondary-700 rounded-md hover:bg-neutral-200 transition-colors"
                 title="Quick view"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -48,7 +48,7 @@ class TextileTable(tables.Table):
             </button>
             <a 
                 href="{% url 'textile_single' item_id=record.id %}"
-                class="px-3 py-1 bg-primary-100 text-primary-700 rounded-md hover:bg-primary-200 transition-colors"
+                class="px-3 py-1 bg-neutral-100 text-secondary-700 rounded-md hover:bg-neutral-200 transition-colors"
                 title="Full details"
             >
                 <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -67,7 +67,7 @@ class TextileTable(tables.Table):
         attrs = {
             "class": "min-w-full divide-y divide-gray-200 border-collapse",
             "th": {
-                "class": "px-4 py-3 text-left text-xs font-medium text-primary-600 uppercase tracking-wider bg-primary-50"
+                "class": "px-4 py-3 text-left text-xs font-medium text-white uppercase tracking-wider"
             },
             "tbody": {"class": "bg-white divide-y divide-gray-200"},
             "tr": {"class": "hover:bg-gray-50 transition-colors"},
