@@ -2,127 +2,133 @@
 {% load render_table from django_tables2 %}
 
 {% block content %}
-    <div class="prose">
-        <h1 class="text-3xl mb-4">Record {{ item.id }} from {{ item.year }}</h1>
-        <p class="mb-4"><a href="/database/">&larr; Return to database</a></p>
+    <div class="prose max-w-none">
+        <h1 class="text-3xl font-bold mb-2 text-primary-700">Record {{ item.id_manual|default:item.id }} ({{ item.year }})</h1>
+        <p class="mb-6"><a href="/database/" class="text-secondary-700 hover:text-secondary-800 underline">&larr; Return to database</a></p>
     </div>
-    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
         <!-- Left Column -->
-        <div class="prose">
+        <div class="prose max-w-none">
             {% if item.archive %}
-                <p><em>The following data is derived from the {{item.archive}}</em>.</p>
+               <div class="bg-accent-50 border-l-4 border-neutral-500 p-4 mb-8 not-prose">
+                    <p class="text-sm text-neutral-800">
+                        The following data is derived from the {{ item.archive }}. <a href="{% url 'about_crawler' %}" class="text-secondary-700 hover:text-secondary-800 underline">Learn more about our web crawler</a>.
+                    </p>
+                </div>                
             {% endif %}
-            <h2 class="text-xl mb-4">Summary</h2>
-            <div class="font-serif text-lg mb-4">
+            <h2 class="text-2xl font-semibold mb-3 text-secondary-700">Summary</h2>
+            <div class="font-serif text-lg mb-6">
                 {% if item.summary_of_record %}
                     <p class="mb-2">{{ item.summary_of_record }}</p>
                 {% else %}
-                    <p class="mb-2">No summary is available for this item.</p>
+                    <p class="mb-2 text-neutral-500">No summary is available for this item.</p>
                 {% endif %}
             </div>
 
-            <h2 class="text-xl mb-4">Record Excerpt</h2>
-            <div class="font-serif text-lg mb-4">
+            <h2 class="text-2xl font-semibold mb-3 text-secondary-700">Record Excerpt</h2>
+            <div class="font-serif text-lg mb-6">
                 {% if item.transcription %}
-                    <blockquote class="pl-4 border-l-2 border-yellow-500 italic">{{ item.transcription }}</blockquote>
+                    <blockquote class="pl-4 border-l-4 border-accent-500 italic bg-accent-50 py-2">{{ item.transcription }}</blockquote>
                 {% else %}
-                    <blockquote class="pl-4 border-l-2 border-yellow-500 italic">No transcription available.</blockquote>
+                    <blockquote class="pl-4 border-l-4 border-neutral-300 italic text-neutral-500">No transcription available.</blockquote>
                 {% endif %}
                 {% if item.source_reference %}
-                    <p class="text-sm text-right">Source: {{ item.source_reference }}</p>
+                    <p class="text-sm text-right mt-2 text-neutral-600">Source: {{ item.source_reference }}</p>
                 {% endif %}
             </div>
 
-            <div class="bg-slate-200 p-3 mb-4">
-                <h3 class="text-lg mb-4">Item Metadata</h3>
-                <div>
-                    <p class="text-base"><strong>Primary Textile Types</strong>:
+            <div class="bg-accent-50 rounded-lg p-4 mb-6 border border-neutral-200">
+                <h3 class="text-xl font-semibold mb-3 text-secondary-700">Item Metadata</h3>
+                <div class="space-y-2">
+                    <p class="text-base"><strong>Primary Textile Types:</strong>
                         {% if item.primary_textile_types.all %}
                             {% for primary_type in item.primary_textile_types.all %}
                                 {{ primary_type.name }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         {% else %}
-                            No primary textile types available.
+                            <span class="text-neutral-500">None specified</span>
                         {% endif %}
                     </p>
 
-                    <p class="text-base"><strong>Secondary Textile Types</strong>:
+                    <p class="text-base"><strong>Secondary Textile Types:</strong>
                         {% if item.secondary_textile_types.all %}
                             {% for secondary_type in item.secondary_textile_types.all %}
                                 {{ secondary_type.name }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         {% else %}
-                            No secondary textile types available.
+                            <span class="text-neutral-500">None specified</span>
                         {% endif %}
                     </p>
-                    <p class="text-base"><strong>Primary Subjects</strong>:
+                    <p class="text-base"><strong>Primary Subjects:</strong>
                         {% if item.primary_subjects.all %}
                             {% for primary_subject in item.primary_subjects.all %}
                                 {{ primary_subject.name }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         {% else %}
-                            No primary subjects available.
+                            <span class="text-neutral-500">None specified</span>
                         {% endif %}
                     </p>
 
-                    <p class="text-base"><strong>Secondary Subjects</strong>:
+                    <p class="text-base"><strong>Secondary Subjects:</strong>
                         {% if item.secondary_subjects.all %}
                             {% for secondary_subject in item.secondary_subjects.all %}
                                 {{ secondary_subject.name }}{% if not forloop.last %}, {% endif %}
                             {% endfor %}
                         {% else %}
-                            No secondary subjects available.
+                            <span class="text-neutral-500">None specified</span>
                         {% endif %}
                     </p>
-                    {# list keywords from Taggit #}
-                    <p class="text-base"><strong>Keywords</strong>: {{ item.keywords.all|join:", " }}</p>
+                    {% if item.keywords.all %}
+                        <p class="text-base"><strong>Keywords:</strong> {{ item.keywords.all|join:", " }}</p>
+                    {% endif %}
                 </div>
-                <div>
-                    <p class="text-base"><strong>Circulation</strong>: {{ item.get_circulation_display }}</p>
-                    <p class="text-base"><strong>Source type</strong>: {{ item.source_type }}</p>
-                    <p class="text-base"><strong>Year</strong>: {{ item.year }}</p>
-                    <p class="text-base"><strong>Reference</strong>: {{ item.source_reference }}</p>
+                <div class="mt-4 pt-4 border-t border-neutral-300 space-y-2">
+                    {% if item.get_circulation_display %}<p class="text-base"><strong>Circulation:</strong> {{ item.get_circulation_display }}</p>{% endif %}
+                    {% if item.source_type %}<p class="text-base"><strong>Source type:</strong> {{ item.source_type }}</p>{% endif %}
+                    <p class="text-base"><strong>Year:</strong> {{ item.year|default:"Not specified" }}</p>
+                    {% if item.source_reference %}<p class="text-base"><strong>Reference:</strong> {{ item.source_reference }}</p>{% endif %}
                 </div>
             </div>
 
             {% if item.map %}
                 <section class="mt-8">
-                    <h3 class="text-3xl">Map</h3>
-                    <p>Future spot for spatial data.</p>
-                    <div id="map" class="h-96 border border-gray-300 flex items-center justify-center">Map</div>
+                    <h3 class="text-2xl font-semibold mb-3 text-secondary-700">Map</h3>
+                    <p class="mb-2">Future spot for spatial data.</p>
+                    <div id="map" class="h-96 border border-neutral-300 rounded-lg flex items-center justify-center bg-neutral-50">Map</div>
                 </section>
             {% endif %}
         </div>
 
         <!-- Right Column -->
-        <div class="prose">
-            <h2 class="text-xl mb-4">Images</h2>
+        <div class="prose max-w-none">
+            <h2 class="text-2xl font-semibold mb-3 text-secondary-700">Images</h2>
             {% if item.images.all %}
-                <div class="grid grid-cols-1 gap-4">
+                <div class="grid grid-cols-1 gap-6 mb-8">
                     {% for image in item.images.all %}
-                        <figure>
-                            <img src="{{ image.image.url }}" alt="{{ image.caption }}" class="w-full h-auto">
-                            <figcaption class="text-center text-sm">{{ image.caption }}</figcaption>
+                        <figure class="border border-neutral-200 rounded-lg overflow-hidden shadow-sm">
+                            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:image.caption }}" class="w-full h-auto">
+                            {% if image.caption %}
+                                <figcaption class="text-center text-sm px-4 py-2 bg-neutral-50 text-neutral-700">{{ image.caption }}</figcaption>
+                            {% endif %}
                         </figure>
                     {% endfor %}
                 </div>
             {% else %}
-                <p>No images are available for this item.</p>
+                <p class="text-neutral-500 mb-8">No images are available for this item.</p>
             {% endif %}
 
-            <h2 class="text-xl mb-4 mt-4">Linked Items</h2>
-            {% if item.crosslinks %}
-                <div class="bg-slate-200 p-3">
-                    <ul>
+            <h2 class="text-2xl font-semibold mb-3 text-secondary-700">Linked Items</h2>
+            {% if item.crosslinks.all %}
+                <div class="bg-accent-50 rounded-lg p-4 border border-neutral-200">
+                    <ul class="space-y-2 list-none pl-0">
                         {% for crosslink in item.crosslinks.all %}
-                            <li><a href="{{ crosslink.url }}">{{ crosslink.title }}</a></li>
+                            <li class="pl-0"><a href="/database/{{ crosslink.id }}/" class="text-secondary-700 hover:text-secondary-800 hover:underline">→ Record {{ crosslink.id_manual|default:crosslink.id }} ({{ crosslink.year }})</a></li>
                         {% endfor %}
                     </ul>
                 </div>
             {% else %}
-                <p>No crosslinks are available for this item.</p>
+                <p class="text-neutral-500">No linked items are available for this record.</p>
             {% endif %}
         </div>
-    </div>
     </div>
 {% endblock content %}

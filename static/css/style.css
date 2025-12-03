@@ -109,9 +109,9 @@ h6 {
   word-break: break-word; /* Breaks long words */
 }
 
-/* Style for even rows */
+/* Style for even rows - using very light Madras teal */
 tr:nth-child(even) {
-  background-color: #f0f5f8; /* Light version of our dark blue */
+  background-color: #edf7f6; /* secondary-50 - very light teal */
 }
 
 /* Indicator */
