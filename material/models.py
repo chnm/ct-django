@@ -78,6 +78,7 @@ class Subject(models.Model):
     def natural_key(self):
         return self.name
 
+
 class TextileType(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(blank=True, null=True, max_length=255)
@@ -88,6 +89,7 @@ class TextileType(models.Model):
 
     class Meta:
         ordering = ["name"]
+
 
 class TextileRecord(models.Model):
     CIRCULATION_CHOICES = [
@@ -104,7 +106,9 @@ class TextileRecord(models.Model):
     )
     year = models.CharField(blank=True, null=True)
     archive = models.CharField(max_length=765, blank=True, null=True)
-    textile_type = models.ManyToManyField(TextileType, blank=True, related_name="textile_records")
+    textile_type = models.ManyToManyField(
+        TextileType, blank=True, related_name="textile_records"
+    )
     primary_textile_types = models.ManyToManyField(
         "PrimaryTextileType", related_name="textile_records", blank=True, default=[]
     )
@@ -178,6 +182,7 @@ class TextileRecord(models.Model):
         # default sort by year
         ordering = ["year"]
 
+
 class PrimaryTextileType(models.Model):
     id = models.AutoField(primary_key=True)
     name = models.CharField(blank=True, null=True, max_length=255)
@@ -239,6 +244,7 @@ class TextileAlias(models.Model):
         related_name="secondary_alias",
         default=None,
     )
+    # TODO: Alias should be more robust than this; this can be multiple things
     alias = models.CharField(max_length=765, unique=True)
 
     def __str__(self) -> str:
