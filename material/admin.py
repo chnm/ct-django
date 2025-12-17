@@ -3,6 +3,7 @@ from django.db import models as db_models
 from django.utils.html import format_html
 
 from import_export.admin import ImportExportModelAdmin
+from reversion.admin import VersionAdmin
 from unfold.admin import ModelAdmin
 from unfold.admin import TabularInline
 from unfold.decorators import display
@@ -56,27 +57,27 @@ class ArchivalRecordInline(TabularInline):
 
 
 @admin.register(Area)
-class AreaAdmin(ModelAdmin):
+class AreaAdmin(VersionAdmin, ModelAdmin):
     resource_class = AreaResource
     list_display = ["name"]
 
 
 @admin.register(Place)
-class PlaceAdmin(ModelAdmin):
+class PlaceAdmin(VersionAdmin, ModelAdmin):
     resource_class = PlaceResource
     list_display = ["id", "city", "country", "area", "latitude", "longitude"]
     inlines = [PlacesAliasInline]
 
 
 @admin.register(Subject)
-class SubjectAdmin(ModelAdmin):
+class SubjectAdmin(VersionAdmin, ModelAdmin):
     resource_class = SubjectResource
     list_display = ["name"]
     search_fields = ["name"]
 
 
 @admin.register(PrimaryTextileType)
-class PrimaryTextileTypeAdmin(ModelAdmin):
+class PrimaryTextileTypeAdmin(VersionAdmin, ModelAdmin):
     list_display = [
         "name",
         "description",
@@ -85,7 +86,7 @@ class PrimaryTextileTypeAdmin(ModelAdmin):
 
 
 @admin.register(SecondaryTextileType)
-class SecondaryTextileTypeAdmin(ModelAdmin):
+class SecondaryTextileTypeAdmin(VersionAdmin, ModelAdmin):
     list_display = [
         "name",
         "description",
@@ -145,7 +146,7 @@ def unpublish_from_crawler(modeladmin, request, queryset):
         )
 
 @admin.register(TextileType)
-class TextileTypeAdmin(ModelAdmin):
+class TextileTypeAdmin(VersionAdmin, ModelAdmin):
     list_display = [
         "name",
         "description",
@@ -153,7 +154,7 @@ class TextileTypeAdmin(ModelAdmin):
 
 
 @admin.register(TextileRecord)
-class TextileRecordAdmin(ModelAdmin, ImportExportModelAdmin):
+class TextileRecordAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
     resource_class = TextileRecordResource
     list_display = [
         "thumbnail_preview",
@@ -222,13 +223,13 @@ class TextileRecordAdmin(ModelAdmin, ImportExportModelAdmin):
 
 
 @admin.register(Image)
-class ImageAdmin(ModelAdmin):
+class ImageAdmin(VersionAdmin, ModelAdmin):
     resource_class = ImageResource
     list_display = ["textile_record", "image", "description"]
 
 
 @admin.register(NamedActor)
-class NamedActorAdmin(ModelAdmin):
+class NamedActorAdmin(VersionAdmin, ModelAdmin):
     list_display = ["name", "textile_record"]
     search_fields = ["name"]
     list_filter = ["textile_record"]

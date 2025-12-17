@@ -63,6 +63,7 @@ INSTALLED_APPS = [
     # libraries
     "modelcluster",
     "import_export",
+    "reversion",
     "taggit",
     "tailwind",
     "fontawesomefree",
@@ -88,6 +89,7 @@ MIDDLEWARE = [
     "allauth.account.middleware.AccountMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django_htmx.middleware.HtmxMiddleware",
+    "reversion.middleware.RevisionMiddleware",
 ]
 
 ROOT_URLCONF = "config.urls"

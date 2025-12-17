@@ -187,6 +187,7 @@ dependencies = [
     { name = "django-import-export" },
     { name = "django-modelcluster" },
     { name = "django-prose" },
+    { name = "django-reversion" },
     { name = "django-storages" },
     { name = "django-tables2" },
     { name = "django-taggit" },
@@ -225,6 +226,7 @@ requires-dist = [
     { name = "django-import-export", specifier = ">=4.0.7,<5" },
     { name = "django-modelcluster", specifier = "~=6.3" },
     { name = "django-prose", specifier = ">=2.1.0" },
+    { name = "django-reversion", specifier = ">=6.1.0" },
     { name = "django-storages", specifier = ">=1.14.4,<2" },
     { name = "django-tables2", specifier = ">=2.7.0,<3" },
     { name = "django-taggit", specifier = ">=5.0.1,<6" },
@@ -430,6 +432,18 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/78/08/0f6b0f1473617abbe3b64e96b0bea32ba78e405e54577c6f1aac2884aa98/django_prose-2.1.0.tar.gz", hash = "sha256:000c554496c2f61358c2602e21b54677bb02a727662ec9783dba5e35acfe4af8", size = 10496, upload-time = "2024-07-17T12:00:02.305Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e0/0b/afedd82a9e525ff1ec466a880a440173dd33e4a802e7ac0ec7dda536b9cd/django_prose-2.1.0-py3-none-any.whl", hash = "sha256:548c117fb511447ea59c51cfd5e1748cf1962bb1062c0c99abb9ecb4606cb051", size = 10945, upload-time = "2024-07-17T11:59:59.715Z" },
+]
+
+[[package]]
+name = "django-reversion"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/8b/72000ad3ba05cb72134f62ad093267e3d83d8fdf1406102d2a1a2ec7d55e/django_reversion-6.1.0.tar.gz", hash = "sha256:31dd7fee02e2a21af7c2d0a61c1c0f27ba07df2317c9a0a3f31d3ee40069025d", size = 76140, upload-time = "2025-12-12T20:23:51.948Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5e/8e/c80904ce5cb94f78cdd7d794cb7b4a8e8891a7515621bbce5f2a45de6555/django_reversion-6.1.0-py3-none-any.whl", hash = "sha256:1f5815791d9accdb0bad9d5982668f217dc65225be57041ae9641dbdcd838ce3", size = 86196, upload-time = "2025-12-12T20:23:50.18Z" },
 ]
 
 [[package]]
