@@ -24,8 +24,8 @@
     <div class="flex flex-col lg:flex-row gap-6">
         {# Left Column: Filters #}
         <div class="lg:w-1/4 w-full">
-            <div class="sticky top-4 border border-gray-300 rounded-lg shadow-sm bg-white">
-                <div class="bg-primary text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
+            <div class="sticky top-4 border border-accent-50 rounded-lg shadow-sm bg-white">
+                <div class="bg-accent-400 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
                     <span class="font-medium">Search Filters</span>
                     <button id="mobile-filter-toggle" type="button" class="lg:hidden text-accent">
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
@@ -41,7 +41,7 @@
                           hx-indicator=".progress"
                           class="space-y-5">
                 {# Manually render each field from the TextileFilter #}
-                {# Year Range Slider - Dual handle version #}
+                {# Year Range Slider #}
                         <div class="form-group">
                             <label for="year-range-slider" class="block text-sm font-medium text-gray-700">{% trans "Year Range" %}</label>
                             <div x-data="{
@@ -163,7 +163,7 @@
                             </div>
                         </div>
 
-                {# Original Year Dropdown (Keep for backward compatibility) #}
+                {# Year Dropdown #}
                         <div class="form-group">
                             <label for="id_year" class="block text-sm font-medium text-gray-700">{% trans "Exact Year" %}</label>
                             <select name="year" id="id_year" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">

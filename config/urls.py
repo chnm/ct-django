@@ -11,6 +11,7 @@ from debug_toolbar.toolbar import debug_toolbar_urls
 from exhibits.views import about, events
 from material.views import (
     TextileTableView,
+    about_crawler,
     get_secondary_textile_types,
     index,
     keyword_search,
@@ -44,12 +45,14 @@ admin.site.index = custom_index
 urlpatterns = [
     path("", index, name="index"),
     path("admin/", admin.site.urls),
+    path("prose/", include("prose.urls")),
     path("accounts/", include("allauth.urls")),
     # Site pages
     path("database/", TextileTableView.as_view(), name="database"),
     path(
         "database/<int:item_id>/", textile_records_single, name="textile_single"
     ),  # modal view
+    path("about/crawler/", about_crawler, name="about_crawler"),
     path("api/keywords/", keyword_search, name="keyword_search"),
     path(
         "record-details/<int:record_id>/", record_details, name="record_details"

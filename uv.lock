@@ -71,6 +71,18 @@ wheels = [
 ]
 
 [[package]]
+name = "bleach"
+version = "6.3.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "webencodings" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/07/18/3c8523962314be6bf4c8989c79ad9531c825210dd13a8669f6b84336e8bd/bleach-6.3.0.tar.gz", hash = "sha256:6f3b91b1c0a02bb9a78b5a454c92506aa0fdf197e1d5e114d2e00c6f64306d22", size = 203533, upload-time = "2025-10-27T17:57:39.211Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/cd/3a/577b549de0cc09d95f11087ee63c739bba856cd3952697eec4c4bb91350a/bleach-6.3.0-py3-none-any.whl", hash = "sha256:fe10ec77c93ddf3d13a73b035abaac7a9f5e436513864ccdad516693213c65d6", size = 164437, upload-time = "2025-10-27T17:57:37.538Z" },
+]
+
+[[package]]
 name = "boto3"
 version = "1.36.19"
 source = { registry = "https://pypi.org/simple" }
@@ -174,6 +186,8 @@ dependencies = [
     { name = "django-htmx" },
     { name = "django-import-export" },
     { name = "django-modelcluster" },
+    { name = "django-prose" },
+    { name = "django-reversion" },
     { name = "django-storages" },
     { name = "django-tables2" },
     { name = "django-taggit" },
@@ -211,6 +225,8 @@ requires-dist = [
     { name = "django-htmx", specifier = ">=1.17.3,<2" },
     { name = "django-import-export", specifier = ">=4.0.7,<5" },
     { name = "django-modelcluster", specifier = "~=6.3" },
+    { name = "django-prose", specifier = ">=2.1.0" },
+    { name = "django-reversion", specifier = ">=6.1.0" },
     { name = "django-storages", specifier = ">=1.14.4,<2" },
     { name = "django-tables2", specifier = ">=2.7.0,<3" },
     { name = "django-taggit", specifier = ">=5.0.1,<6" },
@@ -403,6 +419,31 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/94/4b/364fe61a161ead607dc6af311901ba8e62f537f8fdab94b5252cb6efe6d7/django-permissionedforms-0.1.tar.gz", hash = "sha256:4340bb20c4477fffb13b4cc5cccf9f1b1010b64f79956c291c72d2ad2ed243f8", size = 5856, upload-time = "2022-02-28T19:40:27.892Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e6/5b/216157ff053f955b15b9dcdc13bfb6e406666445164fee9e332e141be96d/django_permissionedforms-0.1-py2.py3-none-any.whl", hash = "sha256:d341a961a27cc77fde8cc42141c6ab55cc1f0cb886963cc2d6967b9674fa47d6", size = 5744, upload-time = "2022-02-28T19:40:26.337Z" },
+]
+
+[[package]]
+name = "django-prose"
+version = "2.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "bleach" },
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/78/08/0f6b0f1473617abbe3b64e96b0bea32ba78e405e54577c6f1aac2884aa98/django_prose-2.1.0.tar.gz", hash = "sha256:000c554496c2f61358c2602e21b54677bb02a727662ec9783dba5e35acfe4af8", size = 10496, upload-time = "2024-07-17T12:00:02.305Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/e0/0b/afedd82a9e525ff1ec466a880a440173dd33e4a802e7ac0ec7dda536b9cd/django_prose-2.1.0-py3-none-any.whl", hash = "sha256:548c117fb511447ea59c51cfd5e1748cf1962bb1062c0c99abb9ecb4606cb051", size = 10945, upload-time = "2024-07-17T11:59:59.715Z" },
+]
+
+[[package]]
+name = "django-reversion"
+version = "6.1.0"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "django" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/9b/8b/72000ad3ba05cb72134f62ad093267e3d83d8fdf1406102d2a1a2ec7d55e/django_reversion-6.1.0.tar.gz", hash = "sha256:31dd7fee02e2a21af7c2d0a61c1c0f27ba07df2317c9a0a3f31d3ee40069025d", size = 76140, upload-time = "2025-12-12T20:23:51.948Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/5e/8e/c80904ce5cb94f78cdd7d794cb7b4a8e8891a7515621bbce5f2a45de6555/django_reversion-6.1.0-py3-none-any.whl", hash = "sha256:1f5815791d9accdb0bad9d5982668f217dc65225be57041ae9641dbdcd838ce3", size = 86196, upload-time = "2025-12-12T20:23:50.18Z" },
 ]
 
 [[package]]
@@ -1080,6 +1121,15 @@ dependencies = [
 sdist = { url = "https://files.pythonhosted.org/packages/dd/96/2212043a2679f77faf7cd6c0839b5a704e280d41c4000f6563f0ea7fab1d/wagtail-6.4.tar.gz", hash = "sha256:3e311f367867741a2a025ae1c6d498c177ae1936a4b92444177804fa713edff0", size = 6629755, upload-time = "2025-02-03T17:09:11.138Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/f5/0f/a4a56ee64e46a5ab98a6a772b6632a5666860b4794eec1d8affce8ee5a61/wagtail-6.4-py3-none-any.whl", hash = "sha256:3d89b93079711fd1703be057a06cf5d34303a20ee31b2f51384954e21fff38ce", size = 9109816, upload-time = "2025-02-03T17:09:01.501Z" },
+]
+
+[[package]]
+name = "webencodings"
+version = "0.5.1"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/0b/02/ae6ceac1baeda530866a85075641cec12989bd8d31af6d5ab4a3e8c92f47/webencodings-0.5.1.tar.gz", hash = "sha256:b36a1c245f2d304965eb4e0a82848379241dc04b865afcc4aab16748587e1923", size = 9721, upload-time = "2017-04-05T20:21:34.189Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f4/24/2a3e3df732393fed8b3ebf2ec078f05546de641fe1b667ee316ec1dcf3b7/webencodings-0.5.1-py2.py3-none-any.whl", hash = "sha256:a0af1213f3c2226497a97e2b3aa01a7e4bee4f403f95be16fc9acd2947514a78", size = 11774, upload-time = "2017-04-05T20:21:32.581Z" },
 ]
 
 [[package]]

@@ -4,6 +4,7 @@ from django.shortcuts import redirect
 from django.urls import path
 from django.utils.html import format_html
 from import_export.admin import ImportExportModelAdmin
+from reversion.admin import VersionAdmin
 from unfold.admin import ModelAdmin
 from unfold.decorators import display
 
@@ -13,7 +14,7 @@ from .services import MuseumAPIClient
 
 
 @admin.register(StagedMuseumItem)
-class StagedMuseumItemAdmin(ModelAdmin, ImportExportModelAdmin):
+class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
     resource_class = StagedMuseumItemResource
     list_display = [
         "thumbnail_preview",

@@ -113,6 +113,11 @@ def textile_records_single(request, item_id):
     return render(request, "database/textile_records_single.html", {"item": item})
 
 
+def about_crawler(request):
+    """Static page explaining how the web crawler works"""
+    return render(request, "about_crawler.html")
+
+
 class TextileTableView(SingleTableMixin, FilterView):
     paginate_by = 25
     table_class = TextileTable

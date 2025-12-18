@@ -81,7 +81,7 @@ class TextileRecordResource(resources.ModelResource):
     raise_errors = False
     
     # Basic Information
-    id = fields.Field(attribute="id", column_name="Record ID")
+    id = fields.Field(attribute="id", column_name="Database ID")
     id_manual = fields.Field(attribute="id_manual", column_name="Record ID")
     is_public = fields.Field(attribute="is_public", column_name="Is Public")
     year = fields.Field(attribute="year", column_name="Year/Date")
@@ -183,6 +183,7 @@ class TextileRecordResource(resources.ModelResource):
         model = TextileRecord
         import_id_fields = ("id",)
         fields = (
+            "id",
             "id_manual",
             "is_public", 
             "year",

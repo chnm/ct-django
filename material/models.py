@@ -79,6 +79,18 @@ class Subject(models.Model):
         return self.name
 
 
+class TextileType(models.Model):
+    id = models.AutoField(primary_key=True)
+    name = models.CharField(blank=True, null=True, max_length=255)
+    description = models.TextField(blank=True, null=True, verbose_name="Notes")
+
+    def __str__(self) -> str:
+        return f"{self.name}"
+
+    class Meta:
+        ordering = ["name"]
+
+
 class TextileRecord(models.Model):
     CIRCULATION_CHOICES = [
         ("td", "Trade & Distribution"),
@@ -86,14 +98,17 @@ class TextileRecord(models.Model):
         ("co", "Consumption"),
     ]
 
-    id = models.AutoField(primary_key=True)
-    id_manual = models.IntegerField(blank=True, null=True, verbose_name="Record ID")
+    id = models.AutoField(primary_key=True, verbose_name="Database ID")
+    id_manual = models.CharField(blank=True, null=True, verbose_name="Record ID")
     is_public = models.BooleanField(
         default=False,
         help_text="Check this box if the record is publicly viewable. Unchecked will keep the record hidden.",
     )
     year = models.CharField(blank=True, null=True)
     archive = models.CharField(max_length=765, blank=True, null=True)
+    textile_type = models.ManyToManyField(
+        TextileType, blank=True, related_name="textile_records"
+    )
     primary_textile_types = models.ManyToManyField(
         "PrimaryTextileType", related_name="textile_records", blank=True, default=[]
     )
@@ -161,7 +176,7 @@ class TextileRecord(models.Model):
     )
 
     def __str__(self) -> str:
-        return f"Item ID {self.id}"
+        return f"Item Record {self.id} ({self.year})"
 
     class Meta:
         # default sort by year
@@ -229,6 +244,7 @@ class TextileAlias(models.Model):
         related_name="secondary_alias",
         default=None,
     )
+    # TODO: Alias should be more robust than this; this can be multiple things
     alias = models.CharField(max_length=765, unique=True)
 
     def __str__(self) -> str:
