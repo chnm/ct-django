@@ -4,6 +4,6 @@
     "npm": "9.6.3"
   },
   "dependencies": {
-    "openseadragon": "^5.0.0"
+    "openseadragon": "^5.0.1"
   }
 }
