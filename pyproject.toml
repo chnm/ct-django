@@ -8,6 +8,7 @@ readme = "README.md"
 license = "MIT"
 dependencies = [
     "django>=5.0.6,<6",
+    "whitenoise>=6.12.0,<7",
     "django-htmx>=1.17.3,<2",
     "django-environ>=0.11.2,<0.12",
     "django-tailwind>=3.8.0,<4",
