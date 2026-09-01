@@ -8,6 +8,8 @@ from reversion.admin import VersionAdmin
 from unfold.admin import ModelAdmin
 from unfold.decorators import display
 
+from config.admin_utils import admin_thumbnail, admin_thumbnail_placeholder
+
 from .models import StagedMuseumItem
 from .resources import StagedMuseumItemResource
 from .services import MuseumAPIClient
@@ -43,29 +45,47 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
     ]
     actions = ["mark_as_reviewed", "publish_to_textile_records"]
     change_list_template = "admin/crawler/stagedmuseumitem/change_list.html"
-    
+
     fieldsets = (
-        ("Basic Information", {
-            "fields": ("id", "title", "description", "url", "image"),
-        }),
-        ("Museum Data", {
-            "fields": ("archive", "date", "item_type", "medium", "country"),
-        }),
-        ("Review Process", {
-            "fields": ("is_reviewed", "review_notes", "reviewed_by"),
-        }),
-        ("Publishing", {
-            "fields": ("published", "published_to"),
-            "classes": ("collapse",),
-        }),
-        ("Metadata", {
-            "fields": ("initial_date_fetched", "date_updated"),
-            "classes": ("collapse",),
-        }),
-        ("API Response", {
-            "fields": ("api_response",),
-            "classes": ("collapse",),
-        }),
+        (
+            "Basic Information",
+            {
+                "fields": ("id", "title", "description", "url", "image"),
+            },
+        ),
+        (
+            "Museum Data",
+            {
+                "fields": ("archive", "date", "item_type", "medium", "country"),
+            },
+        ),
+        (
+            "Review Process",
+            {
+                "fields": ("is_reviewed", "review_notes", "reviewed_by"),
+            },
+        ),
+        (
+            "Publishing",
+            {
+                "fields": ("published", "published_to"),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            "Metadata",
+            {
+                "fields": ("initial_date_fetched", "date_updated"),
+                "classes": ("collapse",),
+            },
+        ),
+        (
+            "API Response",
+            {
+                "fields": ("api_response",),
+                "classes": ("collapse",),
+            },
+        ),
     )
 
     def get_urls(self):
@@ -100,19 +120,11 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
     @display(description="Thumbnail")
     def thumbnail_preview(self, obj):
         if obj.image:
-            return format_html(
-                '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
-                obj.image.url
-            )
+            return admin_thumbnail(obj.image.url)
         elif obj.thumbnail:
-            return format_html(
-                '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
-                obj.thumbnail
-            )
+            return admin_thumbnail(obj.thumbnail)
         else:
-            return format_html(
-                '<div style="width: 60px; height: 60px; background-color: #f3f4f6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 12px;">No Image</div>'
-            )
+            return admin_thumbnail_placeholder()
 
     def fetch_cooper_hewitt(self, request):
         try:
@@ -123,7 +135,7 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
                 f"Successfully fetched Cooper-Hewitt data. Created: {created}, Updated: {updated}",
             )
         except Exception as e:
-            messages.error(request, f"Error fetching from Cooper-Hewitt: {str(e)}")
+            messages.error(request, f"Error fetching from Cooper-Hewitt: {e!s}")
         return redirect("admin:crawler_stagedmuseumitem_changelist")
 
     def fetch_vam(self, request):
@@ -135,7 +147,7 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
                 f"Successfully fetched V&A data. Created: {created}, Updated: {updated}",
             )
         except Exception as e:
-            messages.error(request, f"Error fetching from V&A: {str(e)}")
+            messages.error(request, f"Error fetching from V&A: {e!s}")
         return redirect("admin:crawler_stagedmuseumitem_changelist")
 
     def fetch_all(self, request):
@@ -150,15 +162,15 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
                 f"V&A - Created: {va_created}, Updated: {va_updated}",
             )
         except Exception as e:
-            messages.error(request, f"Error fetching data: {str(e)}")
+            messages.error(request, f"Error fetching data: {e!s}")
         return redirect("admin:crawler_stagedmuseumitem_changelist")
 
+    @admin.action(description="Mark selected items as reviewed")
     def mark_as_reviewed(self, request, queryset):
         queryset.update(is_reviewed=True, reviewed_by=request.user)
         messages.success(request, f"{queryset.count()} items marked as reviewed")
 
-    mark_as_reviewed.short_description = "Mark selected items as reviewed"
-
+    @admin.action(description="Publish selected items to TextileRecord")
     def publish_to_textile_records(self, request, queryset):
         published_count = 0
         errors = []
@@ -178,9 +190,7 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
                 item.publish(request.user)
                 published_count += 1
             except Exception as e:
-                errors.append(
-                    f"Error publishing item {item.id} - {item.title}: {str(e)}"
-                )
+                errors.append(f"Error publishing item {item.id} - {item.title}: {e!s}")
 
         if published_count:
             messages.success(
@@ -192,7 +202,3 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
             messages.error(
                 request, "Some items could not be published:\n" + "\n".join(errors)
             )
-
-    publish_to_textile_records.short_description = (
-        "Publish selected items to TextileRecord"
-    )

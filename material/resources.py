@@ -1,6 +1,5 @@
 import logging
 
-from django.core.exceptions import ObjectDoesNotExist
 from django.db.utils import IntegrityError
 from import_export import fields, resources
 from import_export.widgets import ForeignKeyWidget, ManyToManyWidget, Widget
@@ -79,7 +78,7 @@ class TaggitWidget(Widget):
 
 class TextileRecordResource(resources.ModelResource):
     raise_errors = False
-    
+
     # Basic Information
     id = fields.Field(attribute="id", column_name="Database ID")
     id_manual = fields.Field(attribute="id_manual", column_name="Record ID")
@@ -87,7 +86,7 @@ class TextileRecordResource(resources.ModelResource):
     year = fields.Field(attribute="year", column_name="Year/Date")
     archive = fields.Field(attribute="archive", column_name="Archive")
     creator = fields.Field(attribute="creator", column_name="Created By")
-    
+
     # Textile Details
     textile_specifications = fields.Field(
         attribute="textile_specifications", column_name="Textile Specifications"
@@ -100,15 +99,17 @@ class TextileRecordResource(resources.ModelResource):
     summary_of_record = fields.Field(
         attribute="summary_of_record", column_name="Summary of Record"
     )
-    transcription = fields.Field(attribute="transcription", column_name="Transcription/Excerpt")
+    transcription = fields.Field(
+        attribute="transcription", column_name="Transcription/Excerpt"
+    )
     keywords = fields.Field(
         attribute="keywords", column_name="Keywords", widget=TaggitWidget()
     )
-    
+
     # Economic Information
     price = fields.Field(attribute="price", column_name="Price")
     currency = fields.Field(attribute="currency", column_name="Currency")
-    
+
     # Textile Classifications
     primary_textile_types = fields.Field(
         attribute="primary_textile_types",
@@ -120,7 +121,7 @@ class TextileRecordResource(resources.ModelResource):
         column_name="Secondary Textile Types",
         widget=ManyToManyWidget(SecondaryTextileType, field="name", separator="; "),
     )
-    
+
     # Subject Classifications
     subject_primary = fields.Field(
         attribute="primary_subjects",
@@ -132,7 +133,7 @@ class TextileRecordResource(resources.ModelResource):
         column_name="Secondary Subjects",
         widget=ManyToManyWidget(Subject, field="name", separator="; "),
     )
-    
+
     # Geographic Information
     from_place = fields.Field(
         attribute="from_place",
@@ -154,7 +155,7 @@ class TextileRecordResource(resources.ModelResource):
         column_name="Destination Area",
         widget=ForeignKeyWidget(Area, "name"),
     )
-    
+
     # Source Information
     source_type = fields.Field(attribute="source_type", column_name="Source Type")
     description_of_source = fields.Field(
@@ -166,15 +167,15 @@ class TextileRecordResource(resources.ModelResource):
     source_reference = fields.Field(
         attribute="source_reference", column_name="Source Reference/URL"
     )
-    
+
     # Additional tracking fields
     date_added = fields.Field(attribute="date_added", column_name="Date Added")
     date_updated = fields.Field(attribute="date_updated", column_name="Date Updated")
-    
+
     # Related Images (custom export)
     image_count = fields.Field(column_name="Number of Images")
     primary_image_url = fields.Field(column_name="Primary Image URL")
-    
+
     # Crawler Source Information (for items that came from crawler)
     source_museum = fields.Field(column_name="Source Museum")
     crawler_id = fields.Field(column_name="Original Museum ID")
@@ -185,7 +186,7 @@ class TextileRecordResource(resources.ModelResource):
         fields = (
             "id",
             "id_manual",
-            "is_public", 
+            "is_public",
             "year",
             "archive",
             "creator",
@@ -201,7 +202,7 @@ class TextileRecordResource(resources.ModelResource):
             "subject_primary",
             "subject_secondary",
             "from_place",
-            "to_place", 
+            "to_place",
             "from_area",
             "to_area",
             "source_type",
@@ -215,20 +216,20 @@ class TextileRecordResource(resources.ModelResource):
             "source_museum",
             "crawler_id",
         )
-        
+
     def dehydrate_image_count(self, obj):
         """Count of images associated with this record"""
         return obj.images.count()
-    
+
     def dehydrate_primary_image_url(self, obj):
         """URL of the first public image, or first image if none are public"""
         first_image = obj.images.filter(is_image_public=True).first()
         if not first_image:
             first_image = obj.images.first()
-        
+
         if first_image and first_image.image:
             return first_image.image.url
-        
+
         # Check if this record came from the crawler
         staged_sources = obj.staged_source.all()
         if staged_sources.exists():
@@ -237,16 +238,16 @@ class TextileRecordResource(resources.ModelResource):
                 return staged_item.image.url
             elif staged_item.thumbnail:
                 return staged_item.thumbnail
-        
+
         return ""
-    
+
     def dehydrate_source_museum(self, obj):
         """Museum source if this record came from the crawler"""
         staged_sources = obj.staged_source.all()
         if staged_sources.exists():
             return staged_sources.first().archive
         return ""
-    
+
     def dehydrate_crawler_id(self, obj):
         """Original museum ID if this record came from the crawler"""
         staged_sources = obj.staged_source.all()
@@ -270,7 +271,7 @@ class TextileRecordResource(resources.ModelResource):
             )
         except Exception as e:
             logger.error(f"Error processing row: {row}")
-            logger.error(f"Error details: {str(e)}")
+            logger.error(f"Error details: {e!s}")
             raise
 
         return super().before_import_row(row, **kwargs)
@@ -350,12 +351,12 @@ class TextileRecordResource(resources.ModelResource):
                         )
                 except IntegrityError as e:
                     logger.error(
-                        f"Failed to create {location_type.__name__} with {location_field}='{value}'. {str(e)}"
+                        f"Failed to create {location_type.__name__} with {location_field}='{value}'. {e!s}"
                     )
                     continue
                 except Exception as e:
                     logger.error(
-                        f"Unexpected error when processing {location_type.__name__} with {location_field}='{value}': {str(e)}"
+                        f"Unexpected error when processing {location_type.__name__} with {location_field}='{value}': {e!s}"
                     )
                     continue
 

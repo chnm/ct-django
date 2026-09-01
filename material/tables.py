@@ -1,8 +1,4 @@
 import django_tables2 as tables
-from django.urls import reverse
-from django.utils.html import format_html
-from django.utils.safestring import mark_safe
-from django_tables2 import A, TemplateColumn
 
 from material.models import TextileRecord
 
@@ -36,7 +32,7 @@ class TextileTable(tables.Table):
     actions = tables.TemplateColumn(
         template_code="""
         <div class="flex justify-center items-center space-x-2">
-            <button 
+            <button
                 onclick="openModal('{{ record.id }}', '{% url 'textile_single' item_id=record.id %}')"
                 class="px-3 py-1 bg-neutral-50 text-secondary-700 rounded-md hover:bg-neutral-200 transition-colors"
                 title="Quick view"
@@ -46,7 +42,7 @@ class TextileTable(tables.Table):
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                 </svg>
             </button>
-            <a 
+            <a
                 href="{% url 'textile_single' item_id=record.id %}"
                 class="px-3 py-1 bg-neutral-100 text-secondary-700 rounded-md hover:bg-neutral-200 transition-colors"
                 title="Full details"

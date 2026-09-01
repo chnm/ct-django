@@ -1,7 +1,5 @@
 # crawler/services.py
 import logging
-import os
-from urllib.parse import urlparse
 
 import backoff
 import requests
@@ -80,7 +78,7 @@ class MuseumAPIClient:
                             thumbnail_url = first_image["sq"]["url"]
                         elif "z" in first_image:
                             thumbnail_url = first_image["z"]["url"]
-                    
+
                     # Prepare image download
                     image_file = None
                     if thumbnail_url:
@@ -112,10 +110,16 @@ class MuseumAPIClient:
                     # Save the image if we have one
                     if image_file:
                         try:
-                            staged_item.image.save(image_file.name, image_file, save=False)
-                            logger.info(f"Successfully saved image for {item.get('id')}")
+                            staged_item.image.save(
+                                image_file.name, image_file, save=False
+                            )
+                            logger.info(
+                                f"Successfully saved image for {item.get('id')}"
+                            )
                         except Exception as e:
-                            logger.error(f"Failed to save image for {item.get('id')}: {str(e)}")
+                            logger.error(
+                                f"Failed to save image for {item.get('id')}: {e!s}"
+                            )
 
                     # Update review notes after we know if it was created or updated
                     staged_item.review_notes = (
@@ -125,7 +129,9 @@ class MuseumAPIClient:
 
                     if created:
                         items_created += 1
-                        logger.info(f"Created new item: {item.get('id')} - {item.get('title', 'No title')}")
+                        logger.info(
+                            f"Created new item: {item.get('id')} - {item.get('title', 'No title')}"
+                        )
                     else:
                         items_updated += 1
                         logger.info(
@@ -135,7 +141,7 @@ class MuseumAPIClient:
                 except Exception as e:
                     items_errored += 1
                     logger.error(
-                        f"Error processing item {item.get('id', 'unknown ID')}: {str(e)}"
+                        f"Error processing item {item.get('id', 'unknown ID')}: {e!s}"
                     )
                     continue
 
@@ -149,13 +155,13 @@ class MuseumAPIClient:
             return items_created, items_updated
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"HTTP Request failed: {str(e)}")
+            logger.error(f"HTTP Request failed: {e!s}")
             raise
         except ValueError as e:
-            logger.error(f"JSON parsing failed: {str(e)}")
+            logger.error(f"JSON parsing failed: {e!s}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error during fetch: {str(e)}")
+            logger.error(f"Unexpected error during fetch: {e!s}")
             raise
 
     def download_image(self, image_url, filename):
@@ -166,15 +172,15 @@ class MuseumAPIClient:
             logger.info(f"Downloading image from: {image_url}")
             response = self.session.get(image_url, timeout=30)
             response.raise_for_status()
-            
+
             # Create a ContentFile from the image data
             return ContentFile(response.content, name=filename)
-            
+
         except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to download image {image_url}: {str(e)}")
+            logger.error(f"Failed to download image {image_url}: {e!s}")
             return None
         except Exception as e:
-            logger.error(f"Unexpected error downloading image {image_url}: {str(e)}")
+            logger.error(f"Unexpected error downloading image {image_url}: {e!s}")
             return None
 
     @sleep_and_retry
@@ -188,7 +194,7 @@ class MuseumAPIClient:
         # Construct the URL with parameters
         base_url = "https://api.vam.ac.uk/v2/objects/search"
         params = {
-            "id_category": "THES381162", #ConnThreads project tag
+            "id_category": "THES381162",  # ConnThreads project tag
             "order_sort": "asc",
             "page": 1,
             "page_size": 100,
@@ -251,19 +257,25 @@ class MuseumAPIClient:
                     )
 
                     # Construct V&A collections item page URL
-                    url = f"https://collections.vam.ac.uk/item/{record['systemNumber']}/"
-                    
+                    url = (
+                        f"https://collections.vam.ac.uk/item/{record['systemNumber']}/"
+                    )
+
                     # Get manifest and thumbnail URLs
-                    manifest_url = record.get("_images", {}).get("_iiif_presentation_url", "")
-                    thumbnail_url = record.get("_images", {}).get("_primary_thumbnail", "")
-                    
+                    manifest_url = record.get("_images", {}).get(
+                        "_iiif_presentation_url", ""
+                    )
+                    thumbnail_url = record.get("_images", {}).get(
+                        "_primary_thumbnail", ""
+                    )
+
                     # Prepare image download
                     image_file = None
                     if thumbnail_url:
                         # Use the thumbnail URL directly as it's more reliable
                         filename = f"{record['systemNumber']}.jpg"
                         image_file = self.download_image(thumbnail_url, filename)
-                    
+
                     # Prepare the default values
                     defaults = {
                         "title": record.get("_primaryTitle", ""),
@@ -288,10 +300,16 @@ class MuseumAPIClient:
                     # Save the image if we have one
                     if image_file:
                         try:
-                            staged_item.image.save(image_file.name, image_file, save=False)
-                            logger.info(f"Successfully saved image for {record['systemNumber']}")
+                            staged_item.image.save(
+                                image_file.name, image_file, save=False
+                            )
+                            logger.info(
+                                f"Successfully saved image for {record['systemNumber']}"
+                            )
                         except Exception as e:
-                            logger.error(f"Failed to save image for {record['systemNumber']}: {str(e)}")
+                            logger.error(
+                                f"Failed to save image for {record['systemNumber']}: {e!s}"
+                            )
 
                     # Update review notes after we know if it was created or updated
                     staged_item.review_notes = (
@@ -313,7 +331,7 @@ class MuseumAPIClient:
                 except Exception as e:
                     items_errored += 1
                     logger.error(
-                        f"Error processing item {record.get('systemNumber', 'unknown ID')}: {str(e)}"
+                        f"Error processing item {record.get('systemNumber', 'unknown ID')}: {e!s}"
                     )
                     continue
 
@@ -327,11 +345,11 @@ class MuseumAPIClient:
             return items_created, items_updated
 
         except requests.exceptions.RequestException as e:
-            logger.error(f"HTTP Request failed: {str(e)}")
+            logger.error(f"HTTP Request failed: {e!s}")
             raise
         except ValueError as e:
-            logger.error(f"JSON parsing failed: {str(e)}")
+            logger.error(f"JSON parsing failed: {e!s}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error during fetch: {str(e)}")
+            logger.error(f"Unexpected error during fetch: {e!s}")
             raise

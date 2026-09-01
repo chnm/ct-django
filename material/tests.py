@@ -1,4 +1,7 @@
+from unittest.mock import Mock, patch
+
 from django.test import TestCase
+from geopy.exc import GeocoderUnavailable
 
 from material.models import (
     ArchivalRecord,
@@ -32,16 +35,36 @@ class PlaceModelTest(TestCase):
     def setUp(self):
         self.area = Area.objects.create(name="Test Area")
         self.place = Place.objects.create(
-            city="Test City", country="Test Country", area=self.area
+            city="Test City",
+            country="Test Country",
+            area=self.area,
+            latitude=1.0,
+            longitude=2.0,
         )
 
     def test_string_representation(self):
         self.assertEqual(str(self.place), "Test City, Test Country")
 
     def test_latitude_longitude_auto_population(self):
-        self.place.save()
-        self.assertIsNotNone(self.place.latitude)
-        self.assertIsNotNone(self.place.longitude)
+        location = Mock(latitude=51.5074, longitude=-0.1278)
+        with patch("geopy.geocoders.Nominatim") as nominatim:
+            nominatim.return_value.geocode.return_value = location
+            place = Place.objects.create(city="London", country="United Kingdom")
+
+        nominatim.return_value.geocode.assert_called_once_with(
+            "London, United Kingdom", timeout=10
+        )
+        self.assertEqual(place.latitude, location.latitude)
+        self.assertEqual(place.longitude, location.longitude)
+
+    def test_geocoding_failure_does_not_block_save(self):
+        with patch("geopy.geocoders.Nominatim") as nominatim:
+            nominatim.return_value.geocode.side_effect = GeocoderUnavailable()
+            place = Place.objects.create(city="Offline", country="Example")
+
+        self.assertIsNone(place.latitude)
+        self.assertIsNone(place.longitude)
+        self.assertTrue(Place.objects.filter(pk=place.pk).exists())
 
 
 class TextileRecordModelTest(TestCase):
@@ -49,7 +72,10 @@ class TextileRecordModelTest(TestCase):
         self.textile_record = TextileRecord.objects.create(year=2023, is_public=True)
 
     def test_string_representation(self):
-        self.assertEqual(str(self.textile_record), f"Item ID {self.textile_record.id}")
+        self.assertEqual(
+            str(self.textile_record),
+            f"Item Record {self.textile_record.id} ({self.textile_record.year})",
+        )
 
     def test_default_ordering(self):
         record2 = TextileRecord.objects.create(year=2022, is_public=True)
@@ -82,8 +108,8 @@ class SecondaryTextileTypeModelTest(TestCase):
     def test_default_ordering(self):
         type2 = SecondaryTextileType.objects.create(name="Linen")
         types = SecondaryTextileType.objects.all()
-        self.assertEqual(types[0], self.secondary_textile_type)
-        self.assertEqual(types[1], type2)
+        self.assertEqual(types[0], type2)
+        self.assertEqual(types[1], self.secondary_textile_type)
 
 
 class NamedActorModelTest(TestCase):
@@ -132,7 +158,10 @@ class ArchivalRecordModelTest(TestCase):
         )
 
     def test_string_representation(self):
-        self.assertEqual(str(self.archival_record), "Test Reference for Item ID 1")
+        self.assertEqual(
+            str(self.archival_record),
+            f"Test Reference for {self.textile_record}",
+        )
 
 
 class ImageModelTest(TestCase):
@@ -143,4 +172,4 @@ class ImageModelTest(TestCase):
         )
 
     def test_string_representation(self):
-        self.assertEqual(str(self.image), "Image for Item ID 1")
+        self.assertEqual(str(self.image), f"Image for {self.textile_record}")

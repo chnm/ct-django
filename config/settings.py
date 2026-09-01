@@ -1,22 +1,15 @@
-import os
 from pathlib import Path
-from django.utils.translation import gettext_lazy as _
-from django.urls import reverse_lazy
 
 import environ
-from dotenv import load_dotenv
+from django.urls import reverse_lazy
+from django.utils.translation import gettext_lazy as _
 
-load_dotenv()
-
-
-# Build paths inside the project like this: BASE_DIR / 'subdir'.
-BASE_DIR = Path(__file__).resolve().parent.parent
-
-
-# Quick-start development settings - unsuitable for production
-# See https://docs.djangoproject.com/en/5.0/howto/deployment/checklist/
-
+# Build paths inside the project like this: BASE_DIR / "subdir".
+BASE_DIR = Path(__file__).resolve(strict=True).parent.parent
 env = environ.FileAwareEnv(DEBUG=(bool, False))
+ENV_FILE = BASE_DIR / ".env"
+if env.bool("DJANGO_READ_DOT_ENV_FILE", default=True) and ENV_FILE.exists():
+    env.read_env(ENV_FILE)
 
 DEBUG = env("DEBUG")
 SECRET_KEY = env(
@@ -28,10 +21,23 @@ CSRF_TRUSTED_ORIGINS = env.list(
     "DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"]
 )
 
+# Production security defaults; each remains configurable for non-standard
+# reverse proxies and local environments.
+SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
+SECURE_SSL_REDIRECT = env.bool("DJANGO_SECURE_SSL_REDIRECT", default=not DEBUG)
+# The container healthcheck hits this path directly over plain HTTP.
+SECURE_REDIRECT_EXEMPT = [r"^health/$"]
+SESSION_COOKIE_SECURE = env.bool("DJANGO_SESSION_COOKIE_SECURE", default=not DEBUG)
+CSRF_COOKIE_SECURE = env.bool("DJANGO_CSRF_COOKIE_SECURE", default=not DEBUG)
+SECURE_HSTS_SECONDS = env.int(
+    "DJANGO_SECURE_HSTS_SECONDS", default=31_536_000 if not DEBUG else 0
+)
+
 
 # Application definition
 
 INSTALLED_APPS = [
+    "daphne",
     "unfold",
     "unfold.contrib.filters",
     "unfold.contrib.forms",
@@ -42,6 +48,7 @@ INSTALLED_APPS = [
     "django.contrib.contenttypes",
     "django.contrib.sessions",
     "django.contrib.messages",
+    "django.contrib.postgres",
     "django.contrib.staticfiles",
     "storages",
     "allauth",
@@ -79,6 +86,7 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
+    "whitenoise.middleware.WhiteNoiseMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -108,22 +116,22 @@ TEMPLATES = [
                 "django.template.context_processors.request",
                 "django.contrib.auth.context_processors.auth",
                 "django.contrib.messages.context_processors.messages",
-                "django.template.context_processors.request",
             ],
         },
     },
 ]
 
-# DEBUG
-# ------------------------------------------------------------------------------
-# django-debug-toolbar
-# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#prerequisites
-INSTALLED_APPS += ["debug_toolbar"]  # noqa: F405
-# https://django-debug-toolbar.readthedocs.io/en/latest/installation.html#middleware
-MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]  # noqa: F405
-# https://django-debug-toolbar.readthedocs.io/en/latest/configuration.html#debug-toolbar-config
+# Only load development tooling when DEBUG is enabled. This keeps production
+# installs valid when dependency groups are omitted.
+if DEBUG:
+    INSTALLED_APPS += ["debug_toolbar"]
+    MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
+
 DEBUG_TOOLBAR_CONFIG = {
-    "DISABLE_PANELS": ["debug_toolbar.panels.redirects.RedirectsPanel"],
+    "DISABLE_PANELS": [
+        "debug_toolbar.panels.redirects.RedirectsPanel",
+        "debug_toolbar.panels.templates.TemplatesPanel",
+    ],
     "SHOW_TEMPLATE_CONTEXT": True,
 }
 
@@ -166,9 +174,7 @@ UNFOLD = {
                     {
                         "title": _("Textile Types"),
                         "icon": "category",
-                        "link": reverse_lazy(
-                            "admin:material_textiletype_changelist"
-                        ),
+                        "link": reverse_lazy("admin:material_textiletype_changelist"),
                     },
                     {
                         "title": _("Images"),
@@ -263,43 +269,12 @@ UNFOLD = {
     },
 }
 
-# ALLAUTH configuration
-ACCOUNT_AUTHENTICATION_METHOD = "username"  # or 'email', or 'username_email'
-ACCOUNT_EMAIL_REQUIRED = True
-ACCOUNT_EMAIL_VERIFICATION = "mandatory"  # or 'optional', 'none'
-ACCOUNT_LOGOUT_REDIRECT_URL = "/"  # URL to redirect to after logging out
-LOGIN_REDIRECT_URL = "/"  # URL to redirect to after logging in
-
-# settings.py
-
-LOGGING = {
-    "version": 1,
-    "disable_existing_loggers": False,
-    "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {message}",
-            "style": "{",
-        },
-    },
-    "handlers": {
-        "console": {
-            "class": "logging.StreamHandler",
-            "formatter": "verbose",
-        },
-        "file": {
-            "class": "logging.FileHandler",
-            "filename": "debug.log",
-            "formatter": "verbose",
-        },
-    },
-    "loggers": {
-        "crawler": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
-            "propagate": True,
-        },
-    },
-}
+# django-allauth configuration
+ACCOUNT_LOGIN_METHODS = {"username"}
+ACCOUNT_SIGNUP_FIELDS = ["email*", "username*", "password1*", "password2*"]
+ACCOUNT_EMAIL_VERIFICATION = "mandatory"
+ACCOUNT_LOGOUT_REDIRECT_URL = "/"
+LOGIN_REDIRECT_URL = "/"
 
 WSGI_APPLICATION = "config.wsgi.application"
 ASGI_APPLICATION = "config.asgi.application"
@@ -316,6 +291,8 @@ DATABASES = {
         "NAME": env("DB_NAME", default="connectingthreads"),
         "USER": env("DB_USER", default="connectingthreads"),
         "PASSWORD": env("DB_PASS", default="password"),
+        "CONN_MAX_AGE": 60,
+        "CONN_HEALTH_CHECKS": True,
     }
 }
 
@@ -355,9 +332,9 @@ INTERNAL_IPS = [
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.0/howto/static-files/
 
-STATIC_URL = "static/"
-STATICFILES_DIRS = (os.path.join(BASE_DIR, "static"),)
-STATIC_ROOT = os.path.join(BASE_DIR, "staticfiles")
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static"]
+STATIC_ROOT = BASE_DIR / "staticfiles"
 
 # Media files
 STORAGES = {
@@ -365,10 +342,10 @@ STORAGES = {
         "BACKEND": "django.core.files.storage.FileSystemStorage",
     },
     "staticfiles": {
-        "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
-OBJ_STORAGE = env("OBJ_STORAGE", default=False)
+OBJ_STORAGE = env.bool("OBJ_STORAGE", default=False)
 if OBJ_STORAGE:
     AWS_ACCESS_KEY_ID = env("OBJ_STORAGE_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = env("OBJ_STORAGE_SECRET_ACCESS_KEY")
@@ -382,25 +359,22 @@ if OBJ_STORAGE:
         "BACKEND": "storages.backends.s3.S3Storage",
     }
 else:
-    MEDIA_URL = "media/"
-    MEDIA_ROOT = os.path.join(BASE_DIR, "mediafiles")
+    MEDIA_URL = "/media/"
+    MEDIA_ROOT = BASE_DIR / "mediafiles"
 
 
 # Wagtail
 WAGTAIL_SITE_NAME = "Connecting Threads"
-WAGTAIL_BASE_URL = "http://localhost:8000"
-WAGTAILADMIN_BASE_URL = "http://localhost:8000"
+WAGTAIL_BASE_URL = env("WAGTAIL_BASE_URL", default="http://localhost:8000")
+WAGTAILADMIN_BASE_URL = env("WAGTAILADMIN_BASE_URL", default=WAGTAIL_BASE_URL)
 WAGTAILEMBEDS_RESPONSIVE_HTML = True
 WAGTAILIMAGES_MAX_UPLOAD_SIZE = 20 * 1024 * 1024  # 20mb
 
+LOG_LEVEL = env("DJANGO_LOG_LEVEL", default="INFO")
 LOGGING = {
     "version": 1,
     "disable_existing_loggers": False,
     "formatters": {
-        "verbose": {
-            "format": "{levelname} {asctime} {module} {process:d} {thread:d} {message}",
-            "style": "{",
-        },
         "simple": {
             "format": "{levelname} {message}",
             "style": "{",
@@ -408,33 +382,30 @@ LOGGING = {
     },
     "handlers": {
         "console": {
-            "level": "DEBUG",
+            "level": LOG_LEVEL,
             "class": "logging.StreamHandler",
             "formatter": "simple",
-        },
-        "file": {
-            "level": "DEBUG",
-            "class": "logging.handlers.RotatingFileHandler",
-            "filename": "debug.log",
-            "maxBytes": 1024 * 1024 * 5,  # 5 MB
-            "backupCount": 5,
-            "formatter": "verbose",
         },
     },
     "loggers": {
         "django": {
-            "handlers": ["console", "file"],
-            "level": "INFO",
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
             "propagate": True,
         },
         "django.request": {
-            "handlers": ["console", "file"],
+            "handlers": ["console"],
             "level": "ERROR",
             "propagate": False,
         },
         "material": {
-            "handlers": ["console", "file"],
-            "level": "DEBUG",
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
+            "propagate": False,
+        },
+        "crawler": {
+            "handlers": ["console"],
+            "level": LOG_LEVEL,
             "propagate": True,
         },
     },
@@ -443,7 +414,7 @@ LOGGING = {
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
-DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 # Application API settings
 COOPER_HEWITT_API_KEY = env("COOPER_HEWITT_API_KEY", default="")
+GEOCODING_USER_AGENT = env("GEOCODING_USER_AGENT", default="ConnectingThreads/1.0")

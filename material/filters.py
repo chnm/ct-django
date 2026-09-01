@@ -1,9 +1,7 @@
 import re
-from decimal import Decimal
 
 import django_filters
-from django.db.models import F, IntegerField, Q, Value
-from django.db.models.functions import Cast, Coalesce
+from django.db.models import Q
 
 from material.models import (
     Area,

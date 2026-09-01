@@ -1,16 +1,17 @@
 from datetime import timedelta
-from django.contrib.admin.views.decorators import staff_member_required
+
 from django.contrib import admin
+from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count
 from django.shortcuts import render
 from django.utils import timezone
 
+from crawler.models import StagedMuseumItem
 from material.models import (
-    TextileRecord,
     Image,
     PrimaryTextileType,
+    TextileRecord,
 )
-from crawler.models import StagedMuseumItem
 
 
 def get_admin_stats(request=None):
@@ -140,7 +141,7 @@ def get_admin_stats(request=None):
     for item in archive_data:
         archive_name = item["archive"]
         count = item["count"]
-        
+
         # Map archive names to friendly display names
         if not archive_name:
             display_name = "Local Import"
@@ -150,7 +151,7 @@ def get_admin_stats(request=None):
             display_name = "Victoria & Albert Museum"
         else:
             display_name = archive_name or "Local Import"
-        
+
         percentage = (
             (count / textile_record_count * 100) if textile_record_count > 0 else 0
         )
