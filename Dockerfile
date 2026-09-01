@@ -1,55 +1,34 @@
-FROM rust as volta-build
-WORKDIR /src
-RUN git clone https://github.com/volta-cli/volta.git /src
-RUN cargo build
-RUN ls /src/target/debug
+FROM node:22-bookworm-slim AS node-runtime
 
-FROM python:slim-trixie
-COPY --from=ghcr.io/astral-sh/uv:latest /uv /uvx /bin/
+FROM python:3.12-slim-trixie
 
-# Set environment variables
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1
-ENV PYTHONDONTWRITEBYTECODE=1
-ENV PYTHONUNBUFFERED=1
-ENV UV_PROJECT_ENVIRONMENT=/venv
+COPY --from=node-runtime /usr/local/bin/ /usr/local/bin/
+COPY --from=node-runtime /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
 
-# Set working directory
+ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
+    PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_PROJECT_ENVIRONMENT=/venv \
+    UV_LINK_MODE=copy
+
+RUN pip install --no-cache-dir "uv==0.9.6"
+
 WORKDIR /app
 
-# Copy project
-COPY . /app/
+# Install dependencies in a cacheable layer. Image builds must use the
+# committed lockfile instead of resolving a different dependency graph.
+COPY pyproject.toml uv.lock ./
+RUN uv sync --locked --all-groups --no-install-project
 
-RUN uv lock
+COPY . ./
+RUN uv sync --locked --all-groups \
+    && uv run --no-sync manage.py tailwind install \
+    && uv run --no-sync manage.py tailwind build \
+    && uv run --no-sync manage.py collectstatic --no-input
 
-# Copy over Volta binaries
-RUN mkdir -p /root/.volta/bin
-COPY --from=volta-build /src/target/debug/volta /root/.volta/bin
-COPY --from=volta-build /src/target/debug/volta-migrate /root/.volta/bin
-COPY --from=volta-build /src/target/debug/volta-shim /root/.volta/bin
+EXPOSE 8000
 
-# shell stuff for volta
-SHELL ["/bin/bash", "-c"]
-ENV BASH_ENV ~/.bashrc
-ENV VOLTA_HOME /root/.volta
-ENV PATH $VOLTA_HOME/bin:$PATH
+HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
+    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=4)"
 
-RUN ln -s /root/.volta/bin/volta-shim /root/.volta/bin/node 
-RUN ln -s /root/.volta/bin/volta-shim /root/.volta/bin/npm 
-RUN ln -s /root/.volta/bin/volta-shim /root/.volta/bin/npx
-RUN ln -s /root/.volta/bin/volta-shim /root/.volta/bin/pnpm 
-RUN ln -s /root/.volta/bin/volta-shim /root/.volta/bin/yarn
-
-# triggers node installation
-RUN node -v && npm -v
-RUN npm install
-
-# generate front end assets
-RUN uv run manage.py tailwind install
-RUN uv run manage.py tailwind build
-RUN uv run manage.py collectstatic --no-input
-
-# clean up
-RUN rm -rf /root/.volta
-RUN rm -rf /app/node_modules
-
-CMD uv run manage.py runserver 0.0.0.0:8000
+CMD ["uv", "run", "--no-sync", "daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]

@@ -6,9 +6,8 @@ from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
-from debug_toolbar.toolbar import debug_toolbar_urls
-
 from exhibits.views import about, events
+from material.admin_dashboard import get_admin_stats
 from material.views import (
     TextileTableView,
     about_crawler,
@@ -18,7 +17,8 @@ from material.views import (
     record_details,
     textile_records_single,
 )
-from material.admin_dashboard import get_admin_stats
+
+from .views import health
 
 # Override the default admin index template
 admin.site.index_template = "admin/index.html"
@@ -44,6 +44,7 @@ admin.site.index = custom_index
 
 urlpatterns = [
     path("", index, name="index"),
+    path("health/", health, name="health"),
     path("admin/", admin.site.urls),
     path("prose/", include("prose.urls")),
     path("accounts/", include("allauth.urls")),
@@ -73,4 +74,4 @@ urlpatterns = [
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
 
 if settings.DEBUG:
-    urlpatterns = [path("__debug__/", include(debug_toolbar_urls()))] + urlpatterns
+    urlpatterns = [path("__debug__/", include("debug_toolbar.urls"))] + urlpatterns
