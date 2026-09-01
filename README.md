@@ -2,7 +2,7 @@
 
 A Django-based digital humanities project for researching and cataloging textile trade data, with integrated museum collection crawling and comprehensive data management capabilities.
 
-**Tech Stack:** Python 3.12 / Django 5.0 / PostgreSQL 17 / Tailwind CSS / Wagtail CMS
+**Tech Stack:** Python 3.12+ / Django 6.0 / Wagtail 7 / PostgreSQL 17 / Daphne / Tailwind CSS
 
 ## Project Overview
 
@@ -62,28 +62,22 @@ uv run pre-commit install
 uv run pre-commit autoupdate
 ```
 
-### Environment Configuration
-
-Create a `.env` file with required configuration:
+Alternatively, start the complete application and PostgreSQL stack with Docker:
 
 ```bash
-# Generate a secure secret key
-echo "DJANGO_SECRET_KEY=$(uv run python -c 'import secrets; print(secrets.token_urlsafe())')" >> .env
+docker compose up --build
+```
 
-# Basic Django settings
-echo "DEBUG=True" >> .env
-echo "DJANGO_ALLOWED_HOSTS=localhost" >> .env
-echo "DJANGO_CSRF_TRUSTED_ORIGINS=http://localhost" >> .env
+The application is available at `http://localhost:8000/`, with a container
+health endpoint at `http://localhost:8000/health/`.
 
-# Database configuration
-echo "DB_HOST=localhost" >> .env
-echo "DB_PORT=5432" >> .env
-echo "DB_NAME=connectingthreads" >> .env
-echo "DB_USER=connectingthreads" >> .env
-echo "DB_PASS=your_password" >> .env
+### Environment Configuration
 
-# Museum API keys
-echo "COOPER_HEWITT_API_KEY=your_cooper_hewitt_key" >> .env
+Copy the documented development defaults, then replace placeholder values as
+needed:
+
+```bash
+cp .env.example .env
 ```
 
 ### Database Setup
@@ -117,8 +111,11 @@ Common development tasks are available via Makefile:
 - `make tailwind`: Start Tailwind CSS compilation in watch mode
 - `make mm`: Create Django migrations (`uv run python manage.py makemigrations`)
 - `make migrate`: Apply Django migrations (`uv run python manage.py migrate`)
-- `make test`: Run the test suite
+- `make check`: Run Django system checks
+- `make test`: Run the pytest suite
 - `make lint`: Run code linting and formatting
+- `make shell`: Open the Django shell
+- `make help`: List available commands
 
 ## Project Structure
 
@@ -126,13 +123,14 @@ Common development tasks are available via Makefile:
 ct-django/
 ├── config/           # Django settings and configuration
 ├── material/         # Core textile record models and admin
-├── crawler/          # Museum API crawling functionality  
+├── crawler/          # Museum API crawling functionality
 ├── exhibits/         # Exhibition and display models
 ├── theme/            # Tailwind CSS theme and styling
 ├── templates/        # Django templates
 ├── static/           # Static assets
 ├── media/            # Uploaded files and images
-└── requirements/     # Dependency specifications
+├── pyproject.toml    # Python dependencies and tool configuration
+└── uv.lock           # Reproducible Python dependency lockfile
 ```
 
 ## Usage
@@ -180,7 +178,7 @@ Code formatting is handled by:
 
 ## License
 
-[Add license information here]
+Connecting Threads is released under the [MIT License](LICENSE).
 
 ## Acknowledgments
 
