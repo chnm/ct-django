@@ -39,18 +39,12 @@ module.exports = {
      * Python: If you use Tailwind CSS classes in Python, uncomment the following line
      * and make sure the pattern below matches your project structure.
      */
-    // '../../**/*.py'
-  ],
-  safelist: [
-    // Component classes that should always be emitted
-    'bg-paper', 'bg-paper-2', 'bg-paper-3',
-    'border-rule', 'border-rule-2',
-    'text-ink', 'text-navy', 'bg-navy', 'border-navy-2',
-    'text-sub', 'text-faint', 'text-faint-2', 'text-label',
-    'text-madras-red', 'text-madras-gold', 'text-madras-green',
-    'bg-tag-red', 'bg-tag-gold', 'bg-tag-green',
-    'border-ghost-border',
-    'font-display', 'font-serif', 'font-mono'
+    // '../../**/*.py',
+
+    /**
+     * CSS source files for @apply class extraction
+     */
+    "./src/**/*.css",
   ],
   theme: {
     extend: {
