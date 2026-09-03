@@ -324,3 +324,43 @@ class QuickViewTest(TestCase):
     def test_record_details_endpoint_is_gone(self):
         r = TextileRecord.objects.create(year="1680", is_public=True)
         self.assertEqual(self.client.get(f"/record-details/{r.id}/").status_code, 404)
+
+
+class RecordPageTest(TestCase):
+    def setUp(self):
+        self.area = Area.objects.create(name="India")
+        self.item = TextileRecord.objects.create(
+            year="1680", circulation="td", is_public=True, from_area=self.area, to_area=self.area,
+            summary_of_record="Local consumption.", transcription="Coarse cloth was sold weekly.",
+            source_reference="Ramaswamy, Vijaya.",
+        )
+        self.item.keywords.add("Weavers")
+        self.other = TextileRecord.objects.create(year="18th century", circulation="pr", is_public=True)
+        self.other.keywords.add("Weavers")
+        self.private = TextileRecord.objects.create(year="1700", is_public=False)
+        self.private.keywords.add("Weavers")
+
+    def test_record_page_context_and_sections(self):
+        response = self.client.get(f"/database/{self.item.id}/")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.context["date_certainty"], "exact year")
+        self.assertEqual([r.id for r in response.context["linked"]], [self.other.id])
+        self.assertEqual(response.context["linked_reason"], 'shares keyword “Weavers”')
+        self.assertTrue(response.context["timeline"].band)
+        html = response.content.decode()
+        self.assertIn(f"Record {self.item.id}", html)
+        self.assertIn("Map view arrives with the spatial explorer.", html)
+        self.assertIn("This record highlighted", html)
+        self.assertIn("Coarse cloth was sold weekly.", html)
+        self.assertIn("No images are available for this record.", html)
+        self.assertNotIn("Cite", html)
+
+    def test_crosslinks_come_first(self):
+        linked = TextileRecord.objects.create(year="1690", circulation="co", is_public=True)
+        self.item.crosslinks.add(linked)
+        response = self.client.get(f"/database/{self.item.id}/")
+        self.assertEqual([r.id for r in response.context["linked"]], [linked.id, self.other.id])
+        self.assertEqual(response.context["linked_reason"], "crosslinked")
+
+    def test_private_record_is_404(self):
+        self.assertEqual(self.client.get(f"/database/{self.private.id}/").status_code, 404)

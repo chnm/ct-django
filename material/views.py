@@ -7,10 +7,10 @@ from django_tables2 import SingleTableMixin
 from taggit.models import Tag
 
 from exhibits.models import ExhibitHome, HomeAboutSnippet
-from material.filters import TextileFilter
+from material.filters import TextileFilter, extract_year_range
 from material.models import PrimaryTextileType, SecondaryTextileType, TextileRecord
 from material.tables import TextileTable
-from material.timeline import build_timeline
+from material.timeline import build_timeline, is_exact_year
 
 logger = logging.getLogger(__name__)
 
@@ -93,8 +93,44 @@ def get_secondary_textile_types(request, primary_id):
 
 
 def textile_records_single(request, item_id):
-    item = get_object_or_404(TextileRecord, pk=item_id)
-    return render(request, "database/textile_records_single.html", {"item": item})
+    item = get_object_or_404(TextileRecord, pk=item_id, is_public=True)
+    public = TextileRecord.objects.filter(is_public=True)
+
+    linked = list(item.crosslinks.filter(is_public=True).order_by("id")[:4])
+    linked_reason = "crosslinked" if linked else ""
+    keyword = item.keywords.first()
+    if keyword and len(linked) < 4:
+        extra = (
+            public.filter(keywords__name=keyword.name)
+            .exclude(id=item.id)
+            .exclude(id__in=[r.id for r in linked])
+            .order_by("id")
+            .distinct()[: 4 - len(linked)]
+        )
+        extra = list(extra)
+        if extra and not linked:
+            linked_reason = f"shares keyword “{keyword.name}”"
+        linked += extra
+
+    start, _ = extract_year_range(item.year)
+    if start is None:
+        date_certainty = "undated"
+    elif is_exact_year(item.year):
+        date_certainty = "exact year"
+    else:
+        date_certainty = "approximate"
+
+    return render(
+        request,
+        "database/textile_records_single.html",
+        {
+            "item": item,
+            "timeline": build_timeline(public, highlight_id=item.id, compact=True),
+            "linked": linked,
+            "linked_reason": linked_reason,
+            "date_certainty": date_certainty,
+        },
+    )
 
 
 def about_crawler(request):
