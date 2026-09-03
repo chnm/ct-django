@@ -22,7 +22,7 @@ def index(request):
         if not about_snippet:
             # Create a default snippet if none exists
             about_snippet = HomeAboutSnippet.objects.create(
-                title="Connecting Threads",
+                title="Following a checked cloth across an ocean",
                 subtitle="Fashioning Madras in India and the Caribbean",
                 content="""
                 <p>Connecting Threads is a collaborative digital history project dedicated to amplifying the contributions of Indian weavers and African Caribbean consumers to global histories of dress.</p>
@@ -33,7 +33,7 @@ def index(request):
     except Exception:
         # In case of any issues, provide a fallback snippet
         about_snippet = {
-            "title": "Connecting Threads",
+            "title": "Following a checked cloth across an ocean",
             "subtitle": "Fashioning Madras in India and the Caribbean",
             "content": """
             <p>Connecting Threads is a collaborative digital history project dedicated to amplifying the contributions of Indian weavers and African Caribbean consumers to global histories of dress.</p>
@@ -43,7 +43,13 @@ def index(request):
         }
 
     return render(
-        request, "index.html", {"exhibits": exhibits, "about_snippet": about_snippet}
+        request,
+        "index.html",
+        {
+            "exhibits": exhibits,
+            "about_snippet": about_snippet,
+            "record_count": TextileRecord.objects.filter(is_public=True).count(),
+        },
     )
 
 

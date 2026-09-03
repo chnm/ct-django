@@ -187,3 +187,13 @@ class SiteChromeTest(TestCase):
         self.assertNotIn("CT_Exhibition_Opening_Image", html)
         # Launch Event moved out of the nav into the footer's Project column.
         self.assertEqual(html.count("Launch Event"), 1)
+
+
+class IndexViewTest(TestCase):
+    def test_index_counts_only_public_records(self):
+        TextileRecord.objects.create(year="1750", is_public=True)
+        TextileRecord.objects.create(year="1760", is_public=False)
+        response = self.client.get("/")
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, "index.html")
+        self.assertEqual(response.context["record_count"], 1)
