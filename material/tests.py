@@ -1,6 +1,6 @@
 from unittest.mock import Mock, patch
 
-from django.test import TestCase, override_settings
+from django.test import TestCase
 from geopy.exc import GeocoderUnavailable
 
 from material.models import (
@@ -198,19 +198,6 @@ class IndexViewTest(TestCase):
         self.assertTemplateUsed(response, "index.html")
         self.assertEqual(response.context["record_count"], 1)
 
-    # ponytail: STORAGES["staticfiles"] is CompressedManifestStaticFilesStorage
-    # even with DEBUG=True, so {% static %} always hashes filenames
-    # (hero-dolls.<hash>.jpg). Swap to plain StaticFilesStorage just for this
-    # assertion so it can check literal filenames; root fix would be making
-    # settings.py use unhashed static storage when DEBUG=True.
-    @override_settings(
-        STORAGES={
-            "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
-            "staticfiles": {
-                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
-            },
-        }
-    )
     def test_index_renders_field_notes_sections(self):
         response = self.client.get("/")
         html = response.content.decode()
