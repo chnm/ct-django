@@ -303,3 +303,24 @@ class DatabaseListViewTest(TestCase):
         self.assertIn('name="text_search"', html)
         self.assertNotIn('id="detailsModal"', html)
         self.assertNotIn('name="keyword"', html)
+
+
+class QuickViewTest(TestCase):
+    def test_public_record_returns_row_partial(self):
+        r = TextileRecord.objects.create(year="1680", circulation="td", is_public=True, summary_of_record="Local consumption of coarse textiles.")
+        response = self.client.get(f"/database/{r.id}/quick-view/")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertTrue(html.lstrip().startswith("<tr"))
+        self.assertIn(f"Quick view &middot; Record {r.id}", html)
+        self.assertIn("Local consumption", html)
+        self.assertIn("Open full record", html)
+        self.assertIn("Place: area only", html)
+
+    def test_private_record_is_404(self):
+        r = TextileRecord.objects.create(year="1680", is_public=False)
+        self.assertEqual(self.client.get(f"/database/{r.id}/quick-view/").status_code, 404)
+
+    def test_record_details_endpoint_is_gone(self):
+        r = TextileRecord.objects.create(year="1680", is_public=True)
+        self.assertEqual(self.client.get(f"/record-details/{r.id}/").status_code, 404)

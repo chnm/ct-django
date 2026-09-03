@@ -64,30 +64,9 @@ def keyword_search(request):
     return JsonResponse(results, safe=False)
 
 
-def record_details(request, record_id):
-    record = get_object_or_404(TextileRecord, id=record_id)
-    data = {
-        "to_area": str(record.to_area) if record.to_area else None,
-        "from_area": str(record.from_area) if record.from_area else None,
-        "to_place": str(record.to_place) if record.to_place else None,
-        "from_place": str(record.from_place) if record.from_place else None,
-        "transcription": record.transcription if record.transcription else None,
-        "summary_of_record": record.summary_of_record
-        if record.summary_of_record
-        else None,
-        "source_reference": record.source_reference
-        if record.source_reference
-        else None,
-        "source_type": record.source_type if record.source_type else None,
-        "description_of_source": record.description_of_source
-        if record.description_of_source
-        else None,
-        "record_creator": record.record_creator if record.record_creator else None,
-        "crosslinks": [str(link) for link in record.crosslinks.all()]
-        if record.crosslinks
-        else None,
-    }
-    return JsonResponse(data)
+def quick_view(request, item_id):
+    item = get_object_or_404(TextileRecord, pk=item_id, is_public=True)
+    return render(request, "database/_quick_view.html", {"item": item})
 
 
 def get_secondary_textile_types(request, primary_id):

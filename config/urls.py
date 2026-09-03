@@ -14,7 +14,7 @@ from material.views import (
     get_secondary_textile_types,
     index,
     keyword_search,
-    record_details,
+    quick_view,
     textile_records_single,
 )
 
@@ -52,13 +52,10 @@ urlpatterns = [
     path("database/", TextileTableView.as_view(), name="database"),
     path(
         "database/<int:item_id>/", textile_records_single, name="textile_single"
-    ),  # modal view
-    path("database/<int:item_id>/quick-view/", textile_records_single, name="textile_quick_view"),
+    ),  # record page
+    path("database/<int:item_id>/quick-view/", quick_view, name="textile_quick_view"),
     path("about/crawler/", about_crawler, name="about_crawler"),
     path("api/keywords/", keyword_search, name="keyword_search"),
-    path(
-        "record-details/<int:record_id>/", record_details, name="record_details"
-    ),  # page
     path(
         "get-secondary-textile-types/<int:primary_id>/",
         get_secondary_textile_types,
