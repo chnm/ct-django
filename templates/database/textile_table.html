@@ -1,10 +1,11 @@
+{# tailwind: min-w-[900px] text-[13.5px] #}
 {% load django_tables2 i18n %}
 <div class="overflow-x-auto rounded-lg border border-rule bg-white">
   <table {{ table.attrs.as_html }}>
     <thead class="bg-[#f4f1ea]">
       <tr>
         {% for column in table.columns %}
-          <th {{ column.attrs.th.as_html }} class="lbl px-4 py-3 text-left font-semibold">{{ column.header }}</th>
+          <th {{ column.attrs.th.as_html }} scope="col" class="lbl px-4 py-3 text-left font-semibold">{{ column.header }}</th>
         {% endfor %}
       </tr>
     </thead>

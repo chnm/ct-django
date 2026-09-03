@@ -194,9 +194,13 @@ class SiteChromeTest(TestCase):
         self.assertIn('aria-current="page"', html)
         # About stays active on a nested path via prefix matching
         html = self.client.get("/about/crawler/").content.decode()
-        self.assertEqual(html.count('aria-current="page"'), 2)  # desktop + mobile About links
+        self.assertEqual(
+            html.count('aria-current="page"'), 2
+        )  # desktop + mobile About links
         home = self.client.get("/").content.decode()
-        self.assertEqual(home.count('aria-current="page"'), 2)  # desktop + mobile Home links
+        self.assertEqual(
+            home.count('aria-current="page"'), 2
+        )  # desktop + mobile Home links
 
 
 class IndexViewTest(TestCase):
@@ -236,10 +240,20 @@ class DatabaseTagsTest(TestCase):
 
     def test_precision_dot_place_area_none(self):
         area = Area.objects.create(name="India")
-        place = Place.objects.create(city="Madras", country="India", area=area, latitude=1, longitude=1)
-        r = TextileRecord.objects.create(year="1748", circulation="pr", from_place=place, from_area=area, to_area=area)
+        place = Place.objects.create(
+            city="Madras", country="India", area=area, latitude=1, longitude=1
+        )
+        r = TextileRecord.objects.create(
+            year="1748",
+            circulation="pr",
+            from_place=place,
+            from_area=area,
+            to_area=area,
+        )
         self.assertIn("rounded-full", self.render("{% precision_dot r 'from' %}", r=r))
-        self.assertIn("bg-madras-green", self.render("{% precision_dot r 'from' %}", r=r))
+        self.assertIn(
+            "bg-madras-green", self.render("{% precision_dot r 'from' %}", r=r)
+        )
         self.assertIn("border-dashed", self.render("{% precision_dot r 'to' %}", r=r))
         r2 = TextileRecord.objects.create(year="1748")
         self.assertEqual(self.render("{% precision_dot r 'to' %}", r=r2).strip(), "")
@@ -279,15 +293,25 @@ class DatabaseListViewTest(TestCase):
 
     def test_table_columns_and_cells(self):
         area = Area.objects.create(name="Caribbean")
-        TextileRecord.objects.create(year="1755", circulation="co", is_public=True, from_area=area, to_area=area)
+        TextileRecord.objects.create(
+            year="1755", circulation="co", is_public=True, from_area=area, to_area=area
+        )
         html = self.client.get("/database/").content.decode()
-        for header in ["Preview", "Date", "Textile type", "Subtype", "Origin", "Circulation", "Actions"]:
+        for header in [
+            "Preview",
+            "Date",
+            "Textile type",
+            "Subtype",
+            "Origin",
+            "Circulation",
+            "Actions",
+        ]:
             self.assertIn(header, html)
-        self.assertIn("border-dotted", html)          # approximate date
-        self.assertIn("border-dashed", html)          # area-only precision ring
-        self.assertIn("Unassigned", html)             # null circulation tag
+        self.assertIn("border-dotted", html)  # approximate date
+        self.assertIn("border-dashed", html)  # area-only precision ring
+        self.assertIn("Unassigned", html)  # null circulation tag
         self.assertIn("Consumption", html)
-        self.assertIn("quick-view/", html)            # actions cell
+        self.assertIn("quick-view/", html)  # actions cell
         self.assertNotIn("openModal", html)
 
     def test_circulation_filter_accepts_multiple_values(self):
@@ -307,7 +331,12 @@ class DatabaseListViewTest(TestCase):
 
 class QuickViewTest(TestCase):
     def test_public_record_returns_row_partial(self):
-        r = TextileRecord.objects.create(year="1680", circulation="td", is_public=True, summary_of_record="Local consumption of coarse textiles.")
+        r = TextileRecord.objects.create(
+            year="1680",
+            circulation="td",
+            is_public=True,
+            summary_of_record="Local consumption of coarse textiles.",
+        )
         response = self.client.get(f"/database/{r.id}/quick-view/")
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
@@ -319,7 +348,9 @@ class QuickViewTest(TestCase):
 
     def test_private_record_is_404(self):
         r = TextileRecord.objects.create(year="1680", is_public=False)
-        self.assertEqual(self.client.get(f"/database/{r.id}/quick-view/").status_code, 404)
+        self.assertEqual(
+            self.client.get(f"/database/{r.id}/quick-view/").status_code, 404
+        )
 
     def test_record_details_endpoint_is_gone(self):
         r = TextileRecord.objects.create(year="1680", is_public=True)
@@ -330,12 +361,19 @@ class RecordPageTest(TestCase):
     def setUp(self):
         self.area = Area.objects.create(name="India")
         self.item = TextileRecord.objects.create(
-            year="1680", circulation="td", is_public=True, from_area=self.area, to_area=self.area,
-            summary_of_record="Local consumption.", transcription="Coarse cloth was sold weekly.",
+            year="1680",
+            circulation="td",
+            is_public=True,
+            from_area=self.area,
+            to_area=self.area,
+            summary_of_record="Local consumption.",
+            transcription="Coarse cloth was sold weekly.",
             source_reference="Ramaswamy, Vijaya.",
         )
         self.item.keywords.add("Weavers")
-        self.other = TextileRecord.objects.create(year="18th century", circulation="pr", is_public=True)
+        self.other = TextileRecord.objects.create(
+            year="18th century", circulation="pr", is_public=True
+        )
         self.other.keywords.add("Weavers")
         self.private = TextileRecord.objects.create(year="1700", is_public=False)
         self.private.keywords.add("Weavers")
@@ -345,7 +383,7 @@ class RecordPageTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.context["date_certainty"], "exact year")
         self.assertEqual([r.id for r in response.context["linked"]], [self.other.id])
-        self.assertEqual(response.context["linked_reason"], 'shares keyword “Weavers”')
+        self.assertEqual(response.context["linked_reason"], "shares keyword “Weavers”")
         self.assertTrue(response.context["timeline"].band)
         html = response.content.decode()
         self.assertIn(f"Record {self.item.id}", html)
@@ -355,18 +393,36 @@ class RecordPageTest(TestCase):
         self.assertIn("No images are available for this record.", html)
         self.assertNotIn("Cite", html)
 
+    def test_unplaced_record_does_not_dim_the_timeline(self):
+        unassigned = TextileRecord.objects.create(
+            year="1750", is_public=True
+        )  # no circulation
+        response = self.client.get(f"/database/{unassigned.id}/")
+        bars = [b for lane in response.context["timeline"].lanes for b in lane.bars]
+        self.assertTrue(bars)
+        self.assertFalse(any(b.dimmed for b in bars))
+        self.assertIn("not placed on the timeline", response.content.decode())
+
     def test_crosslinks_come_first(self):
-        linked = TextileRecord.objects.create(year="1690", circulation="co", is_public=True)
+        linked = TextileRecord.objects.create(
+            year="1690", circulation="co", is_public=True
+        )
         self.item.crosslinks.add(linked)
         response = self.client.get(f"/database/{self.item.id}/")
-        self.assertEqual([r.id for r in response.context["linked"]], [linked.id, self.other.id])
+        self.assertEqual(
+            [r.id for r in response.context["linked"]], [linked.id, self.other.id]
+        )
         self.assertEqual(response.context["linked_reason"], "crosslinked")
 
     def test_private_record_is_404(self):
-        self.assertEqual(self.client.get(f"/database/{self.private.id}/").status_code, 404)
+        self.assertEqual(
+            self.client.get(f"/database/{self.private.id}/").status_code, 404
+        )
 
     def test_place_without_area_renders(self):
-        place = Place.objects.create(city="Pulicat", country="India", latitude=1, longitude=1)
+        place = Place.objects.create(
+            city="Pulicat", country="India", latitude=1, longitude=1
+        )
         self.item.from_place = place
         self.item.from_area = None
         self.item.save()

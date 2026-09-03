@@ -9,7 +9,7 @@
     <h1 class="font-display text-[40px] font-semibold leading-none tracking-[-0.02em] text-ink">Record {{ item.id }}</h1>
     <div class="mt-4 flex flex-wrap items-center gap-3 font-mono text-[13px] text-sub">
       {% circulation_tag item %}
-      <span>{{ item.year|default:"undated" }} &middot; {{ date_certainty }}</span>
+      <span>{% if item.year %}{{ item.year }} &middot; {{ date_certainty }}{% else %}undated{% endif %}</span>
       {% if not item.primary_textile_types.exists %}<span class="text-faint">|</span><span>Context record &middot; no attached textile</span>{% endif %}
     </div>
     {% if item.archive %}
@@ -74,7 +74,7 @@
 
       <section>
         <h2 class="lbl mb-3">This record in time</h2>
-        {% include "database/_swimlane.html" with timeline=timeline highlight_label="This record highlighted" %}
+        {% include "database/_swimlane.html" with timeline=timeline highlight_label=timeline_label %}
         <p class="mt-3 font-display text-[14px] text-sub">
           {% if date_certainty == "exact year" %}Fixed to <strong class="text-ink">{{ item.year }}</strong>.{% elif date_certainty == "approximate" %}Dated approximately: <strong class="text-ink">{{ item.year }}</strong>.{% else %}This record has no parseable date.{% endif %}
         </p>

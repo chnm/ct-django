@@ -10,7 +10,7 @@ from exhibits.models import ExhibitHome, HomeAboutSnippet
 from material.filters import TextileFilter, extract_year_range
 from material.models import PrimaryTextileType, SecondaryTextileType, TextileRecord
 from material.tables import TextileTable
-from material.timeline import build_timeline, is_exact_year
+from material.timeline import PHASES, build_timeline, is_exact_year
 
 logger = logging.getLogger(__name__)
 
@@ -120,12 +120,24 @@ def textile_records_single(request, item_id):
     else:
         date_certainty = "approximate"
 
+    placeable = item.circulation in PHASES and start is not None
+    public_rows = public.values_list("id", "year", "circulation", named=True)
+
     return render(
         request,
         "database/textile_records_single.html",
         {
             "item": item,
-            "timeline": build_timeline(public, highlight_id=item.id, compact=True),
+            "timeline": build_timeline(
+                public_rows,
+                highlight_id=item.id if placeable else None,
+                compact=True,
+            ),
+            "timeline_label": (
+                "This record highlighted"
+                if placeable
+                else "This record is not placed on the timeline"
+            ),
             "linked": linked,
             "linked_reason": linked_reason,
             "date_certainty": date_certainty,
@@ -212,5 +224,7 @@ class TextileTableView(SingleTableMixin, FilterView):
         context["max_year"] = max_year
         context["current_min_year"] = current_min
         context["current_max_year"] = current_max
-        context["timeline"] = build_timeline(self.object_list)
+        context["timeline"] = build_timeline(
+            self.object_list.values_list("id", "year", "circulation", named=True)
+        )
         return context

@@ -1,5 +1,5 @@
 from django import template
-from django.utils.html import escape, format_html
+from django.utils.html import format_html
 from django.utils.safestring import mark_safe
 
 from material.timeline import is_exact_year, phase_for
@@ -36,7 +36,9 @@ def precision_dot(record, side):
     color = p.text_class.replace("text-", "")  # e.g. madras-green, sub
     if getattr(record, f"{side}_place_id"):
         return format_html(
-            '<span class="{} bg-{}" aria-hidden="true" title="Located place"></span>', _DOT, color
+            '<span class="{} bg-{}" aria-hidden="true" title="Located place"></span>',
+            _DOT,
+            color,
         )
     if getattr(record, f"{side}_area_id"):
         return format_html(

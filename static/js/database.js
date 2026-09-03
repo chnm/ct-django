@@ -72,15 +72,6 @@ document.addEventListener("DOMContentLoaded", function () {
         secondarySelect.disabled = true;
       }
     });
-
-    if (resetButton) {
-      resetButton.addEventListener("click", function () {
-        primarySelect.value = "";
-        secondarySelect.innerHTML =
-          '<option value="">Select secondary textile type</option>';
-        secondarySelect.disabled = true;
-      });
-    }
   } else {
     console.error("Primary or secondary select element not found");
   }

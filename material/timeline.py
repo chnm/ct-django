@@ -21,9 +21,20 @@ class Phase:
 
 
 PHASES: dict[str, Phase] = {
-    "pr": Phase("pr", "Production", "PROD", "#3a6b52", "text-madras-green", "bg-tag-green"),
-    "td": Phase("td", "Trade & Distribution", "TRAD", "#9a7328", "text-madras-gold", "bg-tag-gold"),
-    "co": Phase("co", "Consumption", "CONS", "#9c3a2e", "text-madras-red", "bg-tag-red"),
+    "pr": Phase(
+        "pr", "Production", "PROD", "#3a6b52", "text-madras-green", "bg-tag-green"
+    ),
+    "td": Phase(
+        "td",
+        "Trade & Distribution",
+        "TRAD",
+        "#9a7328",
+        "text-madras-gold",
+        "bg-tag-gold",
+    ),
+    "co": Phase(
+        "co", "Consumption", "CONS", "#9c3a2e", "text-madras-red", "bg-tag-red"
+    ),
 }
 UNASSIGNED = Phase(None, "Unassigned", "—", "#9a978c", "text-sub", "bg-paper-2")
 
@@ -124,7 +135,9 @@ def _ticks(lo, hi, x):
 def build_timeline(records, highlight_id=None, compact=False):
     lane_h = 28 if compact else 44
     width, gutter, right_pad = (
-        (COMPACT_WIDTH, COMPACT_GUTTER, COMPACT_RIGHT_PAD) if compact else (WIDTH, GUTTER, RIGHT_PAD)
+        (COMPACT_WIDTH, COMPACT_GUTTER, COMPACT_RIGHT_PAD)
+        if compact
+        else (WIDTH, GUTTER, RIGHT_PAD)
     )
     parsed = []  # (record, start, end)
     undated = unassigned = 0
@@ -177,7 +190,7 @@ def build_timeline(records, highlight_id=None, compact=False):
             )
             if highlighted:
                 band = (bar.x1, bar.x2)
-                band_width = round(bar.x2 - bar.x1, 1)
+                band_width = max(round(bar.x2 - bar.x1, 1), 3)
             lane.bars.append(bar)
         lanes.append(lane)
 

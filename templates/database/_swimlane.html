@@ -23,7 +23,7 @@
       {% for bar in lane.bars %}
         <g opacity="{% if bar.dimmed %}.25{% else %}1{% endif %}">
           <title>Record {{ bar.record_id }} &middot; {{ bar.year_text }}</title>
-          <a href="{% url 'textile_single' item_id=bar.record_id %}">
+          <a href="{% url 'textile_single' item_id=bar.record_id %}" tabindex="-1">
             <line x1="{{ bar.x1 }}" x2="{{ bar.x2 }}" y1="{{ bar.y }}" y2="{{ bar.y }}" stroke="{{ lane.hex }}" stroke-width="{% if bar.highlighted %}3{% else %}2{% endif %}" stroke-linecap="round"/>
             {% if bar.approximate %}
               <line x1="{{ bar.x1 }}" x2="{{ bar.x1 }}" y1="{{ bar.y|add:-4 }}" y2="{{ bar.y|add:4 }}" stroke="{{ lane.hex }}" stroke-width="1"/>

@@ -24,6 +24,16 @@ class TextileTable(tables.Table):
     class Meta:
         model = TextileRecord
         template_name = "database/textile_table.html"
-        fields = ("preview", "year", "textile_type", "textile_subtype", "route", "circulation", "actions")
-        attrs = {"class": "w-full min-w-[900px] border-collapse font-display text-[13.5px] text-ink"}
+        fields = (
+            "preview",
+            "year",
+            "textile_type",
+            "textile_subtype",
+            "route",
+            "circulation",
+            "actions",
+        )
+        attrs = {
+            "class": "w-full min-w-[900px] border-collapse font-display text-[13.5px] text-ink"
+        }
         empty_text = "No results match the search criteria."
