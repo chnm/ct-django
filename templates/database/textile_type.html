@@ -1,7 +1,5 @@
 {% if record.primary_textile_types.all %}
-    {% for type in record.primary_textile_types.all %}
-        <span class="block">{{ type.name }}</span>
-    {% endfor %}
+  {% for type in record.primary_textile_types.all %}<span class="block">{{ type.name }}</span>{% endfor %}
 {% else %}
-    <span class="block text-center">&mdash;</span>
+  <span class="block text-faint">Context record</span>
 {% endif %}

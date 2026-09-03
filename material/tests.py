@@ -276,3 +276,16 @@ class DatabaseListViewTest(TestCase):
         self.assertTrue(html.lstrip().startswith('<div class="table-container"'))
         self.assertIn('hx-swap-oob="true"', html)
         self.assertIn("1 of 1 records placed by circulation", html)
+
+    def test_table_columns_and_cells(self):
+        area = Area.objects.create(name="Caribbean")
+        TextileRecord.objects.create(year="1755", circulation="co", is_public=True, from_area=area, to_area=area)
+        html = self.client.get("/database/").content.decode()
+        for header in ["Preview", "Date", "Textile type", "Subtype", "Origin", "Circulation", "Actions"]:
+            self.assertIn(header, html)
+        self.assertIn("border-dotted", html)          # approximate date
+        self.assertIn("border-dashed", html)          # area-only precision ring
+        self.assertIn("Unassigned", html)             # null circulation tag
+        self.assertIn("Consumption", html)
+        self.assertIn("quick-view/", html)            # actions cell
+        self.assertNotIn("openModal", html)

@@ -53,6 +53,7 @@ urlpatterns = [
     path(
         "database/<int:item_id>/", textile_records_single, name="textile_single"
     ),  # modal view
+    path("database/<int:item_id>/quick-view/", textile_records_single, name="textile_quick_view"),
     path("about/crawler/", about_crawler, name="about_crawler"),
     path("api/keywords/", keyword_search, name="keyword_search"),
     path(
