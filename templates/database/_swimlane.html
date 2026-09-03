@@ -1,0 +1,38 @@
+{# tailwind: bg-madras-green bg-madras-gold bg-madras-red bg-sub border-madras-green border-madras-gold border-madras-red border-sub #}
+{# Context: timeline (material.timeline.Timeline), optional highlight_label (str) #}
+<div class="rounded-lg border border-rule bg-white">
+  <div class="flex flex-wrap items-center justify-between gap-2 px-5 pt-4 pb-1">
+    <span class="lbl">Records over time &middot; by circulation</span>
+    <span class="lbl text-faint">
+      {% if highlight_label %}{{ highlight_label }}{% else %}{{ timeline.placed }} of {{ timeline.total }} records placed by circulation{% if timeline.undated %} &middot; {{ timeline.undated }} undated{% endif %}{% endif %}
+    </span>
+  </div>
+  <svg viewBox="0 0 {{ timeline.width }} {{ timeline.height }}" width="100%" role="img"
+       aria-label="Timeline of records by circulation phase, {{ timeline.domain.0 }} to {{ timeline.domain.1 }}"
+       class="block px-2 pb-2" style="height:auto">
+    {% if timeline.band %}
+      <rect x="{{ timeline.band.0 }}" y="0" width="{{ timeline.band_width }}" height="{{ timeline.axis_y }}" fill="#9a7328" opacity=".08"/>
+    {% endif %}
+    {% for tick in timeline.ticks %}
+      <line x1="{{ tick.x }}" x2="{{ tick.x }}" y1="0" y2="{{ timeline.axis_y }}" stroke="#e4dfd3" stroke-width="1"/>
+      <text x="{{ tick.x }}" y="{{ timeline.axis_y|add:18 }}" text-anchor="middle" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" fill="#9a978c">{{ tick.label }}</text>
+    {% endfor %}
+    {% for lane in timeline.lanes %}
+      <line x1="0" x2="{{ timeline.width }}" y1="{{ lane.y_bottom }}" y2="{{ lane.y_bottom }}" stroke="#efe9dc" stroke-width="1"/>
+      <text x="12" y="{{ lane.y_label }}" font-family="IBM Plex Mono, ui-monospace, monospace" font-size="11" font-weight="600" fill="{{ lane.hex }}">{{ lane.short }}</text>
+      {% for bar in lane.bars %}
+        <g opacity="{% if bar.dimmed %}.25{% else %}1{% endif %}">
+          <title>Record {{ bar.record_id }} &middot; {{ bar.year_text }}</title>
+          <a href="{% url 'textile_single' item_id=bar.record_id %}">
+            <line x1="{{ bar.x1 }}" x2="{{ bar.x2 }}" y1="{{ bar.y }}" y2="{{ bar.y }}" stroke="{{ lane.hex }}" stroke-width="{% if bar.highlighted %}3{% else %}2{% endif %}" stroke-linecap="round"/>
+            {% if bar.approximate %}
+              <line x1="{{ bar.x1 }}" x2="{{ bar.x1 }}" y1="{{ bar.y|add:-4 }}" y2="{{ bar.y|add:4 }}" stroke="{{ lane.hex }}" stroke-width="1"/>
+              <line x1="{{ bar.x2 }}" x2="{{ bar.x2 }}" y1="{{ bar.y|add:-4 }}" y2="{{ bar.y|add:4 }}" stroke="{{ lane.hex }}" stroke-width="1"/>
+            {% endif %}
+            <circle cx="{{ bar.xn }}" cy="{{ bar.y }}" r="{% if bar.highlighted %}4{% else %}3{% endif %}" fill="{{ lane.hex }}"/>
+          </a>
+        </g>
+      {% endfor %}
+    {% endfor %}
+  </svg>
+</div>

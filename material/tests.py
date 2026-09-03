@@ -253,3 +253,26 @@ class DatabaseTagsTest(TestCase):
         html = self.render("{% circulation_tag r %}", r=r2)
         self.assertIn("Unassigned", html)
         self.assertIn("bg-paper-2", html)
+
+
+class DatabaseListViewTest(TestCase):
+    def setUp(self):
+        TextileRecord.objects.create(year="1748", circulation="pr", is_public=True)
+        TextileRecord.objects.create(year="ca. 1800", circulation="td", is_public=True)
+        TextileRecord.objects.create(year="1900", is_public=True)  # unassigned
+
+    def test_list_context_has_timeline_and_renders_swimlane(self):
+        response = self.client.get("/database/")
+        self.assertEqual(response.status_code, 200)
+        t = response.context["timeline"]
+        self.assertEqual((t.placed, t.total, t.unassigned), (2, 3, 1))
+        html = response.content.decode()
+        self.assertIn('id="swimlane"', html)
+        self.assertIn("2 of 3 records placed by circulation", html)
+
+    def test_htmx_response_swaps_table_and_swimlane_out_of_band(self):
+        response = self.client.get("/database/?circulation=pr", HTTP_HX_REQUEST="true")
+        html = response.content.decode()
+        self.assertTrue(html.lstrip().startswith('<div class="table-container"'))
+        self.assertIn('hx-swap-oob="true"', html)
+        self.assertIn("1 of 1 records placed by circulation", html)

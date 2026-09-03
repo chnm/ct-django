@@ -21,6 +21,10 @@
         <h1>Textiles Database</h1>
     </section>
 
+    <div id="swimlane" class="mb-6">
+      {% include "database/_swimlane.html" with timeline=timeline %}
+    </div>
+
     <div class="flex flex-col lg:flex-row gap-6">
         {# Left Column: Filters #}
         <div class="lg:w-1/4 w-full">

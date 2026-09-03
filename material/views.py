@@ -10,6 +10,7 @@ from exhibits.models import ExhibitHome, HomeAboutSnippet
 from material.filters import TextileFilter
 from material.models import PrimaryTextileType, SecondaryTextileType, TextileRecord
 from material.tables import TextileTable
+from material.timeline import build_timeline
 
 logger = logging.getLogger(__name__)
 
@@ -196,4 +197,5 @@ class TextileTableView(SingleTableMixin, FilterView):
         context["max_year"] = max_year
         context["current_min_year"] = current_min
         context["current_max_year"] = current_max
+        context["timeline"] = build_timeline(self.object_list)
         return context
