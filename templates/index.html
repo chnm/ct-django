@@ -3,60 +3,105 @@
 
 {% block title %}Connecting Threads{% endblock title %}
 
-{% block nav_class %}bg-transparent text-white absolute top-0 left-0 w-full z-20{% endblock %}
-
-{% block nav_hero %}{% endblock %}
-
 {% block index %}
-  <!-- Hero Section -->
-  <div class="relative h-screen bg-cover bg-center" style="background-image: url('{% static "img/CT_Exhibition_Opening_Image.original.jpg" %}');">
-    <div class="absolute inset-0 bg-black opacity-50"></div>
-    <div class="relative z-10 flex items-center justify-center h-full text-white">
-      <div class="max-w-6xl mx-auto px-4 grid grid-cols-1 md:grid-cols-2 gap-8 items-center">
-        <!-- Title Column -->
-        <div class="text-center md:text-left">
-          <h1 class="text-4xl md:text-5xl lg:text-6xl font-bold mb-4">{{ about_snippet.title }}</h1>
-          <p class="text-lg md:text-2xl">{{ about_snippet.subtitle }}</p>
-        </div>
-
-        <!-- About Column -->
-        <div class="text-base md:text-lg prose prose-invert">
-          {{ about_snippet.content|safe }}
-        </div>
+  {# ---------- Hero ---------- #}
+  <section class="grid border-b border-rule-2 lg:grid-cols-[1.05fr_1fr]">
+    <div class="flex flex-col justify-center px-6 py-14 sm:px-10 lg:px-14 lg:py-16">
+      <div class="lbl mb-4">Digital exhibition &amp; research database</div>
+      <h1 class="max-w-[640px] font-display text-[40px] font-semibold leading-[1.02] tracking-[-0.02em] text-ink lg:text-[52px]">{{ about_snippet.title }}</h1>
+      <div class="prose prose-p:my-0 mt-5 max-w-[520px] font-serif text-lg leading-[1.62] text-[#45443d]">
+        {{ about_snippet.content|safe }}
       </div>
 
-      <!-- Scroll indicator - moved higher up from bottom -->
-      <div class="absolute bottom-16 md:bottom-24 left-0 right-0 flex justify-center">
-        <svg class="w-8 h-8 text-white animate-bounce" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" viewBox="0 0 24 24" stroke="currentColor">
-          <path d="M19 14l-7 7m0 0l-7-7m7 7V3"></path>
-        </svg>
+      <dl class="my-8 flex max-w-[520px] flex-wrap gap-8 border-y border-rule py-5">
+        <div class="flex flex-col gap-0.5">
+          <dd class="font-display text-[22px] font-semibold text-navy">18th&ndash;19th c.</dd>
+          <dt class="lbl">span</dt>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <dd class="font-display text-[22px] font-semibold text-navy">{{ record_count }}</dd>
+          <dt class="lbl">records</dt>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <dd class="font-display text-[22px] font-semibold text-navy">{{ exhibits|length }}</dd>
+          <dt class="lbl">regions</dt>
+        </div>
+        <div class="flex flex-col gap-0.5">
+          <dd class="font-display text-[22px] font-semibold text-navy">6</dd>
+          <dt class="lbl">partners</dt>
+        </div>
+      </dl>
+
+      <div class="flex flex-wrap gap-3">
+        {% with first=exhibits|first %}
+          <a href="{% if first %}{{ first.url }}{% else %}#exhibits{% endif %}" class="btn-solid">Enter the exhibition</a>
+        {% endwith %}
+        <a href="{% url 'database' %}" class="btn-ghost">Explore the collection &rarr;</a>
       </div>
     </div>
-  </div>
 
-  <!-- Explore Section -->
-  <section id="exhibits" class="py-16 bg-madras-teal bg-opacity-10 min-h-full flex items-center">
-    <div class="container mx-auto px-4 text-center">
-      <h2 class="text-3xl md:text-3xl font-bold mb-8 text-madras-indigo">Explore the story by choosing one of the regions below:</h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
-        {% for exhibit in exhibits %}
-        {# TODO: This is a hacky fix we'll want to properly resolve at some point. #}
-          {% if exhibit.title != "Exhibits" %}
-            <div class="relative group">
-              <div class="w-full h-64 relative">
-                <a href="{{ exhibit.full_url }}">
-                  {% image exhibit.image original class="w-full h-full object-cover" %}
-                  <div class="absolute inset-0 bg-black opacity-50 flex items-center justify-center text-white text-xl font-bold group-hover:opacity-75 transition-opacity">{{ exhibit.title }}</div>
-                </a>
-              </div>
-            </div>
+    <div class="relative min-h-[360px] bg-[#2b2620] lg:min-h-[560px]">
+      <img src="{% static 'img/hero-dolls.jpg' %}" alt="Three dolls in madras dress" class="absolute inset-0 h-full w-full object-cover object-[50%_30%]">
+      <div class="absolute bottom-6 left-6 rounded bg-[rgba(15,12,8,.74)] px-3 py-2 font-mono text-[11.5px] text-[#f2ede0] backdrop-blur">FIG. 1 &mdash; Creole dolls in madras dress, French Caribbean, 19th c. &middot; V&amp;A</div>
+    </div>
+  </section>
+
+  {# ---------- Regions ---------- #}
+  <section id="exhibits" class="mx-auto max-w-7xl px-6 py-14 lg:px-8">
+    <h2 class="mb-8 font-display text-[34px] font-semibold tracking-[-0.015em] text-ink">Explore the story by region</h2>
+    <div class="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+      {% for exhibit in exhibits %}
+        <a href="{{ exhibit.url }}" class="block overflow-hidden rounded-lg border border-rule bg-white no-underline transition-shadow hover:shadow-md">
+          {% if exhibit.image %}
+            {% image exhibit.image fill-640x420 class="h-[150px] w-full object-cover" %}
+          {% else %}
+            <div class="h-[150px] plaid-{{ forloop.counter }}"></div>
           {% endif %}
-        {% endfor %}
+          <div class="px-4 pb-5 pt-4">
+            <div class="lbl mb-1.5 {% cycle 'text-madras-red' 'text-madras-green' 'text-navy' 'text-madras-gold' %}">Chapter {{ forloop.counter|stringformat:"02d" }}</div>
+            <div class="font-display text-[17px] font-semibold text-navy">{{ exhibit.title }}</div>
+            {% if exhibit.hero_text %}
+              <div class="mt-1.5 font-mono text-[13px] text-faint-2">{{ exhibit.hero_text }}</div>
+            {% endif %}
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  </section>
+
+  {# ---------- What's inside ---------- #}
+  <section class="border-t border-rule">
+    <div class="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-3 lg:px-8">
+      <a href="#exhibits" class="flex flex-col gap-2 no-underline">
+        <div class="lbl text-madras-red">01 / Exhibition</div>
+        <div class="font-display text-[19px] font-semibold text-navy">A guided visual story</div>
+        <p class="font-serif text-[15px] leading-[1.55] text-[#55544c]">Four chapters trace Madras from South Indian looms to Caribbean dress and back into European fashion.</p>
+      </a>
+      <a href="{% url 'database' %}" class="flex flex-col gap-2 no-underline">
+        <div class="lbl text-madras-gold">02 / Database</div>
+        <div class="font-display text-[19px] font-semibold text-navy">{{ record_count }} object &amp; archive records</div>
+        <p class="font-serif text-[15px] leading-[1.55] text-[#55544c]">Examined 2022&ndash;2024, filterable by type, place, circulation and date &mdash; with uncertainty kept visible.</p>
+      </a>
+      <a href="/lessons/" class="flex flex-col gap-2 no-underline">
+        <div class="lbl text-madras-green">03 / Lesson Plans</div>
+        <div class="font-display text-[19px] font-semibold text-navy">Five classroom units</div>
+        <p class="font-serif text-[15px] leading-[1.55] text-[#55544c]">Open-access guidance for educators using the project&rsquo;s research and materials.</p>
+      </a>
+    </div>
+  </section>
+
+  {# ---------- Funder logos ---------- #}
+  <section class="border-t border-rule bg-white">
+    <div class="mx-auto max-w-7xl px-6 py-10 lg:px-8">
+      <div class="lbl mb-6 text-center">Supported by</div>
+      <div class="flex flex-wrap items-center justify-center gap-x-10 gap-y-6">
+        <a href="https://www.neh.gov"><img src="{% static 'img/neh-logo.jpg' %}" alt="National Endowment for the Humanities" class="h-14 w-auto"></a>
+        <a href="https://www.ukri.org/councils/ahrc/"><img src="{% static 'img/ukri-ahrc-square-logo.png' %}" alt="Arts and Humanities Research Council" class="h-16 w-auto"></a>
+        <a href="https://rrchnm.org"><img src="{% static 'img/rrchnm-logo.png' %}" alt="Roy Rosenzweig Center for History and New Media" class="h-14 w-auto"></a>
+        <img src="{% static 'img/gmu-logo.png' %}" alt="George Mason University" class="h-14 w-auto">
+        <img src="{% static 'img/edinburgh-logo.png' %}" alt="University of Edinburgh" class="h-14 w-auto">
+        <img src="{% static 'img/va-red.png' %}" alt="V&amp;A Museum" class="h-16 w-auto">
       </div>
     </div>
   </section>
 {% endblock index %}
-
-{% block extrajs %}
-  <script src="{% static 'js/ct.js' %}"></script>
-{% endblock extrajs %}

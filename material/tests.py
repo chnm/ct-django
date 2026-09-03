@@ -1,6 +1,6 @@
 from unittest.mock import Mock, patch
 
-from django.test import TestCase
+from django.test import TestCase, override_settings
 from geopy.exc import GeocoderUnavailable
 
 from material.models import (
@@ -197,3 +197,26 @@ class IndexViewTest(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertTemplateUsed(response, "index.html")
         self.assertEqual(response.context["record_count"], 1)
+
+    # ponytail: STORAGES["staticfiles"] is CompressedManifestStaticFilesStorage
+    # even with DEBUG=True, so {% static %} always hashes filenames
+    # (hero-dolls.<hash>.jpg). Swap to plain StaticFilesStorage just for this
+    # assertion so it can check literal filenames; root fix would be making
+    # settings.py use unhashed static storage when DEBUG=True.
+    @override_settings(
+        STORAGES={
+            "default": {"BACKEND": "django.core.files.storage.FileSystemStorage"},
+            "staticfiles": {
+                "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
+            },
+        }
+    )
+    def test_index_renders_field_notes_sections(self):
+        response = self.client.get("/")
+        html = response.content.decode()
+        self.assertIn('id="exhibits"', html)
+        self.assertIn("Explore the story by region", html)
+        self.assertIn("18th&ndash;19th c.", html)
+        self.assertIn("hero-dolls.jpg", html)
+        self.assertIn("neh-logo.jpg", html)  # funder logo bar
+        self.assertNotIn("ct.js", html)  # carousel script dropped
