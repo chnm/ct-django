@@ -17,6 +17,11 @@ SECRET_KEY = env(
     default="django-insecure meayau2fu^q2$7e4e&s41gsc12umxc2jopbaq^@$0xjd0twpb2",
 )
 ALLOWED_HOSTS = env.list("DJANGO_ALLOWED_HOSTS", default=["localhost"])
+# Loopback hosts must always be accepted so an in-container health probe
+# (e.g. the Docker HEALTHCHECK hitting http://localhost:8000/health/) is not
+# rejected with DisallowedHost when DJANGO_ALLOWED_HOSTS is set to the real
+# public hostname.
+ALLOWED_HOSTS += [h for h in ("localhost", "127.0.0.1") if h not in ALLOWED_HOSTS]
 CSRF_TRUSTED_ORIGINS = env.list(
     "DJANGO_CSRF_TRUSTED_ORIGINS", default=["http://localhost"]
 )
