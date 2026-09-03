@@ -65,7 +65,7 @@ def test_empty_input_has_default_domain_and_no_bars():
 
 
 def test_ticks_scale_with_domain():
-    labels = [k.label for k in build_timeline([rec(1, "600"), rec(2, "2022")]).ticks]
+    labels = [k.label for k in build_timeline([rec(1, "7th century"), rec(2, "2022")]).ticks]
     assert labels[0] == "600" and labels[-1] == "2030"
     assert all(int(v) % 100 == 0 for v in labels[1:-1])  # century ticks over a wide domain
     assert "1000" in labels and len(labels) <= 20

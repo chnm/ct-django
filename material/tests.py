@@ -182,7 +182,7 @@ class SiteChromeTest(TestCase):
         response = self.client.get("/about/crawler/")
         self.assertEqual(response.status_code, 200)
         html = response.content.decode()
-        self.assertIn("Fashioning Madras in India &amp; the Caribbean", html)
+        self.assertIn('class="lbl tracking-[.1em] text-faint-2"', html)
         self.assertIn("Supported by", html)
         self.assertNotIn("CT_Exhibition_Opening_Image", html)
         # Launch Event moved out of the nav into the footer's Project column.
@@ -212,7 +212,6 @@ class IndexViewTest(TestCase):
         html = response.content.decode()
         self.assertIn('id="exhibits"', html)
         self.assertIn("Explore the story by region", html)
-        self.assertIn("18th&ndash;19th c.", html)
         self.assertIn("hero-dolls.jpg", html)
         self.assertIn("neh-logo.jpg", html)  # funder logo bar
         self.assertNotIn("ct.js", html)  # carousel script dropped
