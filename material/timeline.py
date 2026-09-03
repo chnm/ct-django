@@ -85,9 +85,8 @@ class Timeline:
     band_width: float | None
 
 
-WIDTH = 1000
-GUTTER = 64
-RIGHT_PAD = 16
+WIDTH, GUTTER, RIGHT_PAD = 1000, 64, 16
+COMPACT_WIDTH, COMPACT_GUTTER, COMPACT_RIGHT_PAD = 520, 44, 12
 TOP = 8
 AXIS_H = 26
 ROWS = 3
@@ -124,6 +123,9 @@ def _ticks(lo, hi, x):
 
 def build_timeline(records, highlight_id=None, compact=False):
     lane_h = 28 if compact else 44
+    width, gutter, right_pad = (
+        (COMPACT_WIDTH, COMPACT_GUTTER, COMPACT_RIGHT_PAD) if compact else (WIDTH, GUTTER, RIGHT_PAD)
+    )
     parsed = []  # (record, start, end)
     undated = unassigned = 0
     for r in records:
@@ -138,10 +140,10 @@ def build_timeline(records, highlight_id=None, compact=False):
     total = len(parsed) + undated + unassigned
 
     lo, hi = _domain([(s, e) for _, s, e in parsed])
-    plot_w = WIDTH - GUTTER - RIGHT_PAD
+    plot_w = width - gutter - right_pad
 
     def x(year):
-        return round(GUTTER + (year - lo) / (hi - lo) * plot_w, 1)
+        return round(gutter + (year - lo) / (hi - lo) * plot_w, 1)
 
     lanes = []
     band = None
@@ -184,9 +186,9 @@ def build_timeline(records, highlight_id=None, compact=False):
         lanes=lanes,
         ticks=_ticks(lo, hi, x),
         domain=(lo, hi),
-        width=WIDTH,
+        width=width,
         height=axis_y + AXIS_H,
-        gutter=GUTTER,
+        gutter=gutter,
         axis_y=axis_y,
         placed=len(parsed),
         total=total,

@@ -84,6 +84,8 @@ def test_compact_reduces_height():
     full = build_timeline([rec(1, "1748")])
     compact = build_timeline([rec(1, "1748")], compact=True)
     assert compact.height < full.height
+    assert compact.width < full.width
+    assert compact.gutter < full.gutter
 
 
 def test_bars_in_a_lane_spread_over_three_rows():
