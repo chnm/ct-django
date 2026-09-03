@@ -7,20 +7,20 @@ requires-python = ">=3.12"
 readme = "README.md"
 license = "MIT"
 dependencies = [
-    "django>=6.0.8,<6.1",
-    "daphne>=4.1.2,<5",
+    "django>=6.1,<6.2",
+    "daphne>=4.2.3,<5",
     "whitenoise>=6.12.0,<7",
     "django-htmx>=1.29.0,<2",
-    "django-environ>=0.13.0,<0.14",
-    "django-tailwind>=3.9.1,<4",
+    "django-environ>=0.14.0,<0.15",
+    "django-tailwind>=4.5.0,<5",
     "django-allauth>=65.19.1,<66",
-    "wagtail>=7.4.3,<8",
+    "wagtail>=8.0,<9",
     "django-taggit>=6.1.0,<7",
     "django-modelcluster>=6.5,<7",
     "django-import-export>=4.4.1,<5",
     "geopy>=2.5.0,<3",
-    "django-tables2>=3.0.0,<4",
-    "django-filter>=25.2,<26",
+    "django-tables2>=3.0.1,<4",
+    "django-filter>=26.1,<27",
     "fontawesomefree>=6.6.0,<7",
     "django-storages>=1.14.6,<2",
     "boto3>=1.43.83,<2",
@@ -35,10 +35,10 @@ dependencies = [
 
 [dependency-groups]
 dev = [
-    "black>=26.3.1,<27",
+    "black>=26.5.1,<27",
     "djhtml>=3.0.11,<4",
-    "pre-commit>=4.6.0,<5",
-    "django-debug-toolbar>=6.3.0,<7",
+    "pre-commit>=4.6.2,<5",
+    "django-debug-toolbar>=7.1.1,<8",
     "pytest-django>=4.14.0,<5",
     "pylint-django>=2.8.0,<3",
 ]
