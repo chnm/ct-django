@@ -173,3 +173,17 @@ class ImageModelTest(TestCase):
 
     def test_string_representation(self):
         self.assertEqual(str(self.image), f"Image for {self.textile_record}")
+
+
+class SiteChromeTest(TestCase):
+    """base.html nav and footer render on any page that extends it."""
+
+    def test_about_crawler_page_has_new_chrome(self):
+        response = self.client.get("/about/crawler/")
+        self.assertEqual(response.status_code, 200)
+        html = response.content.decode()
+        self.assertIn("Fashioning Madras in India &amp; the Caribbean", html)
+        self.assertIn("Supported by", html)
+        self.assertNotIn("CT_Exhibition_Opening_Image", html)
+        # Launch Event moved out of the nav into the footer's Project column.
+        self.assertEqual(html.count("Launch Event"), 1)
