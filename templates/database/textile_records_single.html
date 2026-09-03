@@ -60,9 +60,9 @@
         <div class="rounded-lg border border-dashed border-rule bg-white p-4">
           {% if item.from_place or item.from_area or item.to_place or item.to_area %}
             <div class="font-display text-[15px]">
-              {% if item.from_place or item.from_area %}{% precision_dot item "from" %}{{ item.from_place.city|default:item.from_area.name }}{% else %}<span class="text-faint">&mdash;</span>{% endif %}
+              {% if item.from_place or item.from_area %}{% precision_dot item "from" %}{% firstof item.from_place.city item.from_area.name %}{% else %}<span class="text-faint">&mdash;</span>{% endif %}
               <span class="mx-1 text-faint">&rarr;</span>
-              {% if item.to_place or item.to_area %}{% precision_dot item "to" %}{{ item.to_place.city|default:item.to_area.name }}{% else %}<span class="text-faint">&mdash;</span>{% endif %}
+              {% if item.to_place or item.to_area %}{% precision_dot item "to" %}{% firstof item.to_place.city item.to_area.name %}{% else %}<span class="text-faint">&mdash;</span>{% endif %}
             </div>
             {% if not item.from_place and not item.to_place %}<p class="mt-2 font-serif text-sm text-sub">Located to an area only &mdash; no specific place or route is documented.</p>{% endif %}
           {% else %}

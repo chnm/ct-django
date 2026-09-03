@@ -364,3 +364,11 @@ class RecordPageTest(TestCase):
 
     def test_private_record_is_404(self):
         self.assertEqual(self.client.get(f"/database/{self.private.id}/").status_code, 404)
+
+    def test_place_without_area_renders(self):
+        place = Place.objects.create(city="Pulicat", country="India", latitude=1, longitude=1)
+        self.item.from_place = place
+        self.item.from_area = None
+        self.item.save()
+        self.assertEqual(self.client.get(f"/database/{self.item.id}/").status_code, 200)
+        self.assertEqual(self.client.get("/database/").status_code, 200)
