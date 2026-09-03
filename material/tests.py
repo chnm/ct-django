@@ -289,3 +289,17 @@ class DatabaseListViewTest(TestCase):
         self.assertIn("Consumption", html)
         self.assertIn("quick-view/", html)            # actions cell
         self.assertNotIn("openModal", html)
+
+    def test_circulation_filter_accepts_multiple_values(self):
+        response = self.client.get("/database/?circulation=pr&circulation=td")
+        self.assertEqual(response.context["timeline"].placed, 2)
+        response = self.client.get("/database/?circulation=co")
+        self.assertEqual(response.context["timeline"].placed, 0)
+
+    def test_sidebar_has_field_notes_controls_and_no_modal(self):
+        html = self.client.get("/database/").content.decode()
+        self.assertIn("Search filters", html)
+        self.assertIn('name="circulation" value="pr"', html)
+        self.assertIn('name="text_search"', html)
+        self.assertNotIn('id="detailsModal"', html)
+        self.assertNotIn('name="keyword"', html)

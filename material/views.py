@@ -128,7 +128,11 @@ class TextileTableView(SingleTableMixin, FilterView):
     table_class = TextileTable
     filterset_class = TextileFilter
     # Only show public records that are properly reviewed
-    queryset = TextileRecord.objects.filter(is_public=True)
+    queryset = (
+        TextileRecord.objects.filter(is_public=True)
+        .select_related("from_place", "from_area", "to_place", "to_area")
+        .prefetch_related("primary_textile_types", "secondary_textile_types", "images")
+    )
 
     def get_template_names(self):
         if self.request.htmx:
@@ -169,7 +173,6 @@ class TextileTableView(SingleTableMixin, FilterView):
         # Round to nearest century boundaries for cleaner UI
         min_year = (min_year // 100) * 100
         max_year = ((max_year // 100) + 1) * 100
-        keywords = Tag.objects.all().values_list("name", flat=True).order_by("name")
         source_types = (
             textile_records.values_list("source_type", flat=True)
             .exclude(source_type__isnull=True)
@@ -188,9 +191,6 @@ class TextileTableView(SingleTableMixin, FilterView):
         except (ValueError, AttributeError):
             current_min, current_max = min_year, max_year
 
-        context["years"] = years
-        context["keywords"] = keywords
-        context["selected_keyword"] = self.request.GET.get("keyword")
         context["source_types"] = source_types
         context["circulation_types"] = circulation_types
         context["min_year"] = min_year

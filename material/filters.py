@@ -144,8 +144,10 @@ class TextileFilter(django_filters.FilterSet):
     source_type = django_filters.CharFilter(
         field_name="source_type", lookup_expr="exact", label="Source type"
     )
-    circulation = django_filters.CharFilter(
-        field_name="circulation", lookup_expr="icontains", label="Circulation"
+    circulation = django_filters.MultipleChoiceFilter(
+        field_name="circulation",
+        choices=TextileRecord.CIRCULATION_CHOICES,
+        label="Circulation",
     )
     source_reference = django_filters.CharFilter(
         field_name="source_reference", lookup_expr="icontains", label="Source reference"
