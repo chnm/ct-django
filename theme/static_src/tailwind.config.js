@@ -41,20 +41,49 @@ module.exports = {
      */
     // '../../**/*.py'
   ],
+  safelist: [
+    // Component classes that should always be emitted
+    'bg-paper', 'bg-paper-2', 'bg-paper-3',
+    'border-rule', 'border-rule-2',
+    'text-ink', 'text-navy', 'bg-navy', 'border-navy-2',
+    'text-sub', 'text-faint', 'text-faint-2', 'text-label',
+    'text-madras-red', 'text-madras-gold', 'text-madras-green',
+    'bg-tag-red', 'bg-tag-gold', 'bg-tag-green',
+    'border-ghost-border',
+    'font-display', 'font-serif', 'font-mono'
+  ],
   theme: {
     extend: {
       fontFamily: {
-        sans: [
-          "Optima",
-          "Candara",
-          "Noto Sans",
-          "source-sans-pro",
-          "sans-serif",
-        ],
+        sans: ['"Space Grotesk"', "system-ui", "sans-serif"],
+        display: ['"Space Grotesk"', "system-ui", "sans-serif"],
+        serif: ['"Newsreader"', "Georgia", "serif"],
+        mono: ['"IBM Plex Mono"', "ui-monospace", "monospace"],
       },
       colors: {
-        // Core textile-inspired colors
-        "madras-red": "#DEB3A0",
+        // Field Notes system (2026 redesign)
+        paper: "#fbfaf7",
+        "paper-2": "#f8f5ee",
+        "paper-3": "#faf8f2",
+        rule: "#e4dfd3",
+        "rule-2": "#e7e2d6",
+        ink: "#1a1a1a",
+        navy: "#20303f",
+        "navy-2": "#33475a",
+        sub: "#5b5b52",
+        faint: "#9a978c",
+        "faint-2": "#9a857f",
+        label: "#8a857a",
+        "madras-gold": "#9a7328",
+        "madras-green": "#3a6b52",
+        "tag-red": "#f6ece9",
+        "tag-gold": "#f4efe3",
+        "tag-green": "#eef3ef",
+        "ghost-border": "#cfc8b8",
+
+        // Legacy palette — still used by database, exhibit, concepts, lessons
+        // templates until their redesign phase lands. Do not remove yet.
+        "madras-red": "#9c3a2e",
         "madras-mustard": "#E0A15A",
         "madras-teal": "#3A6B78",
         "madras-indigo": "#1F2933",

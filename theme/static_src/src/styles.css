@@ -1,3 +1,90 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-display antialiased;
+  }
+}
+
+.stripe {
+  height: 4px;
+  background: linear-gradient(90deg, #9c3a2e 0 22%, #9a7328 22% 46%, #3a6b52 46% 68%, #20303f 68% 100%);
+}
+
+.stripe-footer {
+  height: 4px;
+  background: linear-gradient(90deg, #9c3a2e 0 22%, #9a7328 22% 46%, #3a6b52 46% 68%, #c9c2b4 68% 100%);
+}
+
+.lbl {
+  font-family: "IBM Plex Mono", ui-monospace, monospace;
+  font-size: 10.5px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.14em;
+  color: #8a857a;
+}
+
+.btn-solid {
+  display: inline-block;
+  border-radius: 0.375rem;
+  background-color: #20303f;
+  padding: 13px 22px;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #fbfaf7;
+  text-decoration: none;
+}
+
+.btn-solid:hover {
+  background-color: #2b3f52;
+}
+
+.btn-ghost {
+  display: inline-block;
+  border-radius: 0.375rem;
+  border: 1px solid #cfc8b8;
+  background-color: transparent;
+  padding: 13px 22px;
+  font-family: "Space Grotesk", system-ui, sans-serif;
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: #20303f;
+  text-decoration: none;
+}
+
+.btn-ghost:hover {
+  background-color: #f8f5ee;
+}
+
+/* CSS madras plaid tiles — fallbacks for region cards without an image. */
+.plaid-1 {
+  background-color: #8a2f2c;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.28) 0 6px, transparent 6px 26px, rgba(212,160,60,.85) 26px 30px, transparent 30px 40px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 6px, transparent 6px 26px, rgba(240,232,214,.7) 26px 30px, transparent 30px 40px);
+}
+
+.plaid-2 {
+  background-color: #2f5a4a;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.25) 0 5px, transparent 5px 22px, rgba(158,51,39,.7) 22px 27px, transparent 27px 36px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 5px, transparent 5px 22px, rgba(240,232,214,.6) 22px 27px, transparent 27px 36px);
+}
+
+.plaid-3 {
+  background-color: #26324a;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.3) 0 7px, transparent 7px 30px, rgba(240,232,214,.55) 30px 34px, transparent 34px 46px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.3) 0 7px, transparent 7px 30px, rgba(240,232,214,.55) 30px 34px, transparent 34px 46px);
+}
+
+.plaid-4 {
+  background-color: #b06a1e;
+  background-image:
+    repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 5px, transparent 5px 18px, rgba(58,107,82,.7) 18px 23px, transparent 23px 34px),
+    repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 5px, transparent 5px 18px, rgba(158,51,39,.7) 18px 23px, transparent 23px 34px);
+}
