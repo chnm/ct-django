@@ -23,7 +23,12 @@ class StagedMuseumItem(models.Model):
     archive = models.CharField(blank=True, null=True, max_length=100)
     manifest = models.URLField(blank=True, default="")
     thumbnail = models.URLField(blank=True, default="")
-    image = models.ImageField(upload_to='staged_items/', blank=True, null=True, verbose_name="Downloaded Image")
+    image = models.ImageField(
+        upload_to="staged_items/",
+        blank=True,
+        null=True,
+        verbose_name="Downloaded Image",
+    )
     api_response = JSONField()
 
     # Staging-specific fields

@@ -1,0 +1,14 @@
+.git
+.github
+.venv
+.pytest_cache
+__pycache__
+*.py[cod]
+*.log
+.env
+node_modules
+theme/static_src/node_modules
+mediafiles
+staticfiles
+htmlcov
+.coverage

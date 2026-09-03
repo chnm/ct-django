@@ -17,6 +17,7 @@ updates:
   - package-ecosystem: "npm"
     directories:
       - "/"
+      - "/theme/static_src"
     groups:
       all-npm-dependencies:
         patterns:

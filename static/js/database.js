@@ -212,14 +212,14 @@ function openModal(recordId, recordUrl) {
             </div>
           </div>
         </div>
-        
+
         <div class="mt-4">
           <h4 class="text-xs font-semibold text-gray-500 uppercase">Summary of Record</h4>
           <p class="text-sm text-gray-800 mt-1">${safeData(
             data.summary_of_record,
           )}</p>
         </div>
-        
+
         <div class="mt-6 flex justify-center">
           <a href="${recordUrl}" class="inline-flex items-center gap-2 px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-secondary hover:bg-secondary-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary-300 transition-colors">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">

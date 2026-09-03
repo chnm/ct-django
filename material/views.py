@@ -1,7 +1,5 @@
 import logging
 
-from django.db import models
-from django.db.models import Max, Min
 from django.http import JsonResponse
 from django.shortcuts import get_object_or_404, render
 from django_filters.views import FilterView
@@ -32,7 +30,7 @@ def index(request):
                 <p>This exhibition explores the influence of Madras handkerchiefs on 18th and 19th century dress, from its origins in South India to Madras fashions in the Greater Caribbean and beyond.</p>
                 """,
             )
-    except:
+    except Exception:
         # In case of any issues, provide a fallback snippet
         about_snippet = {
             "title": "Connecting Threads",

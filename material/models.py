@@ -1,6 +1,11 @@
-from django.db import models
+import logging
 
+from django.conf import settings
+from django.db import models
+from geopy.exc import GeopyError
 from taggit.managers import TaggableManager
+
+logger = logging.getLogger(__name__)
 
 
 class Area(models.Model):
@@ -19,7 +24,6 @@ class Area(models.Model):
 
 
 class Place(models.Model):
-    #
     id = models.AutoField(primary_key=True)
     city = models.CharField(max_length=765, unique=True, default="Unnamed City")
     country = models.CharField(max_length=765, blank=True, null=True)
@@ -39,25 +43,29 @@ class Place(models.Model):
 
     # Automatically derive the latitude/longitude from the available data.
     def save(self, *args, **kwargs):
+        if self.latitude is not None and self.longitude is not None:
+            return super().save(*args, **kwargs)
+
+        query = None
         if self.city is not None and self.country is not None:
-            from geopy.geocoders import Nominatim
-
-            geolocator = Nominatim(user_agent="textiles")
-            location = geolocator.geocode(f"{self.city}, {self.country}")
-            if location is not None:
-                self.latitude = location.latitude
-                self.longitude = location.longitude
+            query = f"{self.city}, {self.country}"
         elif self.country is not None:
+            query = self.country
+
+        if query:
             from geopy.geocoders import Nominatim
 
-            geolocator = Nominatim(user_agent="textiles")
-            location = geolocator.geocode(self.country)
+            geolocator = Nominatim(user_agent=settings.GEOCODING_USER_AGENT)
+            try:
+                location = geolocator.geocode(query, timeout=10)
+            except GeopyError:
+                logger.warning("Unable to geocode place %s", query, exc_info=True)
+                location = None
             if location is not None:
                 self.latitude = location.latitude
                 self.longitude = location.longitude
-        else:
-            pass
-        super(Place, self).save(*args, **kwargs)
+
+        super().save(*args, **kwargs)
 
     class Meta:
         unique_together = (
@@ -248,7 +256,7 @@ class TextileAlias(models.Model):
     alias = models.CharField(max_length=765, unique=True)
 
     def __str__(self) -> str:
-        return f"{self.alias} for {self.textile_record}"
+        return f"{self.alias} for {self.textile_record_primary}"
 
     class Meta:
         verbose_name_plural = "Textile Aliases"

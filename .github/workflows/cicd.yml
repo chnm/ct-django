@@ -17,12 +17,12 @@ jobs:
 
       container-registry: "ghcr.io"
       container-image-name: "ct-django"
-      
+
       django-context-root: "."
 
       website-devl-fqdn: "connectingthreads.co.uk"
       website-prod-fqdn: "connectingthreads.co.uk"
-      
+
   deploy:
     uses: chnm/.github/.github/workflows/django--deploy.yml@main
     needs: [build-publish]

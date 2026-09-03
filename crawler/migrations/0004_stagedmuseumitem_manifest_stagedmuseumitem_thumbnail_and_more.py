@@ -4,7 +4,6 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
         ("crawler", "0003_stagedmuseumitem_image_alter_stagedmuseumitem_id_and_more"),
     ]

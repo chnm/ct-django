@@ -10,90 +10,90 @@
             Roy Rosenzweig Center for History and New Media, George Mason University<br>
         </p>
     </div>
-    
+
     <p class="lead text-xl mb-4">
-        The Connecting Threads project uses a custom web crawler we call <strong>Threadbare</strong> that's built into our web app platform, Django, to automatically retrieve and process textile-related 
+        The Connecting Threads project uses a custom web crawler we call <strong>Threadbare</strong> that's built into our web app platform, Django, to automatically retrieve and process textile-related
         records from museum APIs around the world.
     </p>
 
     <h2 class="text-2xl font-semibold mt-8 mb-4 text-secondary-700">How It Works</h2>
-    
+
     <p class="mb-4">
-        Threadbare connects to museum APIs (an Application Programming Interface) using authenticated requests and searches for textile-related objects 
-        using specific keywords and parameters. The crawler is designed to respect API rate limits and handle 
+        Threadbare connects to museum APIs (an Application Programming Interface) using authenticated requests and searches for textile-related objects
+        using specific keywords and parameters. The crawler is designed to respect API rate limits and handle
         large datasets efficiently. We retrieve museum data as structured <a href="https://www.json.org/json-en.html" target="_blank" rel="noopener noreferrer">JSON</a> responses, which are then parsed and processed to extract relevant metadata and media files.
     </p>
 
     <p class="mb-4">The crawler operates in this way:</p>
 
     <ol class="list-decimal list-inside mb-6 space-y-3 ml-4">
-        <li><strong>Authenticates and queries the API:</strong> When a fetch is triggered by a team member, Threadbare uses museum-provided API keys to search collections 
+        <li><strong>Authenticates and queries the API:</strong> When a fetch is triggered by a team member, Threadbare uses museum-provided API keys to search collections
         for textile-related objects based on keywords, material types, date ranges, or project-specific exhibits and keywords.</li>
-        
-        <li><strong>Retrieves comprehensive metadata:</strong> Collects object titles, dates, descriptions, 
+
+        <li><strong>Retrieves comprehensive metadata:</strong> Collects object titles, dates, descriptions,
         material specifications, provenance information, and catalog references.</li>
-        
-        <li><strong>Downloads associated media:</strong> Fetches high-resolution images, thumbnails, and IIIF 
+
+        <li><strong>Downloads associated media:</strong> Fetches high-resolution images, thumbnails, and IIIF
         manifest URLs when available, storing them for preservation and access not dependent upon the original source.</li>
-        
-        <li><strong>Stages data for review:</strong> All retrieved records are placed in a staging area where 
+
+        <li><strong>Stages data for review:</strong> All retrieved records are placed in a staging area where
         they remain unpublished until reviewed by project researchers.</li>
-        
-        <li><strong>Enables curatorial workflow:</strong> Researchers can preview staged items, edit or enhance 
+
+        <li><strong>Enables curatorial workflow:</strong> Researchers can preview staged items, edit or enhance
         metadata, link related records, and approve items for publication to the public database.</li>
-        
-        <li><strong>Maintains provenance:</strong> Each published record retains a link to its original museum 
+
+        <li><strong>Maintains provenance:</strong> Each published record retains a link to its original museum
         source, including the original museum ID and source URL for attribution and verification.</li>
     </ol>
 
     <p class="mb-4">
-        The crawler runs on-demand rather than continuously, allowing the team to target specific collections. This 
+        The crawler runs on-demand rather than continuously, allowing the team to target specific collections. This
         approach ensures quality control and prevents the database from being overwhelmed with potentially irrelevant records.
     </p>
-    
+
     <div class="bg-secondary-50 border-l-4 border-secondary-500 p-4 mt-8 not-prose">
         <p class="font-semibold mb-3 text-secondary-900">Technical Details</p>
         <div class="text-sm text-secondary-800 space-y-2">
             <p>
-                <strong>Architecture:</strong> Threadbare is built with Python 3.11+ and Django 5.0, leveraging Django's 
-                ORM for data persistence and model validation. The crawler uses asynchronous requests via the 
-                <code class="bg-accent-100 px-1 rounded">httpx</code> library to efficiently process large datasets 
+                <strong>Architecture:</strong> Threadbare is built with Python 3.11+ and Django 5.0, leveraging Django's
+                ORM for data persistence and model validation. The crawler uses asynchronous requests via the
+                <code class="bg-accent-100 px-1 rounded">httpx</code> library to efficiently process large datasets
                 without blocking operations.
             </p>
             <p>
-                <strong>Bespoke:</strong> The crawler is custom-developed to meet the specific needs of the Connecting Threads project and 
-                specific museum collections. It is not a general-purpose web crawler but is tailored to interact with 
+                <strong>Bespoke:</strong> The crawler is custom-developed to meet the specific needs of the Connecting Threads project and
+                specific museum collections. It is not a general-purpose web crawler but is tailored to interact with
                 particular APIs and data structures.
             </p>
             <p>
-                <strong>Data Processing:</strong> JSON responses from museum APIs are parsed and validated using 
-                Pydantic models to ensure data integrity before database insertion. Image files are downloaded 
+                <strong>Data Processing:</strong> JSON responses from museum APIs are parsed and validated using
+                Pydantic models to ensure data integrity before database insertion. Image files are downloaded
                 asynchronously and stored using Django's storage backend.
             </p>
             <p>
-                <strong>Rate Limiting:</strong> The crawler implements exponential backoff and respects API rate limits 
+                <strong>Rate Limiting:</strong> The crawler implements exponential backoff and respects API rate limits
                 to maintain good citizenship with museum partners. Failed requests are logged and can be retried manually.
             </p>
             <p>
-                <strong>Open Source:</strong> The complete source code and documentation are available in our 
-                <a href="https://github.com/chnm/ct-django" target="_blank" rel="noopener noreferrer" class="text-secondary-700 hover:text-secondary-800 underline font-medium">GitHub repository</a>. 
+                <strong>Open Source:</strong> The complete source code and documentation are available in our
+                <a href="https://github.com/chnm/ct-django" target="_blank" rel="noopener noreferrer" class="text-secondary-700 hover:text-secondary-800 underline font-medium">GitHub repository</a>.
                 The project is licensed under the MIT License, and contributions are welcome.
             </p>
         </div>
     </div>
 
-      
+
     <h2 class="text-2xl font-semibold mt-8 mb-4 text-secondary-700">Data Quality & Review</h2>
-    
+
     <p class="mb-4">
-        All items retrieved by the crawler go through a review process before being published to the public database. When records are retrieved, 
-        they are stored in a catchment area of the Django application---a separate application designed to hold various items pending review. Once 
+        All items retrieved by the crawler go through a review process before being published to the public database. When records are retrieved,
+        they are stored in a catchment area of the Django application---a separate application designed to hold various items pending review. Once
         items have been reviewed or edited, they can be promoted to the main database for public access.
     </p>
-    
+
     <h2 class="text-2xl font-semibold mt-8 mb-4 text-secondary-700">Museum Partners</h2>
     <p class="mb-4">
-        We are grateful to the following museums we work with to retrieve data from their APIs: 
+        We are grateful to the following museums we work with to retrieve data from their APIs:
     </p>
 
     <ul class="list-disc list-inside mb-6 space-y-2">
@@ -104,8 +104,8 @@
     <div class="bg-accent-50 border border-accent-200 rounded-lg p-4 not-prose">
         <p class="text-sm text-accent-700 mb-2 font-medium">Cite this page:</p>
         <p class="text-sm text-accent-800 font-serif">
-            Heppler, Jason A. "Threadbare: The Museum API Crawler." <em>Connecting Threads</em>. 
-            Roy Rosenzweig Center for History and New Media, George Mason University, December 2025. 
+            Heppler, Jason A. "Threadbare: The Museum API Crawler." <em>Connecting Threads</em>.
+            Roy Rosenzweig Center for History and New Media, George Mason University, December 2025.
             <a href="https://connectingthreads.org/about/crawler/" class="text-secondary-700 hover:text-secondary-800 underline not-italic">https://connectingthreads.org/about/crawler/</a>.
         </p>
     </div>

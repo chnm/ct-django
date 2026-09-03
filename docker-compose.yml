@@ -2,8 +2,11 @@ name: ct-django
 
 services:
   app:
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     image: "rrchnm/ct-django"
+    restart: unless-stopped
     ports:
       - "8000:8000"
     environment:
@@ -16,21 +19,21 @@ services:
       - DB_NAME=connthreads
       - DB_USER=connthreads
       - DB_PASS=password
-      - OBJ_STORAGE=True
-      - OBJ_STORAGE_ACCESS_KEY_ID=connthreads-dev-key
-      - OBJ_STORAGE_SECRET_ACCESS_KEY=connthreads-secret-key
-      - OBJ_STORAGE_BUCKET_NAME=connthreads-dev
-      - OBJ_STORAGE_ENDPOINT_URL=https://obj.rrchnm.org
+      - OBJ_STORAGE=False
     command: >
       sh -c "
-        uv run manage.py migrate &&
-        uv run manage.py runserver 0.0.0.0:8000
+        uv run --no-sync manage.py migrate &&
+        uv run --no-sync daphne -b 0.0.0.0 -p 8000 config.asgi:application
       "
     volumes:
-      - dj-data:/app/media
+      - dj-data:/app/mediafiles
+    depends_on:
+      db:
+        condition: service_healthy
 
   db:
-    image: postgres:17
+    image: postgres:17-alpine
+    restart: unless-stopped
     volumes:
       - pg-data:/var/lib/postgresql/data
     environment:
@@ -42,7 +45,7 @@ services:
       test: ["CMD-SHELL", "pg_isready -U connthreads"]
       interval: 2s
       timeout: 5s
-      retries: 3
+      retries: 10
 
 volumes:
   dj-data:

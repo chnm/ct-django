@@ -1,14 +1,12 @@
 from django.contrib import admin
 from django.db import models as db_models
-from django.utils.html import format_html
-
 from import_export.admin import ImportExportModelAdmin
-from reversion.admin import VersionAdmin
-from unfold.admin import ModelAdmin
-from unfold.admin import TabularInline
-from unfold.decorators import display
 from prose.widgets import RichTextEditor
+from reversion.admin import VersionAdmin
+from unfold.admin import ModelAdmin, TabularInline
+from unfold.decorators import display
 
+from config.admin_utils import admin_thumbnail, admin_thumbnail_placeholder
 from material.models import (
     ArchivalRecord,
     Area,
@@ -20,8 +18,8 @@ from material.models import (
     SecondaryTextileType,
     Subject,
     TextileAlias,
-    TextileType,
     TextileRecord,
+    TextileType,
 )
 from material.resources import (
     AreaResource,
@@ -50,6 +48,7 @@ class PlacesAliasInline(TabularInline):
 class TextileAliasInline(TabularInline):
     model = TextileAlias
     extra = 0
+
 
 class ArchivalRecordInline(TabularInline):
     model = ArchivalRecord
@@ -145,6 +144,7 @@ def unpublish_from_crawler(modeladmin, request, queryset):
             f"{not_from_crawler} records were not from the crawler and were not affected",
         )
 
+
 @admin.register(TextileType)
 class TextileTypeAdmin(VersionAdmin, ModelAdmin):
     list_display = [
@@ -178,9 +178,16 @@ class TextileRecordAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
         "is_public",
         "creator",  # Add filter for creator to easily find crawler items
     ]
-    readonly_fields = ["id",]
+    readonly_fields = [
+        "id",
+    ]
     exclude = ["primary_textile_types", "secondary_textile_types"]
-    filter_horizontal = ["crosslinks", "primary_subjects", "secondary_subjects", "textile_type"]
+    filter_horizontal = [
+        "crosslinks",
+        "primary_subjects",
+        "secondary_subjects",
+        "textile_type",
+    ]
     inlines = [NamedActorsInline, ImagesInline, ArchivalRecordInline]
     ordering = ["year"]
     actions = [make_public, make_private, unpublish_from_crawler]  # Add the new action
@@ -195,31 +202,20 @@ class TextileRecordAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
         if not first_image:
             # Fallback to any image (even if not public for admin view)
             first_image = obj.images.first()
-        
+
         if first_image and first_image.image:
-            return format_html(
-                '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
-                first_image.image.url
-            )
+            return admin_thumbnail(first_image.image.url)
         else:
             # Check if this record came from the crawler (has staged_source)
             staged_sources = obj.staged_source.all()
             if staged_sources.exists():
                 staged_item = staged_sources.first()
                 if staged_item.image:
-                    return format_html(
-                        '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
-                        staged_item.image.url
-                    )
+                    return admin_thumbnail(staged_item.image.url)
                 elif staged_item.thumbnail:
-                    return format_html(
-                        '<img src="{}" style="width: 60px; height: 60px; object-fit: cover; border-radius: 4px; box-shadow: 0 1px 3px rgba(0,0,0,0.1);" />',
-                        staged_item.thumbnail
-                    )
-            
-            return format_html(
-                '<div style="width: 60px; height: 60px; background-color: #f3f4f6; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: #9ca3af; font-size: 12px;">No Image</div>'
-            )
+                    return admin_thumbnail(staged_item.thumbnail)
+
+            return admin_thumbnail_placeholder()
 
 
 @admin.register(Image)
