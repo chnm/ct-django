@@ -1,5 +1,6 @@
 from unittest.mock import Mock, patch
 
+from django.template import Context, Template
 from django.test import TestCase
 from geopy.exc import GeocoderUnavailable
 
@@ -215,3 +216,40 @@ class IndexViewTest(TestCase):
         self.assertIn("hero-dolls.jpg", html)
         self.assertIn("neh-logo.jpg", html)  # funder logo bar
         self.assertNotIn("ct.js", html)  # carousel script dropped
+
+
+class DatabaseTagsTest(TestCase):
+    def render(self, tpl, **ctx):
+        return Template("{% load database_tags %}" + tpl).render(Context(ctx))
+
+    def test_date_display_exact_approximate_empty(self):
+        self.assertEqual(
+            self.render("{{ y|date_display }}", y="1748"),
+            '<span class="font-mono">1748</span>',
+        )
+        html = self.render("{{ y|date_display }}", y="ca. 1855-1879")
+        self.assertIn("border-dotted", html)
+        self.assertIn("text-madras-gold", html)
+        self.assertIn("ca. 1855-1879", html)
+        self.assertIn("&mdash;", self.render("{{ y|date_display }}", y=""))
+        self.assertIn("&lt;b&gt;", self.render("{{ y|date_display }}", y="<b>x"))
+
+    def test_precision_dot_place_area_none(self):
+        area = Area.objects.create(name="India")
+        place = Place.objects.create(city="Madras", country="India", area=area, latitude=1, longitude=1)
+        r = TextileRecord.objects.create(year="1748", circulation="pr", from_place=place, from_area=area, to_area=area)
+        self.assertIn("rounded-full", self.render("{% precision_dot r 'from' %}", r=r))
+        self.assertIn("bg-madras-green", self.render("{% precision_dot r 'from' %}", r=r))
+        self.assertIn("border-dashed", self.render("{% precision_dot r 'to' %}", r=r))
+        r2 = TextileRecord.objects.create(year="1748")
+        self.assertEqual(self.render("{% precision_dot r 'to' %}", r=r2).strip(), "")
+
+    def test_circulation_tag_labels(self):
+        r = TextileRecord.objects.create(year="1748", circulation="td")
+        html = self.render("{% circulation_tag r %}", r=r)
+        self.assertIn("Trade &amp; Distribution", html)
+        self.assertIn("bg-tag-gold", html)
+        r2 = TextileRecord.objects.create(year="1748")
+        html = self.render("{% circulation_tag r %}", r=r2)
+        self.assertIn("Unassigned", html)
+        self.assertIn("bg-paper-2", html)
