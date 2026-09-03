@@ -40,11 +40,6 @@ module.exports = {
      * and make sure the pattern below matches your project structure.
      */
     // '../../**/*.py',
-
-    /**
-     * CSS source files for @apply class extraction
-     */
-    "./src/**/*.css",
   ],
   theme: {
     extend: {

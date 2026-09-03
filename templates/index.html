@@ -16,19 +16,19 @@
       </div>
 
       <dl class="my-8 flex max-w-[520px] flex-wrap gap-8 border-y border-rule py-5">
-        <div class="flex flex-col gap-0.5">
+        <div class="flex flex-col-reverse gap-0.5">
           <dd class="font-display text-[22px] font-semibold text-navy">18th&ndash;19th c.</dd>
           <dt class="lbl">span</dt>
         </div>
-        <div class="flex flex-col gap-0.5">
+        <div class="flex flex-col-reverse gap-0.5">
           <dd class="font-display text-[22px] font-semibold text-navy">{{ record_count }}</dd>
           <dt class="lbl">records</dt>
         </div>
-        <div class="flex flex-col gap-0.5">
+        <div class="flex flex-col-reverse gap-0.5">
           <dd class="font-display text-[22px] font-semibold text-navy">{{ exhibits|length }}</dd>
           <dt class="lbl">regions</dt>
         </div>
-        <div class="flex flex-col gap-0.5">
+        <div class="flex flex-col-reverse gap-0.5">
           <dd class="font-display text-[22px] font-semibold text-navy">6</dd>
           <dt class="lbl">partners</dt>
         </div>
@@ -55,9 +55,9 @@
       {% for exhibit in exhibits %}
         <a href="{{ exhibit.url }}" class="block overflow-hidden rounded-lg border border-rule bg-white no-underline transition-shadow hover:shadow-md">
           {% if exhibit.image %}
-            {% image exhibit.image fill-640x420 class="h-[150px] w-full object-cover" %}
+            {% image exhibit.image fill-640x420 class="h-[150px] w-full object-cover" alt="" %}
           {% else %}
-            <div class="h-[150px] plaid-{{ forloop.counter }}"></div>
+            <div class="h-[150px] {% cycle 'plaid-1' 'plaid-2' 'plaid-3' 'plaid-4' %}"></div>
           {% endif %}
           <div class="px-4 pb-5 pt-4">
             <div class="lbl mb-1.5 {% cycle 'text-madras-red' 'text-madras-green' 'text-navy' 'text-madras-gold' %}">Chapter {{ forloop.counter|stringformat:"02d" }}</div>
@@ -73,6 +73,7 @@
 
   {# ---------- What's inside ---------- #}
   <section class="border-t border-rule">
+    <h2 class="sr-only">What's inside</h2>
     <div class="mx-auto grid max-w-7xl gap-10 px-6 py-14 md:grid-cols-3 lg:px-8">
       <a href="#exhibits" class="flex flex-col gap-2 no-underline">
         <div class="lbl text-madras-red">01 / Exhibition</div>

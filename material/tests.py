@@ -188,6 +188,15 @@ class SiteChromeTest(TestCase):
         # Launch Event moved out of the nav into the footer's Project column.
         self.assertEqual(html.count("Launch Event"), 1)
 
+    def test_nav_marks_current_section_active(self):
+        html = self.client.get("/database/").content.decode()
+        self.assertIn('aria-current="page"', html)
+        # About stays active on a nested path via prefix matching
+        html = self.client.get("/about/crawler/").content.decode()
+        self.assertEqual(html.count('aria-current="page"'), 2)  # desktop + mobile About links
+        home = self.client.get("/").content.decode()
+        self.assertEqual(home.count('aria-current="page"'), 2)  # desktop + mobile Home links
+
 
 class IndexViewTest(TestCase):
     def test_index_counts_only_public_records(self):
