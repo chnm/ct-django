@@ -1,4 +1,4 @@
-{% load static tailwind_tags wagtailcore_tags %}
+{% load static tailwind_tags %}
 <!doctype html>
 <html lang="en">
   <head>
@@ -31,12 +31,12 @@
   <body class="flex min-h-screen flex-col bg-paper text-ink"
         x-data="{ toc: false, cite: false, lightbox: null }"
         @lightbox.window="lightbox = $event.detail"
-        @keydown.escape.window="toc = false; lightbox = null"
-        @keydown.left.window="if (!$event.target.closest('input,textarea,select') && $refs.prev) $refs.prev.click()"
-        @keydown.right.window="if (!$event.target.closest('input,textarea,select') && $refs.next) $refs.next.click()">
+        @keydown.escape.window="if (toc) { toc = false; $nextTick(() => $refs.tocbtn.focus()) } lightbox = null"
+        @keydown.left.window="if (!toc && !lightbox && !$event.target.closest('input,textarea,select,[contenteditable],img-comparison-slider') && $refs.prev) $refs.prev.click()"
+        @keydown.right.window="if (!toc && !lightbox && !$event.target.closest('input,textarea,select,[contenteditable],img-comparison-slider') && $refs.next) $refs.next.click()">
     <div class="stripe"></div>
 
-    <header class="flex items-center justify-between border-b border-rule-2 bg-paper px-7 py-3">
+    <header class="relative z-40 flex items-center justify-between border-b border-rule-2 bg-paper px-7 py-3">
       <div class="flex items-center gap-3">
         <a href="{% url 'index' %}" class="flex items-center gap-3 no-underline">
           <svg width="22" height="26" viewBox="0 0 30 34" aria-hidden="true"><rect x="7" y="0" width="3.4" height="34" fill="#9c3a2e"/><rect x="13" y="0" width="3.4" height="34" fill="#9a7328"/><rect x="19" y="0" width="3.4" height="34" fill="#3a6b52"/><rect x="0" y="14.5" width="30" height="3" fill="#20303f"/></svg>
@@ -53,14 +53,14 @@
     </main>
 
     {# Contents sheet #}
-    <div x-show="toc" x-cloak class="fixed inset-x-0 bottom-[66px] top-[62px] z-30 bg-[rgba(24,28,22,.5)] backdrop-blur-sm" @click.self="toc = false">
-      <div id="contents" class="absolute bottom-0 left-1/2 max-h-full w-[860px] max-w-full -translate-x-1/2 overflow-y-auto rounded-t-xl bg-paper p-8" role="dialog" aria-modal="true" aria-label="Chapter contents">
+    <div x-show="toc" x-cloak x-effect="if (toc) $nextTick(() => $refs.tocclose.focus())" class="fixed inset-0 z-30 bg-[rgba(24,28,22,.5)] backdrop-blur-sm" @click.self="toc = false">
+      <div id="contents" class="absolute bottom-0 left-1/2 max-h-full w-[860px] max-w-full -translate-x-1/2 overflow-y-auto rounded-t-xl bg-paper p-8" role="dialog" aria-modal="true" aria-label="Chapter contents" :style="{ paddingBottom: ($refs.bar ? $refs.bar.offsetHeight + 24 : 96) + 'px' }">
         <div class="mb-6 flex items-start justify-between">
           <div>
             <div class="lbl mb-2 text-madras-red">Chapter {{ r.chapter_number|stringformat:"02d" }} &middot; Contents</div>
             <h2 class="font-display text-[28px] font-semibold text-navy">{{ r.home.title }}</h2>
           </div>
-          <button type="button" class="iconbtn" @click="toc = false" x-ref="tocclose" aria-label="Close contents">&times;</button>
+          <button type="button" class="iconbtn" @click="toc = false; $nextTick(() => $refs.tocbtn.focus())" x-ref="tocclose" aria-label="Close contents">&times;</button>
         </div>
         <ol class="grid gap-x-10 gap-y-2 md:grid-cols-2">
           {% for s in r.sections %}
@@ -91,7 +91,7 @@
     </div>
 
     {# Control bar #}
-    <footer class="relative sticky bottom-0 z-20 border-t border-rule bg-paper px-7 py-3.5">
+    <footer class="relative sticky bottom-0 z-40 border-t border-rule bg-paper px-7 py-3.5" x-ref="bar">
       <div class="absolute inset-x-0 top-0 h-[2px] bg-[#e9e3d6]"><div class="h-full bg-madras-red" style="width: {% widthratio r.progress 1 100 %}%"></div></div>
       <div class="grid items-center gap-4 lg:grid-cols-[1fr_auto_1fr]">
         <div class="min-w-0">
@@ -102,7 +102,7 @@
           <div class="truncate font-display text-[15px] font-semibold text-navy">{% if r.is_cover %}{{ r.home.title }}{% else %}{{ r.current.title }}{% endif %}</div>
         </div>
         <div class="justify-self-start lg:justify-self-center">
-          <button type="button" class="btn-ghost" @click="toc = !toc" :aria-expanded="toc" aria-controls="contents">&#9776; Contents</button>
+          <button type="button" class="btn-ghost" x-ref="tocbtn" @click="toc = !toc" :aria-expanded="toc" aria-expanded="false" aria-controls="contents">&#9776; Contents</button>
         </div>
         <div class="flex flex-wrap items-center justify-end gap-2">
           {% block skip_link %}{% endblock skip_link %}

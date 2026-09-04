@@ -63,6 +63,6 @@
     @apply inline-flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-white text-ink hover:bg-paper-2;
   }
   .reader-body {
-    @apply prose max-w-none font-serif text-[17px] leading-[1.62] text-ink prose-p:my-4 prose-a:underline prose-a:decoration-[#c7c0b0] prose-a:underline-offset-[3px] prose-a:text-ink hover:prose-a:text-madras-red;
+    @apply prose max-w-none font-serif text-[17px] leading-[1.62] text-ink prose-p:my-4 prose-a:underline prose-a:decoration-[#c7c0b0] prose-a:underline-offset-[3px] prose-a:text-ink hover:prose-a:text-madras-red [&>*:first-child]:mt-0;
   }
 }

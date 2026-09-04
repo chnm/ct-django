@@ -41,7 +41,8 @@ def reader_for(page):
     if isinstance(page, ExhibitHome):
         home, current_page = page, None
     else:
-        home, current_page = page.get_parent().specific, page
+        home = page.get_ancestors().type(ExhibitHome).specific().last() or page.get_parent().specific
+        current_page = page
 
     section_pages = [
         p for p in home.get_children().live().specific() if isinstance(p, ExhibitPage)

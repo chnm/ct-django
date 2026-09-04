@@ -50,6 +50,7 @@ class CoverPageTest(TestCase):
         self.assertIn("Exit exhibition", html)
         self.assertIn("Exhibition &middot; Chapter 01", html)
         self.assertNotIn("Cite this chapter", html)
+        self.assertIn("<figure", html)
 
     def test_cover_shows_hero_text_body_and_citation_when_set(self):
         self.home.hero_text = "Read the chapter"
@@ -90,6 +91,7 @@ class SectionPageTest(TestCase):
             self.assertIn(title, html)
         self.assertIn("Two body", html)
         self.assertIn("Section 02 &middot; Chapter A", html)  # neutral eyebrow
+        self.assertIn("rounded-full bg-madras-red", html)  # contents current-dot
 
     def test_phase_tints_eyebrow_and_related_records_render(self):
         page = self.pages[0]
@@ -97,7 +99,7 @@ class SectionPageTest(TestCase):
         page.related_records.add(self.record)
         page.save_revision().publish()
         html = self.render(page)
-        self.assertIn("text-madras-green", html.split("Section 01 &middot;")[0][-400:] + html.split("Section 01 &middot;")[1][:200])
+        self.assertIn('class="lbl mb-4 text-madras-green"', html)
         self.assertIn("Section 01 &middot; Production", html)
         self.assertIn("Related database records", html)
         self.assertIn(f"Entry no. {self.record.id}", html)
@@ -110,7 +112,7 @@ class SectionPageTest(TestCase):
         page.link_to_subsection = self.pages[2]
         page.save_revision().publish()
         html = self.render(page)
-        self.assertNotIn("<h2", html.split('<main')[1].split("</main>")[0])
+        self.assertNotIn("<h1", html.split("<main")[1].split("</main>")[0])
         self.assertIn("Skip to Three &rarr;", html)
         self.assertIn(f'href="{self.home.url}"', html)  # Previous on section 1 goes to the cover
 
@@ -158,3 +160,11 @@ class SectionPageTest(TestCase):
         html = self.render(page)
         self.assertIn("<img-comparison-slider", html)
         self.assertIn("Before / After", html)
+
+    def test_untitled_image_still_renders_a_plate(self):
+        img = Image.objects.create(title="", file=get_test_image_file())
+        page = self.pages[0]
+        page.image = img
+        page.save_revision().publish()
+        html = self.render(page)
+        self.assertIn("<figure", html)

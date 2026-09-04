@@ -53,3 +53,12 @@ class ReaderTest(TestCase):
     def test_pages_expose_reader_in_context(self):
         for page in (self.home, self.pages[0]):
             self.assertIn("reader", page.get_context(None))
+
+    def test_nested_page_resolves_to_the_exhibit_home(self):
+        from exhibits.models import ExhibitPage
+
+        nested = ExhibitPage(title="Nested", slug="nested", body="<p>x</p>")
+        self.pages[0].add_child(instance=nested)
+        r = reader_for(nested)
+        self.assertEqual(r.home, self.home)
+        self.assertEqual(r.chapter_number, 1)

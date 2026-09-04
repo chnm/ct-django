@@ -1,5 +1,5 @@
 {% extends 'base_exhibit.html' %}
-{% load wagtailcore_tags wagtailimages_tags %}
+{% load wagtailcore_tags %}
 {% block title %}Connecting Threads | {{ page.title }}{% endblock title %}
 
 {% block extrahead %}
@@ -22,9 +22,9 @@
 
   {# ---- which images does this layout have? ---- #}
   {% if layout == "three_column_images_left" or layout == "three_column_images_right" %}
-    {% firstof page.image_first_column page.image_second_column as has_gallery %}
+    {% firstof page.image_first_column.pk page.image_second_column.pk as has_gallery %}
   {% else %}
-    {% firstof comparison page.image as has_plate %}
+    {% firstof comparison.pk page.image.pk as has_plate %}
   {% endif %}
 
   {# ---- grid classes ---- #}
@@ -37,39 +37,43 @@
   {% elif layout == "half_and_half" %}{% firstof "grid h-full lg:grid-cols-[1fr_1fr]" as grid %}
   {% elif layout == "three_column_images_left" %}{% firstof "grid h-full lg:grid-cols-[1.55fr_1fr]" as grid %}
   {% elif layout == "three_column_images_right" %}{% firstof "grid h-full lg:grid-cols-[1fr_1.55fr]" as grid %}
-  {% else %}{% firstof "flex h-full flex-col" as grid %}{% endif %}
+  {% else %}{% firstof "flex flex-col" as grid %}{% endif %}
   {% if layout == "right_image_one_third" or layout == "right_image_two_thirds" or layout == "three_column_images_right" %}{% firstof "lg:order-2" as image_order %}{% endif %}
 
-  <div class="{{ grid }} flex-1">
+  <div class="{{ grid }} {% if layout != 'wide_image' and layout != 'full_screen' %}flex-1{% endif %}">
     {# ---- image column ---- #}
     {% if has_gallery %}
       <div class="{{ image_order }} bg-[#f4f1ea] p-6 lg:p-8">
         <div class="grid h-full gap-5 sm:grid-cols-2">
-          {% if page.image_first_column %}<div class="shadow-md">{% include "exhibits/_plate.html" with image=page.image_first_column caption=page.image_first_column_caption figure_number=r.current.number|default:1 %}</div>{% endif %}
+          {% if page.image_first_column %}<div class="shadow-md">{% include "exhibits/_plate.html" with image=page.image_first_column caption=page.image_first_column_caption %}</div>{% endif %}
           {% if page.image_second_column %}<div class="shadow-md">{% include "exhibits/_plate.html" with image=page.image_second_column caption=page.image_second_column_caption %}</div>{% endif %}
         </div>
       </div>
     {% elif has_plate %}
-      <div class="{{ image_order }} {% if layout == 'wide_image' or layout == 'full_screen' %}h-[62vh] shrink-0{% else %}min-h-[360px]{% endif %}">
-        {% if comparison %}
-          {% if comparison.first_image_caption or comparison.second_image_caption %}
-            {% with cap=comparison.first_image_caption|add:" / "|add:comparison.second_image_caption %}
-              {% include "exhibits/_plate.html" with comparison=comparison caption=cap %}
-            {% endwith %}
-          {% else %}
-            {% include "exhibits/_plate.html" with comparison=comparison caption="" %}
-          {% endif %}
+      <div class="{{ image_order }} {% if layout == 'wide_image' or layout == 'full_screen' %}h-[62vh] shrink-0{% else %}min-h-[360px]{% endif %} {% if page.image_comparisons.all %}flex flex-col{% endif %}">
+        {% if page.image_comparisons.all %}
+          {% for c in page.image_comparisons.all %}
+            <div class="min-h-[360px] flex-1">
+              {% if c.first_image_caption or c.second_image_caption %}
+                {% with cap=c.first_image_caption|add:" / "|add:c.second_image_caption %}
+                  {% include "exhibits/_plate.html" with comparison=c caption=cap %}
+                {% endwith %}
+              {% else %}
+                {% include "exhibits/_plate.html" with comparison=c caption="" %}
+              {% endif %}
+            </div>
+          {% endfor %}
         {% else %}
-          {% include "exhibits/_plate.html" with image=page.image caption=page.image_caption figure_number=r.current.number|default:1 %}
+          {% include "exhibits/_plate.html" with image=page.image caption=page.image_caption %}
         {% endif %}
       </div>
     {% endif %}
 
     {# ---- text column ---- #}
-    <div class="flex min-h-0 flex-col justify-center overflow-y-auto px-8 py-10 lg:px-14 {% if layout == 'wide_image' or layout == 'full_screen' %}mx-auto w-full max-w-[760px]{% endif %}">
+    <div class="flex flex-col justify-center px-8 py-10 lg:px-14 {% if layout != 'wide_image' and layout != 'full_screen' %}min-h-0 overflow-y-auto{% endif %} {% if layout == 'wide_image' or layout == 'full_screen' %}mx-auto w-full max-w-[760px]{% endif %}">
       <div class="lbl mb-4 {{ tint }}">Section {{ r.current.number|stringformat:"02d" }} &middot; {% if page.phase %}{{ page.get_phase_display }}{% else %}{{ r.home.title }}{% endif %}</div>
       {% if page.display_title %}
-        <h2 class="mb-5 font-display {% if has_gallery %}text-[30px]{% else %}text-[40px]{% endif %} font-semibold leading-[1.05] tracking-[-0.02em] text-navy">{{ page.title }}</h2>
+        <h1 class="mb-5 font-display {% if has_gallery %}text-[30px]{% else %}text-[40px]{% endif %} font-semibold leading-[1.05] tracking-[-0.02em] text-navy">{{ page.title }}</h1>
       {% endif %}
       <div class="reader-body">{{ page.body|richtext }}</div>
       {% with related=page.related_records.all %}
