@@ -53,8 +53,8 @@
     </main>
 
     {# Contents sheet #}
-    <div x-show="toc" x-cloak x-effect="if (toc) $nextTick(() => $refs.tocclose.focus())" class="fixed inset-0 z-30 bg-[rgba(24,28,22,.5)] backdrop-blur-sm" @click.self="toc = false">
-      <div id="contents" class="absolute bottom-0 left-1/2 max-h-full w-[860px] max-w-full -translate-x-1/2 overflow-y-auto rounded-t-xl bg-paper p-8" role="dialog" aria-modal="true" aria-label="Chapter contents" :style="{ paddingBottom: ($refs.bar ? $refs.bar.offsetHeight + 24 : 96) + 'px' }">
+    <div x-show="toc" x-cloak x-effect="if (toc) { $refs.sheet.style.paddingBottom = ($refs.bar.offsetHeight + 24) + 'px'; $nextTick(() => $refs.tocclose.focus()) }" class="fixed inset-0 z-30 bg-[rgba(24,28,22,.5)] backdrop-blur-sm" @click.self="toc = false">
+      <div id="contents" x-ref="sheet" class="absolute bottom-0 left-1/2 max-h-full w-[860px] max-w-full -translate-x-1/2 overflow-y-auto rounded-t-xl bg-paper p-8" role="dialog" aria-modal="true" aria-label="Chapter contents">
         <div class="mb-6 flex items-start justify-between">
           <div>
             <div class="lbl mb-2 text-madras-red">Chapter {{ r.chapter_number|stringformat:"02d" }} &middot; Contents</div>

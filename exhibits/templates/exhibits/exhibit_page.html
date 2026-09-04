@@ -45,8 +45,8 @@
     {% if has_gallery %}
       <div class="{{ image_order }} bg-[#f4f1ea] p-6 lg:p-8">
         <div class="grid h-full gap-5 sm:grid-cols-2">
-          {% if page.image_first_column %}<div class="shadow-md">{% include "exhibits/_plate.html" with image=page.image_first_column caption=page.image_first_column_caption %}</div>{% endif %}
-          {% if page.image_second_column %}<div class="shadow-md">{% include "exhibits/_plate.html" with image=page.image_second_column caption=page.image_second_column_caption %}</div>{% endif %}
+          {% if page.image_first_column %}<div class="shadow-md">{% include "exhibits/_plate.html" with image=page.image_first_column caption=page.image_first_column_caption comparison=None %}</div>{% endif %}
+          {% if page.image_second_column %}<div class="shadow-md">{% include "exhibits/_plate.html" with image=page.image_second_column caption=page.image_second_column_caption comparison=None %}</div>{% endif %}
         </div>
       </div>
     {% elif has_plate %}
