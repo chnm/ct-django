@@ -1,66 +1,34 @@
 {% extends 'base_exhibit.html' %}
-{% load static %}
-{% load wagtailcore_tags wagtailimages_tags %}
-{% block body_class %}template-homepage{% endblock %}
-{% block title %}Connecting Threads | {{page.title}}{% endblock title %}
+{% load wagtailcore_tags %}
+{% block title %}Connecting Threads | {{ page.title }}{% endblock title %}
 
 {% block content %}
-  {% image page.image original as img %}
-  <div class="relative h-screen bg-cover bg-center" style="background-image: url('{{ img.url }}');">
-    <div class="absolute inset-0 bg-black bg-opacity-50 flex flex-col justify-center items-center text-center text-white p-4">
-      <div class="flex-grow flex flex-col justify-center items-center">
-        <h1 class="text-4xl md:text-6xl font-bold mb-4">{{ page.title }}</h1>
-        {% if page.next_page %}
-          <a href="{% pageurl page.next_page %}" class="bg-madras-teal hover:bg-secondary-600 text-white font-bold py-2 px-4 rounded">
-            {{ page.hero_text }}
-          </a>
+  {% with r=reader %}
+  <div class="grid h-full lg:grid-cols-[1.02fr_1fr]">
+    <div class="flex flex-col justify-center px-8 py-12 lg:px-16">
+      <div class="lbl mb-5 text-madras-red">Chapter {{ r.chapter_number|stringformat:"02d" }} &middot; The Exhibition</div>
+      <h1 class="font-display text-[44px] font-semibold leading-[1.02] tracking-[-0.025em] text-ink lg:text-[58px]">{{ page.title }}</h1>
+      {% if page.body %}
+        <div class="mt-6 max-w-[560px] font-serif text-[19px] leading-[1.6] text-sub prose-p:my-0">{{ page.body|richtext }}</div>
+      {% endif %}
+      <div class="mt-9 flex flex-wrap items-center gap-5">
+        {% if r.next %}
+          <a href="{{ r.next.url }}" class="btn-solid">{{ page.hero_text|default:"Enter chapter" }} &rarr;</a>
+        {% else %}
+          <a href="/#exhibits" class="btn-solid">All chapters &rarr;</a>
         {% endif %}
-
+        <span class="lbl">{{ r.total }} sections &middot; about {{ r.reading_minutes }} min</span>
       </div>
-      <div class="mb-8 space-y-4">
-        <a href="/#exhibits" class="bg-madras-indigo hover:bg-supporting-600 text-white font-bold py-2 px-4 rounded">
-          Take me to the beginning
-        </a>
-      <!-- How to Cite Button for Mobile -->
-        {% if page.citation_text %}
-          <div class="block md:hidden">
-            <div x-data="{ open: false }" class="mt-4">
-              <div class="flex justify-center" :class="{ 'hidden': open }" x-transition x-cloak>
-                <button @click="open = true" class="bg-madras-earth hover:bg-neutral-600 text-white font-bold py-2 px-4 rounded">
-                  Cite this page
-                </button>
-              </div>
-              <div :class="{ 'hidden': !open }" x-transition x-cloak class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-full relative">
-                <button @click="open = false" class="absolute top-2 right-2 text-white">
-                  &times;
-                </button>
-                <p class="text-sm">
-                  {{ page.citation_text }}
-                </p>
-              </div>
-            </div>
-          </div>
-        {% endif %}
-      </div>
+      {% if page.citation_text %}
+        <div class="mt-8" x-data="{ open: false }">
+          <button type="button" class="lbl text-madras-red" @click="open = !open" :aria-expanded="open">Cite this chapter</button>
+          <p x-show="open" x-cloak class="mt-2 max-w-[560px] font-serif text-sm text-sub">{{ page.citation_text }}</p>
+        </div>
+      {% endif %}
+    </div>
+    <div class="min-h-[360px] lg:min-h-0">
+      {% include "exhibits/_plate.html" with image=page.image caption=page.image_caption fit="cover" figure_number=1 %}
     </div>
   </div>
-
-<!-- How to Cite Tab for Desktop -->
-  {% if page.citation_text %}
-    <div x-data="{ open: false }" class="fixed bottom-0 left-0 m-4 hidden md:block">
-      <div class="flex justify-end" :class="{ 'hidden': open }" x-transition x-cloak>
-        <button @click="open = true" class="bg-madras-earth hover:bg-neutral-600 text-white font-bold py-2 px-4 rounded">
-          Cite this page
-        </button>
-      </div>
-      <div :class="{ 'hidden': !open }" x-transition x-cloak class="mt-2 p-4 bg-madras-indigo text-white rounded shadow-lg w-64 relative">
-        <button @click="open = false" class="absolute top-2 right-2 text-white">
-          &times;
-        </button>
-        <p class="text-sm">
-          {{ page.citation_text }}
-        </p>
-      </div>
-    </div>
-  {% endif %}
+  {% endwith %}
 {% endblock content %}
