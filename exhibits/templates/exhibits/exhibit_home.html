@@ -4,7 +4,7 @@
 
 {% block content %}
   {% with r=reader %}
-  <div class="grid h-full lg:grid-cols-[1.02fr_1fr]">
+  <div class="grid h-full flex-1 lg:grid-cols-[1.02fr_1fr]">
     <div class="flex flex-col justify-center px-8 py-12 lg:px-16">
       <div class="lbl mb-5 text-madras-red">Chapter {{ r.chapter_number|stringformat:"02d" }} &middot; The Exhibition</div>
       <h1 class="font-display text-[44px] font-semibold leading-[1.02] tracking-[-0.025em] text-ink lg:text-[58px]">{{ page.title }}</h1>
