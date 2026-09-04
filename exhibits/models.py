@@ -61,7 +61,7 @@ class ExhibitHome(Page):
     image = models.ForeignKey(
         "wagtailimages.Image",
         null=True,
-        blank=True,
+        blank=False,
         on_delete=models.SET_NULL,
         related_name="+",
         help_text="Exhibit landing page with full screen image",

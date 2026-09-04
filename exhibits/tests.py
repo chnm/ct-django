@@ -1,4 +1,6 @@
 from django.test import TestCase
+from wagtail.images.models import Image
+from wagtail.images.tests.utils import get_test_image_file
 from wagtail.models import Page
 
 from exhibits.models import ExhibitHome, ExhibitPage
@@ -8,7 +10,8 @@ from material.models import TextileRecord
 def make_chapter(title, order, sections=()):
     """Create an ExhibitHome under the default site root with ExhibitPage children in order."""
     root = Page.objects.get(depth=2)  # Wagtail's default site root page
-    home = ExhibitHome(title=title, slug=title.lower().replace(" ", "-"), exhibit_display_order=order)
+    image = Image.objects.create(title=f"{title} cover", file=get_test_image_file())
+    home = ExhibitHome(title=title, slug=title.lower().replace(" ", "-"), exhibit_display_order=order, image=image)
     root.add_child(instance=home)
     pages = []
     for i, section_title in enumerate(sections, 1):

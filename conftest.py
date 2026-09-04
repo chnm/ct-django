@@ -12,3 +12,8 @@ def plain_static_storage(settings):
             "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"
         },
     }
+
+
+@pytest.fixture(autouse=True)
+def tmp_media_root(settings, tmp_path):
+    settings.MEDIA_ROOT = str(tmp_path / "media")
