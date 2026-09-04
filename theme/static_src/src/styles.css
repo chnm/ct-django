@@ -6,6 +6,7 @@
   body {
     @apply bg-paper text-ink font-display antialiased;
   }
+  [x-cloak] { display: none !important; }
 }
 
 @layer components {
@@ -54,5 +55,14 @@
     background-image:
       repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 5px, transparent 5px 18px, rgba(58,107,82,.7) 18px 23px, transparent 23px 34px),
       repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 5px, transparent 5px 18px, rgba(158,51,39,.7) 18px 23px, transparent 23px 34px);
+  }
+  .imgctl {
+    @apply rounded px-2.5 py-1.5 font-mono text-[11px] text-[#f2ede0] bg-[rgba(22,30,40,.6)] backdrop-blur hover:bg-[rgba(22,30,40,.85)];
+  }
+  .iconbtn {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-white text-ink hover:bg-paper-2;
+  }
+  .reader-body {
+    @apply prose max-w-none font-serif text-[17px] leading-[1.62] text-ink prose-p:my-4 prose-a:underline prose-a:decoration-[#c7c0b0] prose-a:underline-offset-[3px] prose-a:text-ink hover:prose-a:text-madras-red;
   }
 }
