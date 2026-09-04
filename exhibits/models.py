@@ -1,12 +1,14 @@
 from django.db import models
 from modelcluster.contrib.taggit import ClusterTaggableManager
-from modelcluster.fields import ParentalKey
+from modelcluster.fields import ParentalKey, ParentalManyToManyField
 from taggit.models import TaggedItemBase
 from wagtail.admin.panels import FieldPanel, InlinePanel, MultiFieldPanel
 from wagtail.fields import RichTextField
 from wagtail.models import Orderable, Page
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
+
+from material.models import TextileRecord
 
 
 class GeneralPage(Page):
@@ -59,7 +61,7 @@ class ExhibitHome(Page):
     image = models.ForeignKey(
         "wagtailimages.Image",
         null=True,
-        blank=False,
+        blank=True,
         on_delete=models.SET_NULL,
         related_name="+",
         help_text="Exhibit landing page with full screen image",
@@ -169,6 +171,12 @@ class ExhibitPage(Page):
         default="left_image_one_third",
         help_text="Select the layout for this exhibit page.",
     )
+    phase = models.CharField(
+        max_length=2,
+        blank=True,
+        choices=TextileRecord.CIRCULATION_CHOICES,
+        help_text="Tints this section's eyebrow: Production, Trade & Distribution, or Consumption.",
+    )
     display_title = models.BooleanField(
         default=True,
         help_text="Display the title on the page or not. Checked means yes.",
@@ -231,6 +239,12 @@ class ExhibitPage(Page):
         help_text="Check this box if you want the second image to be zoomable.",
     )
     body = RichTextField(blank=True)
+    related_records = ParentalManyToManyField(
+        "material.TextileRecord",
+        blank=True,
+        related_name="exhibit_sections",
+        help_text="Database records to list under this section.",
+    )
     link_to_next_page = models.ForeignKey(
         "wagtailcore.Page",
         null=True,
@@ -255,6 +269,7 @@ class ExhibitPage(Page):
 
     content_panels = Page.content_panels + [
         FieldPanel("layout"),
+        FieldPanel("phase"),
         FieldPanel("display_title"),
         MultiFieldPanel(
             [
@@ -276,6 +291,7 @@ class ExhibitPage(Page):
             help_text="These fields are for the three-column page layouts.",
         ),
         FieldPanel("body"),
+        FieldPanel("related_records"),
         FieldPanel("link_to_next_page"),
         FieldPanel("link_to_previous_page"),
         FieldPanel("link_to_subsection"),
