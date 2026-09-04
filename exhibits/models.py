@@ -151,6 +151,13 @@ class ExhibitHome(Page):
         FieldPanel("is_chapter_intro_page"),
     ]
 
+    def get_context(self, request, *args, **kwargs):
+        from exhibits.reader import reader_for
+
+        context = super().get_context(request, *args, **kwargs)
+        context["reader"] = reader_for(self)
+        return context
+
 
 class ExhibitPage(Page):
     LAYOUT_CHOICES = [
@@ -301,6 +308,13 @@ class ExhibitPage(Page):
             help_text="The recommended page layout for displaying image comparisons are any of the two-thirds layouts or wide screen layouts.",
         ),
     ]
+
+    def get_context(self, request, *args, **kwargs):
+        from exhibits.reader import reader_for
+
+        context = super().get_context(request, *args, **kwargs)
+        context["reader"] = reader_for(self)
+        return context
 
 
 class ExhibitHomeGalleryImage(Orderable):
