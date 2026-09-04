@@ -10,7 +10,7 @@
     {% image comparison.first_image original as full %}
   {% elif image %}
     {% image image width-1600 as r %}{% image image original as full %}
-    <img src="{{ r.url }}" alt="{{ image.title }}" class="h-full w-full object-{{ fit|default:'contain' }}">
+    <img src="{{ r.url }}" alt="{{ image.title }}" class="h-full w-full {% if fit == "cover" %}object-cover{% else %}object-contain{% endif %}">
   {% endif %}
   {% if image or comparison %}
     <div class="absolute right-4 top-4 flex gap-2">

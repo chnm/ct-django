@@ -54,7 +54,7 @@
 
     {# Contents sheet #}
     <div x-show="toc" x-cloak class="fixed inset-x-0 bottom-[66px] top-[62px] z-30 bg-[rgba(24,28,22,.5)] backdrop-blur-sm" @click.self="toc = false">
-      <div class="absolute bottom-0 left-1/2 max-h-full w-[860px] max-w-full -translate-x-1/2 overflow-y-auto rounded-t-xl bg-paper p-8" role="dialog" aria-modal="true" aria-label="Chapter contents">
+      <div id="contents" class="absolute bottom-0 left-1/2 max-h-full w-[860px] max-w-full -translate-x-1/2 overflow-y-auto rounded-t-xl bg-paper p-8" role="dialog" aria-modal="true" aria-label="Chapter contents">
         <div class="mb-6 flex items-start justify-between">
           <div>
             <div class="lbl mb-2 text-madras-red">Chapter {{ r.chapter_number|stringformat:"02d" }} &middot; Contents</div>
@@ -108,7 +108,7 @@
           {% block skip_link %}{% endblock skip_link %}
           {% if r.is_cover %}
             {% if r.previous_chapter %}<a href="{{ r.previous_chapter.url }}" class="btn-ghost" x-ref="prev">&larr; Previous chapter</a>{% else %}<span class="btn-ghost pointer-events-none opacity-40" aria-disabled="true">&larr; Previous chapter</span>{% endif %}
-            {% if r.next %}<a href="{{ r.next.url }}" class="btn-solid" x-ref="next">Begin &rarr;</a>{% else %}<a href="/#exhibits" class="btn-solid">All chapters &rarr;</a>{% endif %}
+            {% if r.next %}<a href="{{ r.next.url }}" class="btn-solid" x-ref="next">Begin &rarr;</a>{% else %}<a href="/#exhibits" class="btn-solid" x-ref="next">All chapters &rarr;</a>{% endif %}
           {% else %}
             {% if r.previous %}<a href="{{ r.previous.url }}" class="btn-ghost" x-ref="prev">&larr; Previous</a>{% else %}<a href="{{ r.home.url }}" class="btn-ghost" x-ref="prev">&larr; Cover</a>{% endif %}
             {% if r.next %}<a href="{{ r.next.url }}" class="btn-solid" x-ref="next">Next &rarr;</a>{% elif r.next_chapter %}<a href="{{ r.next_chapter.url }}" class="btn-solid" x-ref="next">Next chapter &rarr;</a>{% else %}<a href="/#exhibits" class="btn-solid" x-ref="next">All chapters &rarr;</a>{% endif %}
