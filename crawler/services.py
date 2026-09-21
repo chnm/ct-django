@@ -89,11 +89,13 @@ class MuseumAPIClient:
                     defaults = {
                         "title": item.get("title", ""),
                         "date": item.get("date", ""),
-                        "description": item.get("description", ""),
+                        "description": item.get("description")
+                        or item.get("gallery_text")
+                        or item.get("label_text", ""),
                         "item_type": item.get("type", ""),
                         "medium": item.get("medium", ""),
                         "url": item.get("url", ""),
-                        "country": item.get("country", ""),
+                        "country": item.get("woe:country_name", ""),
                         "archive": "Cooper-Hewitt, Smithsonian Design Museum",
                         "manifest": "",  # Cooper-Hewitt doesn't seem to have IIIF manifests
                         "thumbnail": thumbnail_url,
