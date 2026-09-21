@@ -89,11 +89,13 @@ class MuseumAPIClient:
                     defaults = {
                         "title": item.get("title", ""),
                         "date": item.get("date", ""),
-                        "description": item.get("description", ""),
+                        "description": item.get("description")
+                        or item.get("gallery_text")
+                        or item.get("label_text", ""),
                         "item_type": item.get("type", ""),
                         "medium": item.get("medium", ""),
                         "url": item.get("url", ""),
-                        "country": item.get("country", ""),
+                        "country": item.get("woe:country_name", ""),
                         "archive": "Cooper-Hewitt, Smithsonian Design Museum",
                         "manifest": "",  # Cooper-Hewitt doesn't seem to have IIIF manifests
                         "thumbnail": thumbnail_url,
@@ -228,33 +230,27 @@ class MuseumAPIClient:
                         f"Processing item {index}/{total_items} (ID: {record.get('systemNumber')})"
                     )
 
-                    # Extract fields safely with get() to handle potential missing data
-                    object_type = (
-                        record.get("clusters", {})
-                        .get("object_type", {})
-                        .get("terms", [{}])[0]
-                        .get("value", "")
-                        if record.get("clusters")
-                        else ""
-                    )
+                    # Search hits carry no clusters/description; pull the full
+                    # object record for physicalDescription and materials.
+                    try:
+                        full = (
+                            self.session.get(
+                                f"https://api.vam.ac.uk/v2/object/{record['systemNumber']}"
+                            )
+                            .json()
+                            .get("record", {})
+                        )
+                    except Exception as e:
+                        logger.warning(
+                            f"Could not fetch full record for {record.get('systemNumber')}: {e!s}"
+                        )
+                        full = {}
 
-                    material = (
-                        record.get("clusters", {})
-                        .get("material", {})
-                        .get("terms", [{}])[0]
-                        .get("value", "")
-                        if record.get("clusters")
-                        else ""
+                    object_type = record.get("objectType", "")
+                    material = ", ".join(
+                        m["text"] for m in full.get("materials", []) if m.get("text")
                     )
-
-                    place = (
-                        record.get("clusters", {})
-                        .get("place", {})
-                        .get("terms", [{}])[0]
-                        .get("value", "")
-                        if record.get("clusters")
-                        else ""
-                    )
+                    place = record.get("_primaryPlace", "")
 
                     # Construct V&A collections item page URL
                     url = (
@@ -278,8 +274,10 @@ class MuseumAPIClient:
 
                     # Prepare the default values
                     defaults = {
-                        "title": record.get("_primaryTitle", ""),
+                        "title": record.get("_primaryTitle") or object_type,
                         "date": record.get("_primaryDate", ""),
+                        "description": full.get("physicalDescription")
+                        or full.get("briefDescription", ""),
                         "item_type": object_type,
                         "medium": material,
                         "url": url,
