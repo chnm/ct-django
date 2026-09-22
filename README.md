@@ -141,7 +141,7 @@ ct-django/
 2. **Navigate to Crawler → Staged Museum Items**
 3. **Use the fetch buttons** to download data:
    - "Fetch All Data" - Downloads from both museums
-   - "Fetch Cooper-Hewitt" - Downloads from Cooper-Hewitt API
+   - "Fetch Cooper-Hewitt" - Downloads from the Cooper-Hewitt GraphQL API. Selection is set by `COOPER_HEWITT_QUERY` (GraphQL object arguments); when empty, the fetch refreshes already-staged items.
    - "Fetch V&A" - Downloads from Victoria & Albert Museum API
 
 ### Review and Publishing Workflow

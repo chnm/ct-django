@@ -421,5 +421,8 @@ LOGGING = {
 # https://docs.djangoproject.com/en/5.0/ref/settings/#default-auto-field
 
 # Application API settings
-COOPER_HEWITT_API_KEY = env("COOPER_HEWITT_API_KEY", default="")
+# GraphQL `object` arguments selecting Cooper Hewitt items, e.g.
+# 'exhibitionId:"exhibition-123"' or 'department:"Textiles", country:"India"'.
+# Empty = only refresh items already staged.
+COOPER_HEWITT_QUERY = env("COOPER_HEWITT_QUERY", default="")
 GEOCODING_USER_AGENT = env("GEOCODING_USER_AGENT", default="ConnectingThreads/1.0")
