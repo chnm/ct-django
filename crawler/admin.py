@@ -126,12 +126,16 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
         else:
             return admin_thumbnail_placeholder()
 
-    COOPER_HEWITT_DISABLED = (
-        "Cooper-Hewitt fetching is temporarily disabled: their REST API was retired."
-    )
-
     def fetch_cooper_hewitt(self, request):
-        messages.warning(request, self.COOPER_HEWITT_DISABLED)
+        try:
+            client = MuseumAPIClient()
+            created, updated = client.fetch_cooper_hewitt()
+            messages.success(
+                request,
+                f"Successfully fetched Cooper-Hewitt data. Created: {created}, Updated: {updated}",
+            )
+        except Exception as e:
+            messages.error(request, f"Error fetching from Cooper-Hewitt: {e!s}")
         return redirect("admin:crawler_stagedmuseumitem_changelist")
 
     def fetch_vam(self, request):
@@ -149,10 +153,12 @@ class StagedMuseumItemAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
     def fetch_all(self, request):
         try:
             client = MuseumAPIClient()
-            messages.warning(request, self.COOPER_HEWITT_DISABLED)
+            ch_created, ch_updated = client.fetch_cooper_hewitt()
             va_created, va_updated = client.fetch_vam()
             messages.success(
                 request,
+                f"Successfully fetched all museum data.\n"
+                f"Cooper-Hewitt - Created: {ch_created}, Updated: {ch_updated}\n"
                 f"V&A - Created: {va_created}, Updated: {va_updated}",
             )
         except Exception as e:
