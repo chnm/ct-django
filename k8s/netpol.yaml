@@ -1,0 +1,23 @@
+---
+# This app's own outbound services: the museum crawler (admin "Fetch" actions
+# call the APIs and download item images) and Nominatim geocoding on Place
+# save. DNS + same-namespace isolation, the backup egress and Garage access
+# (media-garage) come from the k8s-django components.
+apiVersion: cilium.io/v2
+kind: CiliumNetworkPolicy
+metadata:
+  name: external-services
+  annotations: { argocd.argoproj.io/sync-wave: "-2" }
+spec:
+  endpointSelector:
+    matchLabels:
+      k8s:app: app
+  egress:
+    - toFQDNs:
+        - { matchName: api.collection.cooperhewitt.org }
+        - { matchName: images.collection.cooperhewitt.org }
+        - { matchName: api.vam.ac.uk }
+        - { matchName: framemark.vam.ac.uk }
+        - { matchName: nominatim.openstreetmap.org }
+      toPorts:
+        - ports: [{ port: "443", protocol: TCP }]

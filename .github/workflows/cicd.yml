@@ -1,33 +1,30 @@
-name: "Build and Publish, Deploy Docker Image"
+name: Django CI and k0s deployment
 
 on:
   workflow_dispatch:
   push:
-    branches:
-      - "**"
-    paths:
-      - "**"
-      - "!.github/**"
+    branches: [main]
+    paths-ignore: [k8s/kustomization.yaml]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
 
 jobs:
-  build-publish:
-    uses: chnm/.github/.github/workflows/django--build-publish.yml@main
-    secrets: inherit
+  deployment:
+    permissions:
+      contents: write   # the reusable pins the digest back to this repository
+    uses: chnm/.github/.github/workflows/django--k0s.yml@33481c3e14d9ca408396865acec1ca1b3664110d # pinned; bump deliberately
     with:
-
-      container-registry: "ghcr.io"
-      container-image-name: "ct-django"
-
-      django-context-root: "."
-
-      website-devl-fqdn: "connectingthreads.co.uk"
-      website-prod-fqdn: "connectingthreads.co.uk"
-
-  deploy:
-    uses: chnm/.github/.github/workflows/django--deploy.yml@main
-    needs: [build-publish]
-    if: github.ref == 'refs/heads/main'
-    secrets: inherit
-    with:
-      website-devl-fqdn: "connectingthreads.co.uk"
-      website-prod-fqdn: "connectingthreads.co.uk"
+      image: rrchnm/ct-django
+      # Argo CD tracks main. Pull requests only build.
+      ref: main
+    secrets:
+      ZOT_TOKEN: ${{ secrets.ZOT_TOKEN }}
+      # Org pin GitHub App: main's ruleset lets it push the digest pin.
+      PIN_APP_PRIVATE_KEY: ${{ secrets.PIN_APP_PRIVATE_KEY }}
