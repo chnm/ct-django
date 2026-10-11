@@ -1,20 +1,31 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
+from unittest.mock import patch
 
 from django.conf import settings
 from django.http import HttpResponseNotFound
-from django.test import SimpleTestCase
-from django.test import RequestFactory, override_settings
+from django.test import RequestFactory, SimpleTestCase, override_settings
 from django.urls import reverse
 from whitenoise.middleware import WhiteNoiseMiddleware
 
 
 class HealthCheckTest(SimpleTestCase):
-    def test_health_check(self):
-        response = self.client.get(reverse("health"))
+    @patch("config.views.connection.ensure_connection")
+    def test_health_check(self, ensure_connection):
+        response = self.client.get(reverse("health"), secure=True)
 
         self.assertEqual(response.status_code, 200)
-        self.assertEqual(response.content, b"ok")
+        self.assertEqual(response.json(), {"status": "ok", "code": 200})
+
+    @patch(
+        "config.views.connection.ensure_connection",
+        side_effect=Exception("connection refused"),
+    )
+    def test_health_check_reports_unreachable_database(self, ensure_connection):
+        response = self.client.get(reverse("health"), secure=True)
+
+        self.assertEqual(response.status_code, 503)
+        self.assertEqual(response.json()["status"], "error")
 
 
 class ProductionStaticFilesTests(SimpleTestCase):

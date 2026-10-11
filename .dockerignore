@@ -6,9 +6,17 @@ __pycache__
 *.py[cod]
 *.log
 .env
+*.pem
+*.key
 node_modules
 theme/static_src/node_modules
 mediafiles
 staticfiles
 htmlcov
 .coverage
+.DS_Store
+
+.dockerignore
+Dockerfile
+docker-compose.yml
+k8s/
