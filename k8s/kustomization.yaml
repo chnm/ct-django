@@ -92,5 +92,5 @@ replacements:
 images:
 - name: app
   newName: oci.rrchnm.internal/rrchnm/ct-django
-- digest: sha256:0000000000000000000000000000000000000000000000000000000000000000
+- digest: sha256:2ff32be53d61dd6e5a73287bb8d9ca12e146c2ed8942bcb663b79e3da338d6c3
   name: oci.rrchnm.internal/rrchnm/ct-django
