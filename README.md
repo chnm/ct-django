@@ -68,8 +68,9 @@ Alternatively, start the complete application and PostgreSQL stack with Docker:
 docker compose up --build
 ```
 
-The application is available at `http://localhost:8000/`, with a container
-health endpoint at `http://localhost:8000/health/`.
+The application is available at `http://localhost:8000/`, with a health
+endpoint at `http://localhost:8000/health/` that returns 503 while the database
+is unreachable.
 
 ### Environment Configuration
 
@@ -158,6 +159,15 @@ Both Staged Museum Items and Textile Records support comprehensive data export:
 1. **Select records** to export (or export all)
 2. **Choose export format** (CSV, Excel, JSON)
 3. **Download** research-ready datasets with proper column names
+
+## Deployment
+
+Production runs on the RRCHNM k0s cluster through Argo CD, using the shared
+[k8s-django](https://forge.rrchnm.internal/rrchnm-systems/k8s-django)
+components. `k8s/` is the overlay Argo CD syncs from `main`. CI builds the
+image, publishes it to `oci.rrchnm.internal/rrchnm/ct-django` and pins its
+digest in `k8s/kustomization.yaml`. Media live in the Garage bucket
+`connectingthreads.co.uk`, served same-origin at `/media/`.
 
 ## Contributing
 

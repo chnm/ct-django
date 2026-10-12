@@ -1,3 +1,4 @@
+import importlib.util
 from pathlib import Path
 
 import environ
@@ -126,9 +127,10 @@ TEMPLATES = [
     },
 ]
 
-# Only load development tooling when DEBUG is enabled. This keeps production
-# installs valid when dependency groups are omitted.
-if DEBUG:
+# Only load development tooling when DEBUG is enabled and it is installed; the
+# image installs no dev dependencies, so DEBUG=True there runs without it.
+DEBUG_TOOLBAR = DEBUG and importlib.util.find_spec("debug_toolbar") is not None
+if DEBUG_TOOLBAR:
     INSTALLED_APPS += ["debug_toolbar"]
     MIDDLEWARE += ["debug_toolbar.middleware.DebugToolbarMiddleware"]
 
@@ -147,7 +149,8 @@ AUTHENTICATION_BACKENDS = (
 
 # Django Unfold configuration
 X_FRAME_OPTIONS = "SAMEORIGIN"
-SILENCED_SYSTEM_CHECKS = ["security.W019"]
+# HSTS subdomain and preload scope belong to the parent domain owner.
+SILENCED_SYSTEM_CHECKS = ["security.W005", "security.W019", "security.W021"]
 
 # Unfold customization options
 UNFOLD = {
@@ -300,6 +303,10 @@ DATABASES = {
         "CONN_HEALTH_CHECKS": True,
     }
 }
+# The migrate Job sets this so a migration blocked behind the nightly pg_dump
+# fails and retries instead of holding the app's queries behind its lock.
+if DB_LOCK_TIMEOUT := env("DB_LOCK_TIMEOUT", default=""):
+    DATABASES["default"]["OPTIONS"] = {"options": f"-c lock_timeout={DB_LOCK_TIMEOUT}"}
 
 
 # Password validation
@@ -350,21 +357,27 @@ STORAGES = {
         "BACKEND": "whitenoise.storage.CompressedManifestStaticFilesStorage",
     },
 }
+MEDIA_URL = "/media/"
 OBJ_STORAGE = env.bool("OBJ_STORAGE", default=False)
 if OBJ_STORAGE:
     AWS_ACCESS_KEY_ID = env("OBJ_STORAGE_ACCESS_KEY_ID")
     AWS_SECRET_ACCESS_KEY = env("OBJ_STORAGE_SECRET_ACCESS_KEY")
     AWS_STORAGE_BUCKET_NAME = env("OBJ_STORAGE_BUCKET_NAME")
     AWS_S3_ENDPOINT_URL = env("OBJ_STORAGE_ENDPOINT_URL")
+    # Garage signs requests with its own region name and serves dotted bucket
+    # names only with path-style addressing.
+    AWS_S3_REGION_NAME = env("OBJ_STORAGE_REGION", default=None)
+    AWS_S3_ADDRESSING_STYLE = "path"
+    # Browsers never see the bucket: the pod's media-garage sidecar proxies
+    # https://<APP_FQDN>/media/<key> to Garage's internal web endpoint, so
+    # URLs are unsigned and same-origin.
+    AWS_QUERYSTRING_AUTH = False
+    AWS_S3_CUSTOM_DOMAIN = f"{env('APP_FQDN', default='localhost')}/media"
 
-    MEDIA_URL = f"{AWS_S3_ENDPOINT_URL}/{AWS_STORAGE_BUCKET_NAME}/"
-
-    # override default storage backend for media
     STORAGES["default"] = {
         "BACKEND": "storages.backends.s3.S3Storage",
     }
 else:
-    MEDIA_URL = "/media/"
     MEDIA_ROOT = BASE_DIR / "mediafiles"
 
 

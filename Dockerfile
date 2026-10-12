@@ -1,34 +1,55 @@
-FROM node:22-bookworm-slim AS node-runtime
+FROM ghcr.io/astral-sh/uv:0.12.18@sha256:3adc3706091ce7c2fe595e669628caedd6d951551b92b258b7e7dbe06d9440bc AS uv
 
-FROM python:3.12-slim-trixie
-
-COPY --from=node-runtime /usr/local/bin/ /usr/local/bin/
-COPY --from=node-runtime /usr/local/lib/node_modules/ /usr/local/lib/node_modules/
-
-ENV PIP_DISABLE_PIP_VERSION_CHECK=1 \
-    PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1 \
-    UV_PROJECT_ENVIRONMENT=/venv \
-    UV_LINK_MODE=copy
-
-RUN pip install --no-cache-dir "uv==0.9.6"
-
+# Tailwind scans templates across the whole project (theme/static_src/tailwind.config.js).
+FROM node:22.23.2-trixie-slim@sha256:7b8a0c89c54499bee567618f96578e1a12a800f062fbdbfd1fb6a443fa6f6284 AS assets
 WORKDIR /app
+COPY . .
+RUN cd theme/static_src && npm ci && npm run build
 
-# Install dependencies in a cacheable layer. Image builds must use the
-# committed lockfile instead of resolving a different dependency graph.
-COPY pyproject.toml uv.lock ./
-RUN uv sync --locked --all-groups --no-install-project
+FROM stagex/core-go:sx2026.06.0@sha256:cb940590e2f59d1c87291b15a94ff425a5fdaf55fa07bb65badfde9b956bf262 AS zoneinfo
 
-COPY . ./
-RUN uv sync --locked --all-groups \
-    && uv run --no-sync manage.py tailwind install \
-    && uv run --no-sync manage.py tailwind build \
-    && uv run --no-sync manage.py collectstatic --no-input
+FROM stagex/pallet-python:sx2026.06.0@sha256:8b238a3f0ee6a4d30fb5a081868d910d8b90362d33ae6674ab6d548d8c9f0fd7 AS base
+COPY --from=uv /uv /uvx /bin/
+# UV_PYTHON: use the base image's interpreter instead of the .python-version pin.
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    UV_COMPILE_BYTECODE=1 \
+    UV_LINK_MODE=copy \
+    UV_PYTHON_DOWNLOADS=never \
+    UV_PYTHON=/usr/bin/python \
+    UV_PROJECT_ENVIRONMENT=/venv \
+    PATH=/venv/bin:$PATH
+# StageX ships no zoneinfo; TIME_ZONE needs it. Unpacked from Go's copy so no
+# tzdata dependency is added; Python's zoneinfo reads /usr/share/zoneinfo first.
+COPY --from=zoneinfo /usr/lib/go/lib/time/zoneinfo.zip /tmp/zoneinfo.zip
+RUN python -c "import zipfile; zipfile.ZipFile('/tmp/zoneinfo.zip').extractall('/usr/share/zoneinfo')" \
+    && rm /tmp/zoneinfo.zip
+WORKDIR /app
+COPY pyproject.toml uv.lock .python-version ./
+RUN uv sync --frozen --no-dev --no-install-project
+COPY . .
+COPY --from=assets /app/theme/static/css/dist theme/static/css/dist
 
+# Hermetic CI gate: no database or network; CI builds this target and discards it.
+# The test suite needs PostgreSQL, so only the deploy checks run here.
+FROM base AS test
+# A throwaway key long and random enough to pass check --deploy.
+ENV DJANGO_SECRET_KEY=test-only-2b7e4f9a1c6d3e8b5a0f7c2d9e4b1a6f3c8d5e0b7a2f9c4e1d6b3a8f5c0e7d2b \
+    DJANGO_READ_DOT_ENV_FILE=False
+RUN python manage.py check --deploy --fail-level WARNING \
+    && python manage.py makemigrations --check --dry-run
+
+FROM base AS runtime
+# Empty until the shared workflow passes the triggering commit.
+ARG SOURCE_SHA=""
+ENV SOURCE_SHA=$SOURCE_SHA \
+    APPLICATION_REVISION=$SOURCE_SHA \
+    DJANGO_READ_DOT_ENV_FILE=False
+RUN DJANGO_SECRET_KEY=build python manage.py collectstatic --no-input
+# Local compose mounts a named volume here; k0s serves media from Garage.
+RUN install -d -o 10001 -g 10001 /app/mediafiles
+USER 10001:10001
 EXPOSE 8000
-
-HEALTHCHECK --interval=30s --timeout=5s --start-period=30s --retries=3 \
-    CMD python -c "import urllib.request; urllib.request.urlopen('http://localhost:8000/health/', timeout=4)"
-
-CMD ["uv", "run", "--no-sync", "daphne", "-b", "0.0.0.0", "-p", "8000", "config.asgi:application"]
+# The StageX base sets ENTRYPOINT to python, which would wrap the CMD below.
+ENTRYPOINT []
+CMD ["daphne", "-b", "0.0.0.0", "-p", "8000", "--access-log", "-", "config.asgi:application"]

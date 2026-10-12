@@ -1,6 +1,14 @@
-from django.http import HttpResponse
+from django.db import connection
+from django.http import JsonResponse
 
 
 def health(request):
-    """Return a lightweight liveness response for container health checks."""
-    return HttpResponse("ok", content_type="text/plain")
+    """Report whether the app can reach its database (k0s readiness probe)."""
+    try:
+        connection.ensure_connection()
+    except Exception:
+        return JsonResponse(
+            {"status": "error", "code": 503, "detail": "database unavailable"},
+            status=503,
+        )
+    return JsonResponse({"status": "ok", "code": 200})
