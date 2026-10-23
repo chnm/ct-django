@@ -1,3 +1,4 @@
+import threading
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from unittest.mock import patch
@@ -56,3 +57,10 @@ class ProductionStaticFilesTests(SimpleTestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(content, b"body { color: black; }")
+
+
+class AsgiThreadStackTests(SimpleTestCase):
+    def test_worker_threads_get_a_glibc_sized_stack(self):
+        import config.asgi  # noqa: F401
+
+        self.assertGreaterEqual(threading.stack_size(), 8 * 1024 * 1024)
