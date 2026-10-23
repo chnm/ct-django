@@ -2,7 +2,7 @@
 
 A Django-based digital humanities project for researching and cataloging textile trade data, with integrated museum collection crawling and comprehensive data management capabilities.
 
-**Tech Stack:** Python 3.12+ / Django 6.0 / Wagtail 7 / PostgreSQL 17 / Daphne / Tailwind CSS
+**Tech Stack:** Python 3.12+ / Django 6.0 / Wagtail 7 / PostgreSQL 17 / Gunicorn / Tailwind CSS
 
 ## Project Overview
 
