@@ -23,7 +23,7 @@ services:
     command: >
       sh -c "
         python manage.py migrate &&
-        daphne -b 0.0.0.0 -p 8000 config.asgi:application
+        exec gunicorn config.wsgi:application --bind 0.0.0.0:8000 --workers 3 --threads 4 --access-logfile - --no-control-socket
       "
     volumes:
       - dj-data:/app/mediafiles
