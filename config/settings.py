@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     # local apps
     "theme",
     "material",
+    "catalog",
     "exhibits",
     "crawler",
 ]
@@ -169,6 +170,26 @@ UNFOLD = {
                         "icon": "dashboard",
                         "link": reverse_lazy("admin:index"),
                     },
+                ],
+            },
+            {
+                "title": _("Catalog"),
+                "items": [
+                    {
+                        "title": _(title),
+                        "icon": icon,
+                        "link": reverse_lazy(f"admin:catalog_{model}_changelist"),
+                    }
+                    for title, icon, model in [
+                        ("Records", "inventory_2", "item"),
+                        ("Places", "location_on", "place"),
+                        ("People and organisations", "people_alt", "agent"),
+                        ("Terms", "category", "term"),
+                        ("Sources", "menu_book", "source"),
+                        ("Collections", "collections", "collection"),
+                        ("Review queue", "rule", "dataissue"),
+                        ("Normalization log", "history", "normalizationlog"),
+                    ]
                 ],
             },
             {
