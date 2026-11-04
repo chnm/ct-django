@@ -10,9 +10,9 @@ from django.db import connection, models, transaction
 
 # Columns in the CSVs that the models leave out on purpose; any other unknown column is an error.
 DERIVED = {
-    ("movement", "from_place"),
-    ("movement", "to_place"),
-}  # place names, read via the FK
+    ("movement", "from_place"), ("movement", "to_place"),  # place names, read via the FK
+    ("source", "n_items"), ("source", "item_ids"),  # stale copies; use source.item_set
+}  # fmt: skip
 
 # Parents before children, matching the build package's own load order.
 ORDER = [

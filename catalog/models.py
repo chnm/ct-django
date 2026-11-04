@@ -4,9 +4,67 @@ CT_restructured_database_revised.xlsx (revision 2026-11-03). This file is now th
 
 from django.db import models
 
+ID_HELP = " Leave blank on a new row to get the next free ID."
 
-class Place(models.Model):
-    place_id = models.TextField(primary_key=True, help_text="PL-001 format.")
+
+class NextId:
+    """Fill a blank text primary key with the next number after the highest existing one (PL-137 -> PL-138)."""
+
+    ID_PREFIX = ""
+    ID_WIDTH = 3
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            # shortcut: two editors adding at the same instant can collide (save fails, retry works); add a lock if that happens
+            ids = (
+                type(self)
+                .objects.filter(pk__startswith=self.ID_PREFIX)
+                .values_list("pk", flat=True)
+            )
+            n = max(
+                (
+                    int(i[len(self.ID_PREFIX) :])
+                    for i in ids
+                    if i[len(self.ID_PREFIX) :].isdigit()
+                ),
+                default=0,
+            )
+            self.pk = f"{self.ID_PREFIX}{n + 1:0{self.ID_WIDTH}d}"
+        super().save(*args, **kwargs)
+
+
+def format_date(start, end, precision, certainty):
+    """The date_display wording the build package used, from the year fields."""
+    if start is None or precision is None:
+        return None
+    end = start if end is None else end
+    if precision == "year":
+        text = str(end)
+    elif precision == "circa":
+        text = f"ca. {end}"
+    elif precision == "decade":
+        text = f"{start}s"
+    elif precision == "century":
+        c = start // 100 + 1
+        suffix = (
+            "th"
+            if 10 <= c % 100 <= 20
+            else {1: "st", 2: "nd", 3: "rd"}.get(c % 10, "th")
+        )
+        text = f"{c}{suffix} century"
+    elif precision == "range":
+        text = f"{start}-{end}"
+    else:  # circa_range
+        text = f"ca. {start}-{end}"
+    return f"{text} (inferred)" if certainty == "inferred" else text
+
+
+class Place(NextId, models.Model):
+    ID_PREFIX, ID_WIDTH = "PL-", 3
+
+    place_id = models.TextField(
+        primary_key=True, blank=True, help_text="PL-001 format." + ID_HELP
+    )
     name_preferred = models.TextField(
         help_text="Name used in the project. Period name where the project's sources use one (Madras)."
     )
@@ -170,8 +228,12 @@ class PlaceAlias(models.Model):
         return str(self.alias or self.pk)
 
 
-class Agent(models.Model):
-    agent_id = models.TextField(primary_key=True, help_text="AG-001 format.")
+class Agent(NextId, models.Model):
+    ID_PREFIX, ID_WIDTH = "AG-", 3
+
+    agent_id = models.TextField(
+        primary_key=True, blank=True, help_text="AG-001 format." + ID_HELP
+    )
     name_preferred = models.TextField(help_text="Preferred form of the name.")
     agent_type = models.TextField(
         choices=[
@@ -201,8 +263,12 @@ class Agent(models.Model):
         return str(self.name_preferred or self.pk)
 
 
-class Term(models.Model):
-    term_id = models.TextField(primary_key=True, help_text="TM-0001 format.")
+class Term(NextId, models.Model):
+    ID_PREFIX, ID_WIDTH = "TM-", 4
+
+    term_id = models.TextField(
+        primary_key=True, blank=True, help_text="TM-0001 format." + ID_HELP
+    )
     vocabulary = models.TextField(
         choices=[
             ("textile_type", "textile_type"),
@@ -243,7 +309,7 @@ class Term(models.Model):
         blank=True,
         help_text="For textile_type: Madras-family handkerchief, Other Indian handkerchief, Other Indian cloth, Indian or European, European cloth, West African cloth, Other Asian cloth.",
     )
-    madras_family = models.TextField(
+    madras_family = models.BooleanField(
         null=True,
         blank=True,
         help_text="For textile_type: 1 = Madras-family handkerchief. 'Other textiles' filter = textile_type with madras_family = 0. Replaces the old 'Other' value.",
@@ -295,8 +361,12 @@ class TermAlias(models.Model):
         return str(self.label or self.pk)
 
 
-class Source(models.Model):
-    source_id = models.TextField(primary_key=True, help_text="SRC-0001 format.")
+class Source(NextId, models.Model):
+    ID_PREFIX, ID_WIDTH = "SRC-", 4
+
+    source_id = models.TextField(
+        primary_key=True, blank=True, help_text="SRC-0001 format." + ID_HELP
+    )
     citation = models.TextField(
         null=True,
         blank=True,
@@ -313,14 +383,6 @@ class Source(models.Model):
     evidence_level = models.TextField(
         null=True, blank=True, help_text="Most common evidence level among its records."
     )
-    n_items = models.IntegerField(
-        null=True,
-        blank=True,
-        help_text="Active records linked to this source (merged records not counted).",
-    )
-    item_ids = models.TextField(
-        null=True, blank=True, help_text="Active records, separated by ', '."
-    )
     source_url = models.TextField(
         null=True, blank=True, help_text="Link, where one of its records has one."
     )
@@ -333,10 +395,14 @@ class Source(models.Model):
         return str(self.pk)
 
 
-class Item(models.Model):
+class Item(NextId, models.Model):
+    ID_PREFIX, ID_WIDTH = "CT-", 5
+
     item_id = models.TextField(
         primary_key=True,
-        help_text="Stable ID in CT-00001 format. Type-neutral on purpose: if a record is later retyped (for example document to visual_work) its ID does not change.",
+        blank=True,
+        help_text="Stable ID in CT-00001 format. Type-neutral on purpose: if a record is later retyped (for example document to visual_work) its ID does not change."
+        + ID_HELP,
     )
     item_type = models.TextField(
         choices=[
@@ -463,15 +529,15 @@ class Item(models.Model):
         ],
         help_text="How the record got here.",
     )
-    ingested_at = models.TextField(
+    ingested_at = models.DateTimeField(
         null=True,
         blank=True,
-        help_text="When a crawler fetched the record, ISO 8601 UTC (YYYY-MM-DDTHH:MM:SSZ). Empty for manual entries.",
+        help_text="When a crawler fetched the record, UTC. Empty for manual entries.",
     )
-    updated_at = models.TextField(
+    updated_at = models.DateTimeField(
         null=True,
         blank=True,
-        help_text="Last update time in the source system, ISO 8601 UTC (YYYY-MM-DDTHH:MM:SSZ).",
+        help_text="Last update time in the source system, UTC.",
     )
     created_by = models.TextField(
         null=True, blank=True, help_text="Who created the record in the source system."
@@ -549,6 +615,16 @@ class Item(models.Model):
 
     def __str__(self):
         return str(self.title or self.pk)
+
+    def save(self, *args, **kwargs):
+        # Always regenerated so it can't go stale; kept as-is only when there are no year fields to build it from.
+        self.date_display = (
+            format_date(
+                self.date_start, self.date_end, self.date_precision, self.date_certainty
+            )
+            or self.date_display
+        )
+        super().save(*args, **kwargs)
 
 
 class DocumentDetail(models.Model):
@@ -861,6 +937,9 @@ class ItemTerm(models.Model):
         "Term", models.PROTECT, db_column="term_id", help_text="The term."
     )
     role = models.TextField(
+        choices=[(r, r) for r in ["textile_type", "textile_form", "textile_pattern", "textile_colour",
+                                  "garment_category", "keyword", "subject", "circulation_stage",
+                                  "source_format", "source_genre", "legacy_theme"]],  # fmt: skip
         help_text="How the term applies: textile_type, textile_form, textile_pattern, textile_colour, garment_category, keyword, subject, circulation_stage, source_format, source_genre, legacy_theme. keyword links point to the new keyword vocabulary (2026-11-03); legacy_theme keeps the old theme links that were used as keywords before."
     )
     is_primary = models.BooleanField(
@@ -1083,10 +1162,10 @@ class SourcePayload(models.Model):
     payload_text = models.TextField(
         help_text="The text as stored. For the current V&A items this is only the three-field 'API Data Summary'. The crawler should store the complete JSON here."
     )
-    fetched_at = models.TextField(
+    fetched_at = models.DateTimeField(
         null=True,
         blank=True,
-        help_text="When fetched, ISO 8601 UTC (YYYY-MM-DDTHH:MM:SSZ).",
+        help_text="When fetched, UTC.",
     )
 
     class Meta:
@@ -1096,8 +1175,12 @@ class SourcePayload(models.Model):
         return str(self.pk)
 
 
-class Collection(models.Model):
-    collection_id = models.TextField(primary_key=True, help_text="COL-01 format.")
+class Collection(NextId, models.Model):
+    ID_PREFIX, ID_WIDTH = "COL-", 2
+
+    collection_id = models.TextField(
+        primary_key=True, blank=True, help_text="COL-01 format." + ID_HELP
+    )
     name = models.TextField(help_text="Name shown on the map.")
     marker_place = models.ForeignKey(
         "Place",

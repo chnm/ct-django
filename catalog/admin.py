@@ -38,7 +38,10 @@ class Stacked(TextWidgets, StackedInline):
 
 
 class Admin(TextWidgets, VersionAdmin, ModelAdmin):
-    pass
+    def get_readonly_fields(self, request, obj=None):
+        # Changing a text primary key in the admin would save a copy under the new ID.
+        fields = super().get_readonly_fields(request, obj)
+        return [*fields, self.model._meta.pk.name] if obj else fields
 
 
 # --- Item ---------------------------------------------------------------
@@ -139,6 +142,7 @@ class ItemAdmin(Admin):
                    "is_context_record", "evidence_level", "legacy_system"]  # fmt: skip
     search_fields = ["item_id", "title", "summary", "legacy_id", "source_identifier"]
     autocomplete_fields = ["merged_into", "source"]
+    readonly_fields = ["date_display"]
     actions = [publish, make_private]
     fieldsets = [
         (None, {"fields": ["item_id", "item_type", "record_status", "is_public", "title",
@@ -200,14 +204,14 @@ class TermAdmin(Admin):
     ordering = ["vocabulary", "label"]
     list_display = ["term_id", "label", "vocabulary", "status", "term_group"]
     list_filter = ["vocabulary", "status"]
-    search_fields = ["term_id", "label", "variant_labels"]
+    search_fields = ["term_id", "label", "variant_labels", "termalias__alias"]
     inlines = [TermAliasInline]
 
 
 @admin.register(m.Source)
 class SourceAdmin(Admin):
     ordering = ["source_id"]
-    list_display = ["source_id", "citation", "holding_institution", "n_items"]
+    list_display = ["source_id", "citation", "holding_institution"]
     search_fields = ["source_id", "citation"]
 
 
