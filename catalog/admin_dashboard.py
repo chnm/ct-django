@@ -1,190 +1,98 @@
+"""Numbers for the admin dashboard (templates/admin/index.html)."""
+
+from collections import Counter
 from datetime import timedelta
 
-from django.contrib import admin
-from django.contrib.admin.views.decorators import staff_member_required
 from django.db.models import Count
-from django.shortcuts import render
 from django.utils import timezone
+from reversion.models import Version
 
-from crawler.models import StagedMuseumItem
-from material.models import (
-    Image,
-    PrimaryTextileType,
-    TextileRecord,
-)
+from catalog.models import Item, ItemPlace, ItemTerm, Media
+
+INGEST_LABELS = {
+    "manual_entry": "Manual entry",
+    "crawler_vam_api": "V&A crawler",
+    "crawler_cooper_hewitt_api": "Cooper Hewitt crawler",
+}
+
+
+def _pct(n, total):
+    return round(n / total * 100, 1) if total else 0
+
+
+def _top(qs, field, n=5):
+    return [(row[field], row["count"]) for row in
+            qs.values(field).annotate(count=Count("item_id", distinct=True)).order_by("-count")[:n]]  # fmt: skip
 
 
 def get_admin_stats(request=None):
-    """
-    Gather statistics for the dashboard.
-    This function can be called by the admin index view or standalone.
-    """
-    # Get current time and time 7 days ago for recent stats
-    now = timezone.now()
-    seven_days_ago = now - timedelta(days=7)
+    active = Item.objects.exclude(record_status="merged")
+    total = active.count()
+    public = Item.objects.public().count()
 
-    # Basic record counts
-    textile_record_count = TextileRecord.objects.count()
-    textile_recent_count = TextileRecord.objects.filter(
-        created_at__gte=seven_days_ago
-    ).count()
-    public_record_count = TextileRecord.objects.filter(is_public=True).count()
-    public_percentage = round(
-        (public_record_count / textile_record_count * 100)
-        if textile_record_count > 0
-        else 0
+    week_ago = timezone.now() - timedelta(days=7)
+    versions = Version.objects.get_for_model(Item).select_related("revision")
+    edited_this_week = (
+        versions.filter(revision__date_created__gte=week_ago)
+        .values("object_id")
+        .distinct()
+        .count()
     )
+    recent = {}
+    for v in versions.order_by("-revision__date_created")[:200]:
+        recent.setdefault(v.object_id, v.revision.date_created)
+        if len(recent) == 5:
+            break
+    recent_records = []
+    for item in Item.objects.filter(pk__in=recent):
+        item.edited_at = recent[item.pk]
+        recent_records.append(item)
+    recent_records.sort(key=lambda i: i.edited_at, reverse=True)
 
-    # Crawler statistics
-    staged_item_count = StagedMuseumItem.objects.count()
-    pending_review_count = StagedMuseumItem.objects.filter(is_reviewed=False).count()
+    images = Media.objects.filter(media_type="image")
+    image_count = images.count()
+    public_images = images.filter(item__in=Item.objects.public()).count()
 
-    # Image statistics
-    image_count = Image.objects.count()
-    public_image_count = Image.objects.filter(is_image_public=True).count()
-    public_image_percentage = round(
-        (public_image_count / image_count * 100) if image_count > 0 else 0
+    stages = _top(
+        ItemTerm.objects.filter(role="circulation_stage", item__in=active),
+        "term__label",
     )
-
-    # Circulation distribution
-    circulation_data = (
-        TextileRecord.objects.values("circulation")
-        .annotate(count=Count("id"))
-        .order_by("-count")
+    staged_total = sum(n for _, n in stages)
+    by_ingest = Counter(active.values_list("ingest_method", flat=True))
+    cloths = _top(
+        ItemTerm.objects.filter(role="textile_type", item__in=active), "term__label"
     )
-
-    # Clean up circulation data for display
-    circulation_counts = []
-    total_with_circulation = sum(
-        item["count"] for item in circulation_data if item["circulation"]
-    )
-
-    for item in circulation_data:
-        circ_type = item["circulation"]
-        count = item["count"]
-        if circ_type:
-            readable_type = dict(TextileRecord.CIRCULATION_CHOICES).get(
-                circ_type, circ_type
-            )
-            # Calculate percentage
-            percentage = (
-                (count / total_with_circulation * 100)
-                if total_with_circulation > 0
-                else 0
-            )
-            circulation_counts.append((readable_type, round(percentage, 1)))
-
-    # Creator type distribution
-    creator_data = (
-        TextileRecord.objects.values("creator")
-        .annotate(count=Count("id"))
-        .order_by("-count")
-    )
-
-    creator_counts = []
-    for item in creator_data:
-        creator_type = item["creator"] or "Local Import"
-        count = item["count"]
-        percentage = (
-            (count / textile_record_count * 100) if textile_record_count > 0 else 0
-        )
-        creator_counts.append((creator_type.capitalize(), count, round(percentage, 1)))
-
-    # Geographic distribution - Top 5 from/to areas
-    from_areas = list(
-        TextileRecord.objects.filter(from_area__isnull=False)
-        .values("from_area__name")
-        .annotate(count=Count("id"))
-        .order_by("-count")[:5]
-    )
-    from_areas = [(item["from_area__name"], item["count"]) for item in from_areas]
-
-    to_areas = list(
-        TextileRecord.objects.filter(to_area__isnull=False)
-        .values("to_area__name")
-        .annotate(count=Count("id"))
-        .order_by("-count")[:5]
-    )
-    to_areas = [(item["to_area__name"], item["count"]) for item in to_areas]
-
-    # Recent records
-    recent_records = TextileRecord.objects.order_by("-updated_at")[:5]
-
-    # Textile types distribution
-    textile_types_data = (
-        PrimaryTextileType.objects.annotate(record_count=Count("textile_records"))
-        .filter(record_count__gt=0)
-        .order_by("-record_count")[:5]
-    )
-
-    textile_types = []
-    total_with_types = sum(type_obj.record_count for type_obj in textile_types_data)
-
-    for type_obj in textile_types_data:
-        percentage = (
-            (type_obj.record_count / total_with_types * 100)
-            if total_with_types > 0
-            else 0
-        )
-        textile_types.append(
-            (type_obj.name, type_obj.record_count, round(percentage, 1))
-        )
-
-    # Source/Archive distribution
-    archive_data = (
-        TextileRecord.objects.values("archive")
-        .annotate(count=Count("id"))
-        .order_by("-count")
-    )
-
-    source_counts = []
-    for item in archive_data:
-        archive_name = item["archive"]
-        count = item["count"]
-
-        # Map archive names to friendly display names
-        if not archive_name:
-            display_name = "Local Import"
-        elif "Cooper" in archive_name:
-            display_name = "Cooper-Hewitt"
-        elif "Victoria" in archive_name or "V&A" in archive_name:
-            display_name = "Victoria & Albert Museum"
-        else:
-            display_name = archive_name or "Local Import"
-
-        percentage = (
-            (count / textile_record_count * 100) if textile_record_count > 0 else 0
-        )
-        source_counts.append((display_name, count, round(percentage, 1)))
+    cloth_total = sum(n for _, n in cloths)
+    by_holder = Counter(active.values_list("holding_institution", flat=True))
 
     return {
         "title": "Connecting Threads Dashboard",
-        "textile_record_count": textile_record_count,
-        "textile_recent_count": textile_recent_count,
-        "public_record_count": public_record_count,
-        "public_percentage": public_percentage,
-        "staged_item_count": staged_item_count,
-        "pending_review_count": pending_review_count,
+        "textile_record_count": total,
+        "textile_recent_count": edited_this_week,
+        "public_record_count": public,
+        "public_percentage": round(_pct(public, total)),
+        "staged_item_count": active.filter(record_status="staged").count(),
+        "pending_review_count": active.filter(
+            record_status="staged", review_status="unreviewed"
+        ).count(),
         "image_count": image_count,
-        "public_image_count": public_image_count,
-        "public_image_percentage": public_image_percentage,
-        "circulation_counts": circulation_counts,
-        "creator_counts": creator_counts,
-        "from_areas": from_areas,
-        "to_areas": to_areas,
+        "public_image_count": public_images,
+        "public_image_percentage": round(_pct(public_images, image_count)),
+        "circulation_counts": [(label, _pct(n, staged_total)) for label, n in stages],
+        "creator_counts": [(INGEST_LABELS.get(k, k or "Not recorded"), n, _pct(n, total))
+                           for k, n in by_ingest.most_common()],  # fmt: skip
+        "from_areas": _top(
+            ItemPlace.objects.filter(role="origin", item__in=active),
+            "place__macro_region",
+        ),
+        "to_areas": _top(
+            ItemPlace.objects.filter(role="destination", item__in=active),
+            "place__macro_region",
+        ),
         "recent_records": recent_records,
-        "textile_types": textile_types,
-        "source_counts": source_counts,
+        "textile_types": [(label, n, _pct(n, cloth_total)) for label, n in cloths],
+        "source_counts": [
+            (k or "Not recorded", n, _pct(n, total))
+            for k, n in by_holder.most_common(8)
+        ],
     }
-
-
-@staff_member_required
-def admin_dashboard(request):
-    """
-    Custom admin dashboard that can be used as a standalone view.
-    """
-    context = get_admin_stats(request)
-    # Add admin context
-    context["app_list"] = admin.site.get_app_list(request)
-
-    return render(request, "admin/index.html", context)

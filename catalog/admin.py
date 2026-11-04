@@ -1,6 +1,8 @@
 from django import forms
-from django.contrib import admin
+from django.contrib import admin, messages
 from django.db import models
+from django.shortcuts import redirect
+from django.urls import path
 from reversion.admin import VersionAdmin
 from unfold.admin import ModelAdmin, StackedInline, TabularInline
 
@@ -128,6 +130,12 @@ def publish(modeladmin, request, queryset):
     )
 
 
+@admin.action(description="Mark selected records as reviewed")
+def mark_reviewed(modeladmin, request, queryset):
+    n = queryset.update(review_status="reviewed")
+    messages.success(request, f"{n} records marked as reviewed.")
+
+
 @admin.action(description="Make selected records private")
 def make_private(modeladmin, request, queryset):
     queryset.update(is_public=False)
@@ -143,7 +151,8 @@ class ItemAdmin(Admin):
     search_fields = ["item_id", "title", "summary", "legacy_id", "source_identifier"]
     autocomplete_fields = ["merged_into", "source"]
     readonly_fields = ["date_display"]
-    actions = [publish, make_private]
+    change_list_template = "admin/catalog/item/change_list.html"  # museum fetch buttons
+    actions = [publish, mark_reviewed, make_private]
     fieldsets = [
         (None, {"fields": ["item_id", "item_type", "record_status", "is_public", "title",
                            "title_status", "summary", "content_warning", "is_context_record"]}),
@@ -163,6 +172,42 @@ class ItemAdmin(Admin):
         MediaInline, RelationshipInline, TradeObservationInline, CollectionItemInline,
         DataIssueInline, SourcePayloadInline,
     ]  # fmt: skip
+
+    def get_urls(self):
+        fetch = [
+            path(f"fetch/{name}/", self.admin_site.admin_view(view), name=f"catalog_item_fetch_{name}")
+            for name, view in [("all", self.fetch_all), ("vam", self.fetch_vam),
+                               ("cooper_hewitt", self.fetch_cooper_hewitt)]
+        ]  # fmt: skip
+        return fetch + super().get_urls()
+
+    def _fetch(self, request, *sources):
+        from crawler.services import MuseumAPIClient
+
+        if not self.has_add_permission(request):
+            return redirect("admin:catalog_item_changelist")
+        client = MuseumAPIClient()
+        for label, method in sources:
+            try:
+                created, updated = getattr(client, method)()
+                messages.success(
+                    request,
+                    f"{label}: {created} new staged records, {updated} refreshed.",
+                )
+            except Exception as e:
+                messages.error(request, f"{label}: fetch failed ({e}).")
+        return redirect("admin:catalog_item_changelist")
+
+    def fetch_vam(self, request):
+        return self._fetch(request, ("V&A", "fetch_vam"))
+
+    def fetch_cooper_hewitt(self, request):
+        return self._fetch(request, ("Cooper Hewitt", "fetch_cooper_hewitt"))
+
+    def fetch_all(self, request):
+        return self._fetch(
+            request, ("Cooper Hewitt", "fetch_cooper_hewitt"), ("V&A", "fetch_vam")
+        )
 
 
 # --- Authorities --------------------------------------------------------

@@ -91,8 +91,18 @@ class DatabaseView(SingleTableMixin, FilterView):
                 (self.filterset.form["textile_form"], "All forms"),
             ],
             region_selects=[
-                ("from_region", "From region", "Any origin", self.request.GET.get("from_region")),
-                ("to_region", "To region", "Any destination", self.request.GET.get("to_region")),
+                (
+                    "from_region",
+                    "From region",
+                    "Any origin",
+                    self.request.GET.get("from_region"),
+                ),
+                (
+                    "to_region",
+                    "To region",
+                    "Any destination",
+                    self.request.GET.get("to_region"),
+                ),
             ],
             min_year=min_year,
             max_year=max_year,
@@ -106,7 +116,9 @@ class DatabaseView(SingleTableMixin, FilterView):
 def _public_item_or_redirect(item_id):
     """Old URLs used TextileRecord's numeric id; send them to the record that replaced it."""
     if item_id.isdigit():
-        old = Item.objects.filter(legacy_system="TextileRecord", legacy_id=item_id).first()
+        old = Item.objects.filter(
+            legacy_system="TextileRecord", legacy_id=item_id
+        ).first()
         if old is None:
             raise Http404
         return None, (old.merged_into_id or old.pk)
@@ -122,7 +134,9 @@ def record(request, item_id):
     related = Relationship.objects.filter(status="confirmed").filter(
         Q(from_item=item) | Q(to_item=item)
     )
-    related_ids = {r.to_item_id if r.from_item_id == item.pk else r.from_item_id for r in related}
+    related_ids = {
+        r.to_item_id if r.from_item_id == item.pk else r.from_item_id for r in related
+    }
     linked = list(public_items().filter(pk__in=related_ids).order_by("item_id")[:4])
     linked_reason = "related records" if linked else ""
     keyword = (terms(item, "keyword") or [None])[0]
@@ -149,7 +163,10 @@ def record(request, item_id):
     placeable = item.date_start is not None and any(
         code in PHASES for code in phase_codes(item)
     )
-    subjects = [link.agent for link in item.itemagent_set.filter(role="subject").select_related("agent")]
+    subjects = [
+        link.agent
+        for link in item.itemagent_set.filter(role="subject").select_related("agent")
+    ]
     subjects += terms(item, "subject")
 
     return render(
@@ -158,7 +175,9 @@ def record(request, item_id):
         {
             "item": item,
             "timeline": build_timeline(
-                timeline_rows(public), highlight_id=item.pk if placeable else None, compact=True
+                timeline_rows(public),
+                highlight_id=item.pk if placeable else None,
+                compact=True,
             ),
             "timeline_label": (
                 "This record highlighted"

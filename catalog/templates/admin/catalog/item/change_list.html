@@ -5,7 +5,7 @@
     <div class="sm:flex sm:items-center sm:justify-between mb-4">
         <div class="flex gap-2">
             {% if has_add_permission %}
-                <a href="{% url 'admin:fetch-all' %}"
+                <a href="{% url 'admin:catalog_item_fetch_all' %}"
                    id="fetch-all-btn"
                    class="fetch-btn inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
                     <span class="btn-text">{% trans "Fetch All Data" %}</span>
@@ -16,7 +16,7 @@
                         </svg>
                     </span>
                 </a>
-                <a href="{% url 'admin:fetch-cooper-hewitt' %}"
+                <a href="{% url 'admin:catalog_item_fetch_cooper_hewitt' %}"
                    id="fetch-cooper-hewitt-btn"
                    class="fetch-btn inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
                     <span class="btn-text">{% trans "Fetch Cooper-Hewitt" %}</span>
@@ -27,7 +27,7 @@
                         </svg>
                     </span>
                 </a>
-                <a href="{% url 'admin:fetch-vam' %}"
+                <a href="{% url 'admin:catalog_item_fetch_vam' %}"
                    id="fetch-vam-btn"
                    class="fetch-btn inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md shadow-sm focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-primary-500 transition-colors">
                     <span class="btn-text">{% trans "Fetch V&A" %}</span>

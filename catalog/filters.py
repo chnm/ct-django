@@ -22,12 +22,16 @@ def _items(model, **lookup):
 class ItemFilter(django_filters.FilterSet):
     year_range = django_filters.CharFilter(method="filter_years", label="Year range")
     textile_type = django_filters.ModelChoiceFilter(
-        queryset=Term.objects.filter(vocabulary="textile_type", status="active").order_by("label"),
+        queryset=Term.objects.filter(
+            vocabulary="textile_type", status="active"
+        ).order_by("label"),
         method="filter_term",
         label="Textile type",
     )
     textile_form = django_filters.ModelChoiceFilter(
-        queryset=Term.objects.filter(vocabulary="textile_form", status="active").order_by("label"),
+        queryset=Term.objects.filter(
+            vocabulary="textile_form", status="active"
+        ).order_by("label"),
         method="filter_term",
         label="Form",
     )
@@ -37,7 +41,9 @@ class ItemFilter(django_filters.FilterSet):
         label="Circulation",
     )
     from_region = django_filters.ChoiceFilter(
-        choices=[(r, r) for r in REGIONS], method="filter_from_region", label="From region"
+        choices=[(r, r) for r in REGIONS],
+        method="filter_from_region",
+        label="From region",
     )
     to_region = django_filters.ChoiceFilter(
         choices=[(r, r) for r in REGIONS], method="filter_to_region", label="To region"
@@ -76,7 +82,9 @@ class ItemFilter(django_filters.FilterSet):
         )
 
     def filter_from_region(self, qs, name, value):
-        return qs.filter(pk__in=_items(ItemPlace, role="origin", place__macro_region=value))
+        return qs.filter(
+            pk__in=_items(ItemPlace, role="origin", place__macro_region=value)
+        )
 
     def filter_to_region(self, qs, name, value):
         return qs.filter(
@@ -84,7 +92,9 @@ class ItemFilter(django_filters.FilterSet):
         )
 
     def filter_keyword(self, qs, name, value):
-        return qs.filter(pk__in=_items(ItemTerm, role="keyword", term__label__iexact=value))
+        return qs.filter(
+            pk__in=_items(ItemTerm, role="keyword", term__label__iexact=value)
+        )
 
     def filter_text(self, qs, name, value):
         return qs.filter(

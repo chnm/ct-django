@@ -23,7 +23,8 @@ class DatabaseTagsTest(TestCase):
     def test_date_display_exact_approximate_empty(self):
         exact = make_item(date_start=1748, date_end=1748)
         self.assertEqual(
-            self.render("{{ i|date_display }}", i=exact), '<span class="font-mono">1748</span>'
+            self.render("{{ i|date_display }}", i=exact),
+            '<span class="font-mono">1748</span>',
         )
         approx = make_item(date_start=1855, date_end=1879, date_precision="circa_range")
         html = self.render("{{ i|date_display }}", i=approx)
@@ -38,7 +39,10 @@ class DatabaseTagsTest(TestCase):
         item = public_items().get(pk=item.pk)
         html = self.render("{% precision_dot link item %}", link=place, item=item)
         self.assertIn("bg-madras-green", html)
-        self.assertIn("border-dashed", self.render("{% precision_dot link item %}", link=area, item=item))
+        self.assertIn(
+            "border-dashed",
+            self.render("{% precision_dot link item %}", link=area, item=item),
+        )
 
     def test_circulation_tag_labels_including_several_phases(self):
         item = make_item(circulation="td")
@@ -46,7 +50,9 @@ class DatabaseTagsTest(TestCase):
         html = self.render("{% circulation_tag i %}", i=public_items().get(pk=item.pk))
         self.assertIn("Trade &amp; Distribution", html)
         self.assertIn("Consumption", html)
-        html = self.render("{% circulation_tag i %}", i=public_items().get(pk=make_item().pk))
+        html = self.render(
+            "{% circulation_tag i %}", i=public_items().get(pk=make_item().pk)
+        )
         self.assertIn("Unassigned", html)
 
 
@@ -80,7 +86,15 @@ class DatabaseListViewTest(TestCase):
         add_place(item, "destination", "Kingston")
         add_term(item, "textile_type", "Madras")
         html = self.client.get("/database/").content.decode()
-        for header in ["Preview", "Date", "Textile type", "Form", "Origin", "Circulation", "Actions"]:
+        for header in [
+            "Preview",
+            "Date",
+            "Textile type",
+            "Form",
+            "Origin",
+            "Circulation",
+            "Actions",
+        ]:
             self.assertIn(header, html)
         self.assertIn("border-dotted", html)  # approximate date
         self.assertIn("border-dashed", html)  # area-only precision ring
@@ -91,7 +105,10 @@ class DatabaseListViewTest(TestCase):
 
     def test_filters(self):
         def ids(query):
-            return {i.pk for i in self.client.get(f"/database/?{query}").context["table"].data}
+            return {
+                i.pk
+                for i in self.client.get(f"/database/?{query}").context["table"].data
+            }
 
         self.assertEqual(ids("circulation=pr&circulation=td"), {self.a.pk, self.b.pk})
         self.assertEqual(ids("year_range=1700-1790"), {self.a.pk})
@@ -120,7 +137,11 @@ class DatabaseListViewTest(TestCase):
 
 class QuickViewTest(TestCase):
     def test_public_record_returns_row_partial(self):
-        item = make_item(circulation="td", date_start=1680, summary="Local consumption of coarse textiles.")
+        item = make_item(
+            circulation="td",
+            date_start=1680,
+            summary="Local consumption of coarse textiles.",
+        )
         add_place(item, "origin", "India", precision="area")
         html = self.client.get(f"/database/{item.pk}/quick-view/").content.decode()
         self.assertTrue(html.lstrip().startswith("<tr"))
@@ -130,7 +151,9 @@ class QuickViewTest(TestCase):
 
     def test_private_record_is_404(self):
         item = make_item(is_public=False)
-        self.assertEqual(self.client.get(f"/database/{item.pk}/quick-view/").status_code, 404)
+        self.assertEqual(
+            self.client.get(f"/database/{item.pk}/quick-view/").status_code, 404
+        )
 
 
 class RecordPageTest(TestCase):
@@ -178,7 +201,9 @@ class RecordPageTest(TestCase):
         Relationship.objects.create(from_item=self.item, to_item=proposed, rel_type="see_also",
                                     status="proposed", confidence="low")  # fmt: skip
         response = self.get(self.item.pk)
-        self.assertEqual([r.pk for r in response.context["linked"]], [linked.pk, self.other.pk])
+        self.assertEqual(
+            [r.pk for r in response.context["linked"]], [linked.pk, self.other.pk]
+        )
         self.assertEqual(response.context["linked_reason"], "related records")
 
     def test_private_and_merged_records_are_404(self):
@@ -190,7 +215,7 @@ class RecordPageTest(TestCase):
         self.item.content_warning = "Describes enslaved people."
         self.item.save()
         Media.objects.create(item=self.item, media_type="image", is_primary=True,
-                             storage_key="connectingthreads.co.uk/images/x.jpg")  # fmt: skip
+                             storage_key="images/x.jpg")  # fmt: skip
         html = self.get(self.item.pk).content.decode()
         self.assertIn("Describes enslaved people.", html)
         self.assertIn("images/x.jpg", html)
@@ -208,7 +233,9 @@ class OldRecordUrlTest(TestCase):
         survivor = make_item(legacy_system="TextileRecord", legacy_id="1")
         make_item(legacy_system="TextileRecord", legacy_id="2", record_status="merged",
                   is_public=False, merged_into=survivor)  # fmt: skip
-        self.assertEqual(self.client.get("/database/2/").url, f"/database/{survivor.pk}/")
+        self.assertEqual(
+            self.client.get("/database/2/").url, f"/database/{survivor.pk}/"
+        )
 
     def test_unknown_old_id_is_404(self):
         self.assertEqual(self.client.get("/database/999/").status_code, 404)

@@ -243,19 +243,6 @@ UNFOLD = {
                 ],
             },
             {
-                "title": _("Web Crawler"),
-                "collapsible": True,
-                "items": [
-                    {
-                        "title": _("Staged Museum Items"),
-                        "icon": "sync",
-                        "link": reverse_lazy(
-                            "admin:crawler_stagedmuseumitem_changelist"
-                        ),
-                    },
-                ],
-            },
-            {
                 "title": _("Wagtail CMS"),
                 "collapsible": True,
                 "items": [

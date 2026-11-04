@@ -134,7 +134,9 @@ def _ticks(lo, hi, x):
     step = _tick_step(lo, hi)
     first = ceil(lo / step) * step
     # Skip inner ticks within half a step of either end so their labels don't collide.
-    inner = [v for v in range(first, hi + 1, step) if lo + step / 2 <= v <= hi - step / 2]
+    inner = [
+        v for v in range(first, hi + 1, step) if lo + step / 2 <= v <= hi - step / 2
+    ]
     values = [lo] + inner + [hi]
     return [Tick(x(v), str(v)) for v in values]
 

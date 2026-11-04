@@ -6,9 +6,9 @@ from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
+from catalog.admin_dashboard import get_admin_stats
 from catalog.views import DatabaseView, quick_view, record
 from exhibits.views import about, events
-from material.admin_dashboard import get_admin_stats
 from material.views import about_crawler, index, keyword_search
 
 from .views import health

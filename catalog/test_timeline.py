@@ -60,7 +60,9 @@ def test_undated_and_unassigned_are_counted_not_drawn():
 
 
 def test_record_in_two_phases_is_drawn_twice_but_counted_once():
-    t = build_timeline([rec("a", 1750, circulation="pr"), rec("a", 1750, circulation="co")])
+    t = build_timeline(
+        [rec("a", 1750, circulation="pr"), rec("a", 1750, circulation="co")]
+    )
     assert [len(lane.bars) for lane in t.lanes] == [1, 0, 1]
     assert (t.placed, t.total) == (1, 1)
 

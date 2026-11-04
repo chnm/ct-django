@@ -8,6 +8,8 @@ from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
 from django.db import connection, models, transaction
 
+BUCKET_PREFIX = "connectingthreads.co.uk/"
+
 # Columns in the CSVs that the models leave out on purpose; any other unknown column is an error.
 DERIVED = {
     ("movement", "from_place"), ("movement", "to_place"),  # place names, read via the FK
@@ -68,6 +70,9 @@ class Command(BaseCommand):
                             continue
                         raise CommandError(f"{path.name}: no field for column {col!r}")
                     kw[field.attname] = self.convert(field, value)
+                if kw.get("storage_key"):
+                    # The build package keeps the bucket name in front of the object key.
+                    kw["storage_key"] = kw["storage_key"].removeprefix(BUCKET_PREFIX)
                 objs.append(model(**kw))
         model.objects.bulk_create(objs, batch_size=500)
         return len(objs)

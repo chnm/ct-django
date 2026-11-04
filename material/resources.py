@@ -230,30 +230,15 @@ class TextileRecordResource(resources.ModelResource):
         if first_image and first_image.image:
             return first_image.image.url
 
-        # Check if this record came from the crawler
-        staged_sources = obj.staged_source.all()
-        if staged_sources.exists():
-            staged_item = staged_sources.first()
-            if staged_item.image:
-                return staged_item.image.url
-            elif staged_item.thumbnail:
-                return staged_item.thumbnail
-
         return ""
 
     def dehydrate_source_museum(self, obj):
         """Museum source if this record came from the crawler"""
-        staged_sources = obj.staged_source.all()
-        if staged_sources.exists():
-            return staged_sources.first().archive
-        return ""
+        return ""  # crawled records now live in the catalog
 
     def dehydrate_crawler_id(self, obj):
         """Original museum ID if this record came from the crawler"""
-        staged_sources = obj.staged_source.all()
-        if staged_sources.exists():
-            return staged_sources.first().id
-        return ""
+        return ""  # crawled records now live in the catalog
 
     def before_import_row(self, row, **kwargs):
         try:

@@ -534,6 +534,7 @@ class Item(NextId, models.Model):
         choices=[
             ("manual_entry", "manual_entry"),
             ("crawler_vam_api", "crawler_vam_api"),
+            ("crawler_cooper_hewitt_api", "crawler_cooper_hewitt_api"),
         ],
         help_text="How the record got here.",
     )
@@ -812,8 +813,7 @@ class Media(models.Model):
             return self.external_url
         if not self.storage_key:
             return None
-        # storage_key is "<bucket>/<object key>" (path-style); the storage backend adds the bucket itself.
-        return default_storage.url(self.storage_key.split("/", 1)[-1])
+        return default_storage.url(self.storage_key)
 
     def __str__(self):
         return str(self.pk)
