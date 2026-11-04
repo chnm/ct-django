@@ -7,9 +7,10 @@ from django_tables2 import SingleTableMixin
 from taggit.models import Tag
 
 from exhibits.models import ExhibitHome, HomeAboutSnippet
-from material.filters import TextileFilter
+from material.filters import TextileFilter, extract_year_range
 from material.models import PrimaryTextileType, SecondaryTextileType, TextileRecord
 from material.tables import TextileTable
+from material.timeline import PHASES, build_timeline, is_exact_year
 
 logger = logging.getLogger(__name__)
 
@@ -22,7 +23,7 @@ def index(request):
         if not about_snippet:
             # Create a default snippet if none exists
             about_snippet = HomeAboutSnippet.objects.create(
-                title="Connecting Threads",
+                title="Following a checked cloth across an ocean",
                 subtitle="Fashioning Madras in India and the Caribbean",
                 content="""
                 <p>Connecting Threads is a collaborative digital history project dedicated to amplifying the contributions of Indian weavers and African Caribbean consumers to global histories of dress.</p>
@@ -33,7 +34,7 @@ def index(request):
     except Exception:
         # In case of any issues, provide a fallback snippet
         about_snippet = {
-            "title": "Connecting Threads",
+            "title": "Following a checked cloth across an ocean",
             "subtitle": "Fashioning Madras in India and the Caribbean",
             "content": """
             <p>Connecting Threads is a collaborative digital history project dedicated to amplifying the contributions of Indian weavers and African Caribbean consumers to global histories of dress.</p>
@@ -43,7 +44,13 @@ def index(request):
         }
 
     return render(
-        request, "index.html", {"exhibits": exhibits, "about_snippet": about_snippet}
+        request,
+        "index.html",
+        {
+            "exhibits": exhibits,
+            "about_snippet": about_snippet,
+            "record_count": TextileRecord.objects.filter(is_public=True).count(),
+        },
     )
 
 
@@ -57,30 +64,9 @@ def keyword_search(request):
     return JsonResponse(results, safe=False)
 
 
-def record_details(request, record_id):
-    record = get_object_or_404(TextileRecord, id=record_id)
-    data = {
-        "to_area": str(record.to_area) if record.to_area else None,
-        "from_area": str(record.from_area) if record.from_area else None,
-        "to_place": str(record.to_place) if record.to_place else None,
-        "from_place": str(record.from_place) if record.from_place else None,
-        "transcription": record.transcription if record.transcription else None,
-        "summary_of_record": record.summary_of_record
-        if record.summary_of_record
-        else None,
-        "source_reference": record.source_reference
-        if record.source_reference
-        else None,
-        "source_type": record.source_type if record.source_type else None,
-        "description_of_source": record.description_of_source
-        if record.description_of_source
-        else None,
-        "record_creator": record.record_creator if record.record_creator else None,
-        "crosslinks": [str(link) for link in record.crosslinks.all()]
-        if record.crosslinks
-        else None,
-    }
-    return JsonResponse(data)
+def quick_view(request, item_id):
+    item = get_object_or_404(TextileRecord, pk=item_id, is_public=True)
+    return render(request, "database/_quick_view.html", {"item": item})
 
 
 def get_secondary_textile_types(request, primary_id):
@@ -107,8 +93,56 @@ def get_secondary_textile_types(request, primary_id):
 
 
 def textile_records_single(request, item_id):
-    item = get_object_or_404(TextileRecord, pk=item_id)
-    return render(request, "database/textile_records_single.html", {"item": item})
+    item = get_object_or_404(TextileRecord, pk=item_id, is_public=True)
+    public = TextileRecord.objects.filter(is_public=True)
+
+    linked = list(item.crosslinks.filter(is_public=True).order_by("id")[:4])
+    linked_reason = "crosslinked" if linked else ""
+    keyword = item.keywords.first()
+    if keyword and len(linked) < 4:
+        extra = (
+            public.filter(keywords__name=keyword.name)
+            .exclude(id=item.id)
+            .exclude(id__in=[r.id for r in linked])
+            .order_by("id")
+            .distinct()[: 4 - len(linked)]
+        )
+        extra = list(extra)
+        if extra and not linked:
+            linked_reason = f"shares keyword “{keyword.name}”"
+        linked += extra
+
+    start, _ = extract_year_range(item.year)
+    if start is None:
+        date_certainty = "undated"
+    elif is_exact_year(item.year):
+        date_certainty = "exact year"
+    else:
+        date_certainty = "approximate"
+
+    placeable = item.circulation in PHASES and start is not None
+    public_rows = public.values_list("id", "year", "circulation", named=True)
+
+    return render(
+        request,
+        "database/textile_records_single.html",
+        {
+            "item": item,
+            "timeline": build_timeline(
+                public_rows,
+                highlight_id=item.id if placeable else None,
+                compact=True,
+            ),
+            "timeline_label": (
+                "This record highlighted"
+                if placeable
+                else "This record is not placed on the timeline"
+            ),
+            "linked": linked,
+            "linked_reason": linked_reason,
+            "date_certainty": date_certainty,
+        },
+    )
 
 
 def about_crawler(request):
@@ -121,7 +155,11 @@ class TextileTableView(SingleTableMixin, FilterView):
     table_class = TextileTable
     filterset_class = TextileFilter
     # Only show public records that are properly reviewed
-    queryset = TextileRecord.objects.filter(is_public=True)
+    queryset = (
+        TextileRecord.objects.filter(is_public=True)
+        .select_related("from_place", "from_area", "to_place", "to_area")
+        .prefetch_related("primary_textile_types", "secondary_textile_types", "images")
+    )
 
     def get_template_names(self):
         if self.request.htmx:
@@ -162,7 +200,6 @@ class TextileTableView(SingleTableMixin, FilterView):
         # Round to nearest century boundaries for cleaner UI
         min_year = (min_year // 100) * 100
         max_year = ((max_year // 100) + 1) * 100
-        keywords = Tag.objects.all().values_list("name", flat=True).order_by("name")
         source_types = (
             textile_records.values_list("source_type", flat=True)
             .exclude(source_type__isnull=True)
@@ -181,13 +218,13 @@ class TextileTableView(SingleTableMixin, FilterView):
         except (ValueError, AttributeError):
             current_min, current_max = min_year, max_year
 
-        context["years"] = years
-        context["keywords"] = keywords
-        context["selected_keyword"] = self.request.GET.get("keyword")
         context["source_types"] = source_types
         context["circulation_types"] = circulation_types
         context["min_year"] = min_year
         context["max_year"] = max_year
         context["current_min_year"] = current_min
         context["current_max_year"] = current_max
+        context["timeline"] = build_timeline(
+            self.object_list.values_list("id", "year", "circulation", named=True)
+        )
         return context

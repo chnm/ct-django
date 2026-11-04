@@ -1,0 +1,7 @@
+{# tailwind: bg-madras-green bg-madras-gold bg-madras-red bg-sub border-madras-green border-madras-gold border-madras-red border-sub #}
+{% load database_tags %}
+<span class="whitespace-nowrap">
+  {% if record.from_place or record.from_area %}{% precision_dot record "from" %}{% firstof record.from_place.city record.from_area.name %}{% else %}<span class="text-faint">&mdash;</span>{% endif %}
+  <span class="mx-1 text-faint">&rarr;</span>
+  {% if record.to_place or record.to_area %}{% precision_dot record "to" %}{% firstof record.to_place.city record.to_area.name %}{% else %}<span class="text-faint">&mdash;</span>{% endif %}
+</span>
