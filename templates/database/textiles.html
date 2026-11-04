@@ -1,316 +1,219 @@
 {% extends "base.html" %}
-
 {% load render_table from django_tables2 %}
-{% load i18n %}
-{% load static %}
-
+{% load i18n static %}
 {% block title %}Textiles Database{% endblock title %}
 
-{% block extracss %}
-    <style>
-/* Additional styles for the year range slider */
-        .year-slider-handle:focus {
-            outline: none;
-            box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-        }
-    </style>
-{% endblock extracss %}
-
 {% block content %}
-    <section class="prose mb-5 pb-5">
-        <h1>Textiles Database</h1>
-    </section>
-
-    <div class="flex flex-col lg:flex-row gap-6">
-        {# Left Column: Filters #}
-        <div class="lg:w-1/4 w-full">
-            <div class="sticky top-4 border border-accent-50 rounded-lg shadow-sm bg-white">
-                <div class="bg-accent-400 text-white px-4 py-3 rounded-t-lg flex justify-between items-center">
-                    <span class="font-medium">Search Filters</span>
-                    <button id="mobile-filter-toggle" type="button" class="lg:hidden text-accent">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" viewBox="0 0 20 20" fill="currentColor">
-                            <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
-                        </svg>
-                    </button>
-                </div>
-                <div id="filter-content" class="p-4 lg:block">
-                    <form method="get"
-                          hx-get="{% url 'database' %}"
-                          hx-target="div.table-container"
-                          hx-swap="outerHTML"
-                          hx-indicator=".progress"
-                          class="space-y-5">
-                {# Manually render each field from the TextileFilter #}
-                {# Year Range Slider #}
-                        <div class="form-group">
-                            <label for="year-range-slider" class="block text-sm font-medium text-gray-700">{% trans "Year Range" %}</label>
-                            <div x-data="{
-                                         min: {{ min_year }},
-                                         max: {{ max_year }},
-                                         minVal: {{ current_min_year }},
-                                         maxVal: {{ current_max_year }},
-                                         getPercent(value) {
-                                         return ((value - this.min) / (this.max - this.min)) * 100;
-                                         }
-                                         }" class="relative mt-2 mb-10 px-4 font-mono">
-
-                                <div class="relative h-1 mt-8">
-                            {# Background track #}
-                                    <div class="absolute h-1 w-full bg-primary-200 rounded"></div>
-
-                            {# Selected range highlight #}
-                                    <div class="absolute h-1 bg-secondary"
-                                         :style="`left: ${getPercent(minVal)}%; right: ${100 - getPercent(maxVal)}%`"></div>
-
-                            {# Left handle #}
-                                    <div class="absolute h-6 w-6 bg-white border-2 border-secondary rounded-full -mt-2.5 -ml-3 shadow cursor-pointer"
-                                         :style="`left: ${getPercent(minVal)}%`"
-                                         @mousedown="
-                                                     const sliderWidth = $el.parentNode.clientWidth;
-                                                     const minRange = 10; // Minimum range between handles in years
-
-                                                     function handleMove(e) {
-                                                     const newVal = Math.round(((e.clientX - $el.parentNode.getBoundingClientRect().left) / sliderWidth) * (max - min) + min);
-                                                     // Ensure the new value is within allowed range and doesn't overlap with maxVal
-                                                     if (newVal >= min && newVal <= maxVal - minRange) {
-                                                     minVal = newVal;
-                                                     }
-                                                     }
-
-                                                     function handleUp() {
-                                                     document.removeEventListener('mousemove', handleMove);
-                                                     document.removeEventListener('mouseup', handleUp);
-                                                     }
-
-                                                     document.addEventListener('mousemove', handleMove);
-                                                     document.addEventListener('mouseup', handleUp);
-                                                    "
-                                         @touchstart="
-                                                      const sliderWidth = $el.parentNode.clientWidth;
-                                                      const minRange = 10; // Minimum range between handles in years
-
-                                                      function handleMove(e) {
-                                                      e.preventDefault();
-                                                      const touch = e.touches[0];
-                                                      const newVal = Math.round(((touch.clientX - $el.parentNode.getBoundingClientRect().left) / sliderWidth) * (max - min) + min);
-                                                      // Ensure the new value is within allowed range and doesn't overlap with maxVal
-                                                      if (newVal >= min && newVal <= maxVal - minRange) {
-                                                      minVal = newVal;
-                                                      }
-                                                      }
-
-                                                      function handleUp() {
-                                                      document.removeEventListener('touchmove', handleMove);
-                                                      document.removeEventListener('touchend', handleUp);
-                                                      }
-
-                                                      document.addEventListener('touchmove', handleMove, { passive: false });
-                                                      document.addEventListener('touchend', handleUp);
-                                                     ">
-                                        <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-secondary-100 text-secondary-800 text-xs px-1 rounded" x-text="minVal"></span>
-                                    </div>
-
-                            {# Right handle #}
-                                    <div class="absolute h-6 w-6 bg-white border-2 border-secondary rounded-full -mt-2.5 -ml-3 shadow cursor-pointer"
-                                         :style="`left: ${getPercent(maxVal)}%`"
-                                         @mousedown="
-                                                     const sliderWidth = $el.parentNode.clientWidth;
-                                                     const minRange = 10; // Minimum range between handles in years
-
-                                                     function handleMove(e) {
-                                                     const newVal = Math.round(((e.clientX - $el.parentNode.getBoundingClientRect().left) / sliderWidth) * (max - min) + min);
-                                                     // Ensure the new value is within allowed range and doesn't overlap with minVal
-                                                     if (newVal <= max && newVal >= minVal + minRange) {
-                                                     maxVal = newVal;
-                                                     }
-                                                     }
-
-                                                     function handleUp() {
-                                                     document.removeEventListener('mousemove', handleMove);
-                                                     document.removeEventListener('mouseup', handleUp);
-                                                     }
-
-                                                     document.addEventListener('mousemove', handleMove);
-                                                     document.addEventListener('mouseup', handleUp);
-                                                    "
-                                         @touchstart="
-                                                      const sliderWidth = $el.parentNode.clientWidth;
-                                                      const minRange = 10; // Minimum range between handles in years
-
-                                                      function handleMove(e) {
-                                                      e.preventDefault();
-                                                      const touch = e.touches[0];
-                                                      const newVal = Math.round(((touch.clientX - $el.parentNode.getBoundingClientRect().left) / sliderWidth) * (max - min) + min);
-                                                      // Ensure the new value is within allowed range and doesn't overlap with minVal
-                                                      if (newVal <= max && newVal >= minVal + minRange) {
-                                                      maxVal = newVal;
-                                                      }
-                                                      }
-
-                                                      function handleUp() {
-                                                      document.removeEventListener('touchmove', handleMove);
-                                                      document.removeEventListener('touchend', handleUp);
-                                                      }
-
-                                                      document.addEventListener('touchmove', handleMove, { passive: false });
-                                                      document.addEventListener('touchend', handleUp);
-                                                     ">
-                                        <span class="absolute -top-7 left-1/2 -translate-x-1/2 bg-secondary-100 text-secondary-800 text-xs px-1 rounded" x-text="maxVal"></span>
-                                    </div>
-                                </div>
-
-                                <input type="hidden" name="year_range" x-bind:value="`${minVal}-${maxVal}`">
-                            </div>
-                        </div>
-
-                {# Year Dropdown #}
-                        <div class="form-group">
-                            <label for="id_year" class="block text-sm font-medium text-gray-700">{% trans "Exact Year" %}</label>
-                            <select name="year" id="id_year" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="">{% trans "Select Exact Year" %}</option>
-                                {% for year in years %}
-                                    <option value="{{ year }}" {% if request.GET.year == year|stringformat:"s" %}selected{% endif %}>{{ year }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ filter.form.primary_textile_types.id_for_label }}" class="block text-sm font-medium text-gray-700">Primary Textile Type</label>
-                            <select id="{{ filter.form.primary_textile_types.id_for_label }}" name="{{ filter.form.primary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" data-primary-id="{{ filter.form.primary_textile_types.id_for_label }}">
-                                {% for value, name in filter.form.primary_textile_types.field.choices %}
-                                    <option value="{{ value }}">{{ name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ filter.form.secondary_textile_types.id_for_label }}" class="block text-sm font-medium text-gray-700">Secondary Textile Type</label>
-                            <select id="{{ filter.form.secondary_textile_types.id_for_label }}" name="{{ filter.form.secondary_textile_types.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" disabled data-secondary-id="{{ filter.form.secondary_textile_types.id_for_label }}">
-                                <option value="">Select secondary textile type</option>
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="id_source_type" class="block text-sm font-medium text-gray-700">Source Type</label>
-                            <select name="source_type" id="id_source_type" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="" {% if not request.GET.source_type %}selected{% endif %}>All</option>
-                                {% for source_type in source_types %}
-                                    <option value="{{ source_type }}" {% if source_type == request.GET.source_type %}selected{% endif %}>
-                                        {{ source_type }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="id_circulation" class="block text-sm font-medium text-gray-700">Circulation</label>
-                            <select name="circulation" id="id_circulation" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="">All</option>
-                                {% for abbr, full in circulation_types %}
-                                    <option value="{{ abbr }}" {% if abbr == request.GET.circulation %}selected{% endif %}>
-                                        {{ full }}
-                                    </option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ filter.form.from_area.id_for_label }}" class="block text-sm font-medium text-gray-700">From Area</label>
-                            <select id="{{ filter.form.from_area.id_for_label }}" name="{{ filter.form.from_area.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                {% for value, name in filter.form.from_area.field.choices %}
-                                    <option value="{{ value }}">{{ name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="{{ filter.form.to_area.id_for_label }}" class="block text-sm font-medium text-gray-700">To Area</label>
-                            <select id="{{ filter.form.to_area.id_for_label }}" name="{{ filter.form.to_area.html_name }}" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                {% for value, name in filter.form.to_area.field.choices %}
-                                    <option value="{{ value }}">{{ name }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group col-span-1 lg:col-span-1 overflow-y-auto max-h-96">
-                            <label for="id_keyword" class="block text-sm font-medium text-gray-700">Keywords</label>
-                            <select name="keyword" id="id_keyword" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm">
-                                <option value="">Select a keyword</option>
-                                {% for keyword in keywords %}
-                                    <option value="{{ keyword }}" {% if selected_keyword == keyword %}selected{% endif %}>{{ keyword }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div class="form-group">
-                            <label for="text_search" class="block text-sm font-medium text-gray-700">Text Search</label>
-                            <input type="text" name="text_search" id="text_search" class="mt-1 block w-full py-2 px-3 border border-gray-300 bg-white rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm" value="{{ request.GET.text_search }}">
-                        </div>
-                        <div class="flex justify-between space-x-2">
-                            <button type="submit" class="flex-1 bg-secondary hover:bg-secondary-600 text-white px-4 py-2 rounded-md shadow-sm text-sm font-medium transition-colors">
-                                Apply Filters
-                            </button>
-                            <button type="button" class="flex-1 bg-primary-100 hover:bg-primary-200 text-primary-700 border border-primary-200 px-4 py-2 rounded-md shadow-sm text-sm font-medium transition-colors" onclick="resetForm()">
-                                Reset
-                            </button>
-                        </div>
-                    </form>
-                </div>
-            </div>
-        </div>
-        {# Right Column: Table #}
-        <div class="lg:w-3/4 w-full">
-            {# Progress indicator #}
-            <div class="progress">
-                <div class="indeterminate"></div>
-            </div>
-
-            {# Table #}
-            <div class="table-container bg-white rounded-lg shadow overflow-hidden">
-                {% render_table table %}
-            </div>
-        </div>
-    </div> {# Close flex container #}
-
-    {# Modal for data details #}
-    <div id="detailsModal" class="fixed z-50 inset-0 overflow-y-auto hidden">
-        <div class="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
-            {# Backdrop #}
-            <div class="fixed inset-0 transition-opacity" aria-hidden="true">
-                <div class="absolute inset-0 bg-gray-500 bg-opacity-75 backdrop-blur-sm"></div>
-            </div>
-
-            {# Modal content #}
-            <span class="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">&#8203;</span>
-            <div class="inline-block align-bottom bg-white rounded-lg text-left overflow-hidden shadow-xl transform transition-all sm:my-8 sm:align-middle sm:max-w-2xl sm:w-full">
-                {# Modal header #}
-                <div class="bg-primary px-4 py-3 sm:px-6 flex justify-between items-center">
-                    <h3 class="text-lg leading-6 font-medium text-white" id="modal-title">Record Details</h3>
-                    <button type="button" onclick="closeModal()" class="text-accent hover:text-accent-200 transition-colors">
-                        <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    </button>
-                </div>
-
-                {# Modal body #}
-                <div class="bg-white px-4 pt-5 pb-4 sm:p-6 sm:pb-4">
-                    <div class="space-y-4" id="modal-content">
-                        {# Modal content will be populated by JavaScript #}
-                        <div class="animate-pulse">
-                            <div class="h-4 bg-gray-200 rounded w-3/4 mb-4"></div>
-                            <div class="h-4 bg-gray-200 rounded w-1/2 mb-4"></div>
-                            <div class="h-4 bg-gray-200 rounded w-5/6 mb-4"></div>
-                            <div class="h-4 bg-gray-200 rounded w-2/3 mb-4"></div>
-                        </div>
-                    </div>
-                </div>
-
-                {# Modal footer #}
-                <div class="bg-primary-50 px-4 py-3 sm:px-6 flex justify-end">
-                    <button type="button"
-                            class="inline-flex justify-center rounded-md border border-primary-200 shadow-sm px-4 py-2 bg-white text-base font-medium text-primary-700 hover:bg-primary-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-secondary sm:text-sm transition-colors"
-                            onclick="closeModal()">
-                        Close
-                    </button>
-                </div>
-            </div>
-        </div>
+  <header class="mb-8 grid items-end gap-6 lg:grid-cols-2">
+    <div>
+      <div class="lbl mb-3">{{ timeline.total }} records</div>
+      <h1 class="font-display text-[40px] font-semibold leading-none tracking-[-0.02em] text-ink">Textiles Database</h1>
     </div>
+    <p class="max-w-[560px] font-serif text-[17px] leading-[1.55] text-sub lg:justify-self-end">Object and archival records of Madras textiles. Date ranges and location precision are shown for every row, so you can see what we know&mdash;and what we don&rsquo;t.</p>
+  </header>
+
+  <div id="swimlane" class="mb-6">
+    {% include "database/_swimlane.html" with timeline=timeline %}
+  </div>
+
+  <div class="grid gap-6 lg:grid-cols-[280px_1fr]">
+    <aside class="self-start overflow-hidden rounded-lg border border-rule bg-white lg:sticky lg:top-4">
+      <div class="flex items-center justify-between bg-navy px-5 py-3 font-display text-[15px] font-medium text-paper">
+        <span>Search filters</span>
+        <button id="mobile-filter-toggle" type="button" class="lg:hidden" aria-controls="filter-content" aria-expanded="true" aria-label="Toggle filters">
+          <svg class="h-5 w-5 transition-transform" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true"><path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/></svg>
+        </button>
+      </div>
+      <div id="filter-content" class="p-5">
+        <form method="get" hx-get="{% url 'database' %}" hx-target="div.table-container" hx-swap="outerHTML" hx-indicator=".progress" class="space-y-5">
+
+          <div>
+            <div class="lbl mb-2">Year range</div>
+            <div x-data="{
+                         min: {{ min_year }},
+                         max: {{ max_year }},
+                         minVal: {{ current_min_year }},
+                         maxVal: {{ current_max_year }},
+                         getPercent(value) {
+                         return ((value - this.min) / (this.max - this.min)) * 100;
+                         }
+                         }" class="relative mt-2 mb-10 px-4 font-mono">
+
+              <div class="relative h-1 mt-8">
+            {# Background track #}
+                <div class="absolute h-1 w-full bg-rule rounded"></div>
+
+            {# Selected range highlight #}
+                <div class="absolute h-1 bg-navy"
+                     :style="`left: ${getPercent(minVal)}%; right: ${100 - getPercent(maxVal)}%`"></div>
+
+            {# Left handle #}
+                <div class="absolute h-6 w-6 bg-white border border-navy rounded-full -mt-2.5 -ml-3 shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-navy/30"
+                     :style="`left: ${getPercent(minVal)}%`"
+                     @mousedown="
+                                 const sliderWidth = $el.parentNode.clientWidth;
+                                 const minRange = 10; // Minimum range between handles in years
+
+                                 function handleMove(e) {
+                                 const newVal = Math.round(((e.clientX - $el.parentNode.getBoundingClientRect().left) / sliderWidth) * (max - min) + min);
+                                 // Ensure the new value is within allowed range and doesn't overlap with maxVal
+                                 if (newVal >= min && newVal <= maxVal - minRange) {
+                                 minVal = newVal;
+                                 }
+                                 }
+
+                                 function handleUp() {
+                                 document.removeEventListener('mousemove', handleMove);
+                                 document.removeEventListener('mouseup', handleUp);
+                                 }
+
+                                 document.addEventListener('mousemove', handleMove);
+                                 document.addEventListener('mouseup', handleUp);
+                                "
+                     @touchstart="
+                                  const sliderWidth = $el.parentNode.clientWidth;
+                                  const minRange = 10; // Minimum range between handles in years
+
+                                  function handleMove(e) {
+                                  e.preventDefault();
+                                  const touch = e.touches[0];
+                                  const newVal = Math.round(((touch.clientX - $el.parentNode.getBoundingClientRect().left) / sliderWidth) * (max - min) + min);
+                                  // Ensure the new value is within allowed range and doesn't overlap with maxVal
+                                  if (newVal >= min && newVal <= maxVal - minRange) {
+                                  minVal = newVal;
+                                  }
+                                  }
+
+                                  function handleUp() {
+                                  document.removeEventListener('touchmove', handleMove);
+                                  document.removeEventListener('touchend', handleUp);
+                                  }
+
+                                  document.addEventListener('touchmove', handleMove, { passive: false });
+                                  document.addEventListener('touchend', handleUp);
+                                 ">
+                    <span class="absolute -top-7 left-1/2 -translate-x-1/2 font-mono text-[12px] text-sub" x-text="minVal"></span>
+                </div>
+
+            {# Right handle #}
+                <div class="absolute h-6 w-6 bg-white border border-navy rounded-full -mt-2.5 -ml-3 shadow cursor-pointer focus:outline-none focus:ring-2 focus:ring-navy/30"
+                     :style="`left: ${getPercent(maxVal)}%`"
+                     @mousedown="
+                                 const sliderWidth = $el.parentNode.clientWidth;
+                                 const minRange = 10; // Minimum range between handles in years
+
+                                 function handleMove(e) {
+                                 const newVal = Math.round(((e.clientX - $el.parentNode.getBoundingClientRect().left) / sliderWidth) * (max - min) + min);
+                                 // Ensure the new value is within allowed range and doesn't overlap with minVal
+                                 if (newVal <= max && newVal >= minVal + minRange) {
+                                 maxVal = newVal;
+                                 }
+                                 }
+
+                                 function handleUp() {
+                                 document.removeEventListener('mousemove', handleMove);
+                                 document.removeEventListener('mouseup', handleUp);
+                                 }
+
+                                 document.addEventListener('mousemove', handleMove);
+                                 document.addEventListener('mouseup', handleUp);
+                                "
+                     @touchstart="
+                                  const sliderWidth = $el.parentNode.clientWidth;
+                                  const minRange = 10; // Minimum range between handles in years
+
+                                  function handleMove(e) {
+                                  e.preventDefault();
+                                  const touch = e.touches[0];
+                                  const newVal = Math.round(((touch.clientX - $el.parentNode.getBoundingClientRect().left) / sliderWidth) * (max - min) + min);
+                                  // Ensure the new value is within allowed range and doesn't overlap with minVal
+                                  if (newVal <= max && newVal >= minVal + minRange) {
+                                  maxVal = newVal;
+                                  }
+                                  }
+
+                                  function handleUp() {
+                                  document.removeEventListener('touchmove', handleMove);
+                                  document.removeEventListener('touchend', handleUp);
+                                  }
+
+                                  document.addEventListener('touchmove', handleMove, { passive: false });
+                                  document.addEventListener('touchend', handleUp);
+                                 ">
+                    <span class="absolute -top-7 left-1/2 -translate-x-1/2 font-mono text-[12px] text-sub" x-text="maxVal"></span>
+                </div>
+              </div>
+
+              {# Only sent once narrowed, so the default range does not drop undated records #}
+              <input type="hidden" x-bind:name="(minVal > min || maxVal < max) ? 'year_range' : ''" x-bind:value="`${minVal}-${maxVal}`">
+            </div>
+          </div>
+
+          {% for field, any_label in textile_selects %}
+            <div>
+              <label class="lbl mb-2 block" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              <select id="{{ field.id_for_label }}" name="{{ field.html_name }}" class="fn-select">
+                {% for value, name in field.field.choices %}
+                  <option value="{{ value }}" {% if value|stringformat:"s" == field.value|stringformat:"s" %}selected{% endif %}>{% if value == "" %}{{ any_label }}{% else %}{{ name }}{% endif %}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endfor %}
+
+          <fieldset>
+            <legend class="lbl mb-2">Circulation</legend>
+            <div class="flex flex-wrap gap-2">
+              {% for code, label in circulation_types %}
+                <label class="cursor-pointer">
+                  <input type="checkbox" name="circulation" value="{{ code }}" class="peer sr-only" {% if code in filter.form.circulation.value %}checked{% endif %}>
+                  <span class="inline-flex rounded border border-transparent px-2 py-1 font-mono text-[11.5px] font-semibold opacity-60 peer-checked:opacity-100 peer-checked:border-current peer-focus-visible:ring-2 peer-focus-visible:ring-navy {% if code == 'pr' %}bg-tag-green text-madras-green{% elif code == 'td' %}bg-tag-gold text-madras-gold{% else %}bg-tag-red text-madras-red{% endif %}">{{ label }}</span>
+                </label>
+              {% endfor %}
+            </div>
+          </fieldset>
+
+          {% for name, label, any_label, current in region_selects %}
+            <div>
+              <label class="lbl mb-2 block" for="id_{{ name }}">{{ label }}</label>
+              <select id="id_{{ name }}" name="{{ name }}" class="fn-select">
+                <option value="">{{ any_label }}</option>
+                {% for region in regions %}<option value="{{ region }}" {% if region == current %}selected{% endif %}>{{ region }}</option>{% endfor %}
+              </select>
+            </div>
+          {% endfor %}
+
+          <div>
+            <label class="lbl mb-2 block" for="id_source_type">Source type</label>
+            <select name="source_type" id="id_source_type" class="fn-select">
+              <option value="">All sources</option>
+              {% for value, label in source_types %}
+                <option value="{{ value }}" {% if value == request.GET.source_type %}selected{% endif %}>{{ label|capfirst }}</option>
+              {% endfor %}
+            </select>
+          </div>
+
+          <div>
+            <label class="lbl mb-2 block" for="text_search">Keyword / text</label>
+            <input type="text" name="text_search" id="text_search" value="{{ request.GET.text_search|default:'' }}" placeholder="e.g. weavers, head-tie&hellip;" class="fn-select">
+          </div>
+
+          <div class="flex gap-2 pt-1">
+            <button type="submit" class="btn-solid flex-1 text-center">Apply filters</button>
+            <button type="button" class="btn-ghost text-madras-red" onclick="resetForm()">Reset</button>
+          </div>
+        </form>
+      </div>
+    </aside>
+
+    <div>
+      <div class="progress"><div class="indeterminate"></div></div>
+      <div class="table-container">
+        {% render_table table %}
+      </div>
+    </div>
+  </div>
 {% endblock content %}
 
 {% block extrajs %}
-    <script src="{% static 'js/database.js' %}"></script>
+  <script src="{% static 'js/database.js' %}"></script>
 {% endblock extrajs %}

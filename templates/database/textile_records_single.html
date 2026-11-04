@@ -1,134 +1,138 @@
 {% extends "base.html" %}
-{% load render_table from django_tables2 %}
+{% load database_tags %}
+{% block title %}{{ item.title|default:item.pk }} · Textiles Database{% endblock title %}
 
 {% block content %}
-    <div class="prose max-w-none">
-        <h1 class="text-3xl font-bold mb-2 text-primary-700">Record {{ item.id_manual|default:item.id }} ({{ item.year }})</h1>
-        <p class="mb-6"><a href="/database/" class="text-secondary-700 hover:text-secondary-800 underline">&larr; Return to database</a></p>
+  {% terms item "textile_type" as cloths %}{% terms item "textile_form" as forms %}{% terms item "textile_pattern" as patterns %}{% terms item "textile_colour" as colours %}
+  {% terms item "keyword" as keywords %}{% terms item "source_format" as formats %}
+  {% places item "origin" "destination" as route %}{% places item "origin" as origins %}{% places item "destination" as destinations %}
+  {% places item "via" as vias %}{% places item "depicted" as depicted %}{% places item "place_of_interest" as discussed %}
+  {% area_only item as vague %}{% phase item as p %}
+  <header class="mb-8 border-b border-rule pb-6">
+    <a href="{% url 'database' %}" class="font-display text-sm text-madras-red hover:underline">&larr; Return to database</a>
+    <div class="lbl mt-6 mb-2">Database record &middot; ID {{ item.pk }}</div>
+    <h1 class="font-display text-[40px] font-semibold leading-none tracking-[-0.02em] text-ink">{{ item.title|default:item.pk }}</h1>
+    <div class="mt-4 flex flex-wrap items-center gap-3 font-mono text-[13px] text-sub">
+      {% circulation_tag item %}
+      <span>{% if item.date_display %}{{ item.date_display }} &middot; {{ date_certainty }}{% else %}undated{% endif %}</span>
+      {% if item.is_context_record %}<span class="text-faint">|</span><span>Context record &middot; no attached textile</span>{% endif %}
     </div>
-    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <!-- Left Column -->
-        <div class="prose max-w-none">
-            {% if item.archive %}
-               <div class="bg-accent-50 border-l-4 border-neutral-500 p-4 mb-8 not-prose">
-                    <p class="text-sm text-neutral-800">
-                        The following data is derived from the {{ item.archive }}. <a href="{% url 'about_crawler' %}" class="text-secondary-700 hover:text-secondary-800 underline">Learn more about our web crawler</a>.
-                    </p>
-                </div>
-            {% endif %}
-            <h2 class="text-2xl font-semibold mb-3 text-secondary-700">Summary</h2>
-            <div class="font-serif text-lg mb-6">
-                {% if item.summary_of_record %}
-                    <p class="mb-2">{{ item.summary_of_record }}</p>
-                {% else %}
-                    <p class="mb-2 text-neutral-500">No summary is available for this item.</p>
-                {% endif %}
+    {% if item.holding_institution %}
+      <p class="mt-4 max-w-[720px] font-serif text-[15px] text-sub">Held by {{ item.holding_institution }}{% if item.source_identifier %} ({{ item.source_identifier }}){% endif %}.{% if item.ingest_method == "crawler_vam_api" %} This record was gathered by our crawler. <a href="{% url 'about_crawler' %}" class="text-madras-red hover:underline">How the crawler works</a>.{% endif %}</p>
+    {% endif %}
+    {% if item.content_warning %}
+      <p class="mt-4 max-w-[720px] rounded border-l-[3px] border-madras-red bg-tag-red px-4 py-3 font-serif text-[15px] text-ink" role="note"><strong class="font-display">Content note.</strong> {{ item.content_warning }}</p>
+    {% endif %}
+  </header>
+
+  <div class="grid gap-10 lg:grid-cols-[1.55fr_1fr]">
+    <main class="space-y-10 lg:border-r lg:border-rule lg:pr-10">
+      <section>
+        <h2 class="lbl mb-3 text-madras-red">Summary</h2>
+        {% if item.summary %}
+          <p class="font-serif text-[18px] leading-[1.6] text-ink">{{ item.summary }}</p>
+        {% else %}
+          <p class="font-serif text-[18px] text-faint">No summary is available for this item.</p>
+        {% endif %}
+      </section>
+
+      <section>
+        <h2 class="lbl mb-3 text-madras-red">Record excerpt</h2>
+        {% for text in transcriptions %}
+          <blockquote class="mb-3 border-l-[3px] border-madras-gold bg-[#faf6ec] px-6 py-5 font-serif text-[17px] italic leading-[1.6] text-ink">{{ text.text_body|linebreaksbr }}</blockquote>
+        {% empty %}
+          <blockquote class="border-l-[3px] border-rule px-6 py-5 font-serif italic text-faint">No transcription available.</blockquote>
+        {% endfor %}
+        {% if item.source_citation %}<p class="mt-2 text-right font-serif text-sm italic text-faint">Source: {{ item.source_citation }}{% if item.source_url %} &middot; <a href="{{ item.source_url }}" class="text-madras-red hover:underline">link</a>{% endif %}</p>{% endif %}
+      </section>
+
+      <section>
+        <h2 class="lbl mb-3 text-madras-red">Item metadata</h2>
+        <dl class="grid overflow-hidden rounded-lg border border-rule md:grid-cols-2 [&>div]:border-b [&>div]:border-rule [&>div]:p-4 md:[&>div:nth-child(odd)]:border-r">
+          <div><dt class="lbl mb-1">Textile types</dt><dd class="font-display text-[15px]">{% for t in cloths %}{{ t.label }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="text-faint">{% if item.is_context_record %}No textiles attached (context record){% else %}None specified{% endif %}</span>{% endfor %}</dd></div>
+          <div><dt class="lbl mb-1">Form</dt><dd class="font-display text-[15px]">{% for t in forms %}{{ t.label }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="text-faint">None specified</span>{% endfor %}</dd></div>
+          <div><dt class="lbl mb-1">Pattern and colour</dt><dd class="font-display text-[15px]">{% for t in patterns %}{{ t.label }}{% if not forloop.last or colours %}, {% endif %}{% endfor %}{% for t in colours %}{{ t.label }}{% if not forloop.last %}, {% endif %}{% endfor %}{% if not patterns and not colours %}<span class="text-faint">None specified</span>{% endif %}</dd></div>
+          <div><dt class="lbl mb-1">Subjects</dt><dd class="font-display text-[15px]">{% for s in subjects %}{% firstof s.name_preferred s.label %}{% if not forloop.last %}, {% endif %}{% empty %}<span class="text-faint">None specified</span>{% endfor %}</dd></div>
+          <div><dt class="lbl mb-1">Keywords</dt><dd class="font-display text-[15px]">{% for k in keywords %}<a href="{% url 'database' %}?keyword={{ k.label|urlencode }}" class="hover:underline">{{ k.label }}</a>{% if not forloop.last %}, {% endif %}{% empty %}<span class="text-faint">None specified</span>{% endfor %}</dd></div>
+          <div><dt class="lbl mb-1">Circulation</dt><dd class="font-display text-[15px]">{{ p.label }}</dd></div>
+          <div><dt class="lbl mb-1">Source type</dt><dd class="font-display text-[15px]">{% if item|source_type %}{{ item|source_type }}{% else %}<span class="text-faint">None specified</span>{% endif %}{% for f in formats %} &middot; {{ f.label }}{% endfor %}</dd></div>
+          <div><dt class="lbl mb-1">Date</dt><dd class="font-display text-[15px]">{{ item|date_display }}</dd></div>
+          <div class="md:col-span-2 md:!border-r-0 !border-b-0"><dt class="lbl mb-1">Reference</dt><dd class="font-serif text-[15px] italic">{{ item.source_citation|default:"None specified" }}</dd></div>
+        </dl>
+      </section>
+    </main>
+
+    <aside class="space-y-8 rounded-lg bg-paper-3 p-6">
+      <section>
+        <h2 class="lbl mb-3">This record in space</h2>
+        <div class="rounded-lg border border-dashed border-rule bg-white p-4">
+          {% if route %}
+            <div class="font-display text-[15px]">
+              {% for o in origins %}{% precision_dot o item %}{{ o.place.name_preferred }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="text-faint">&mdash;</span>{% endfor %}
+              {% for v in vias %}<span class="mx-1 text-faint">&rarr;</span>{% precision_dot v item %}{{ v.place.name_preferred }}{% endfor %}
+              <span class="mx-1 text-faint">&rarr;</span>
+              {% for d in destinations %}{% precision_dot d item %}{{ d.place.name_preferred }}{% if not forloop.last %}, {% endif %}{% empty %}<span class="text-faint">&mdash;</span>{% endfor %}
             </div>
-
-            <h2 class="text-2xl font-semibold mb-3 text-secondary-700">Record Excerpt</h2>
-            <div class="font-serif text-lg mb-6">
-                {% if item.transcription %}
-                    <blockquote class="pl-4 border-l-4 border-accent-500 italic bg-accent-50 py-2">{{ item.transcription }}</blockquote>
-                {% else %}
-                    <blockquote class="pl-4 border-l-4 border-neutral-300 italic text-neutral-500">No transcription available.</blockquote>
-                {% endif %}
-                {% if item.source_reference %}
-                    <p class="text-sm text-right mt-2 text-neutral-600">Source: {{ item.source_reference }}</p>
-                {% endif %}
-            </div>
-
-            <div class="bg-accent-50 rounded-lg p-4 mb-6 border border-neutral-200">
-                <h3 class="text-xl font-semibold mb-3 text-secondary-700">Item Metadata</h3>
-                <div class="space-y-2">
-                    <p class="text-base"><strong>Primary Textile Types:</strong>
-                        {% if item.primary_textile_types.all %}
-                            {% for primary_type in item.primary_textile_types.all %}
-                                {{ primary_type.name }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span class="text-neutral-500">None specified</span>
-                        {% endif %}
-                    </p>
-
-                    <p class="text-base"><strong>Secondary Textile Types:</strong>
-                        {% if item.secondary_textile_types.all %}
-                            {% for secondary_type in item.secondary_textile_types.all %}
-                                {{ secondary_type.name }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span class="text-neutral-500">None specified</span>
-                        {% endif %}
-                    </p>
-                    <p class="text-base"><strong>Primary Subjects:</strong>
-                        {% if item.primary_subjects.all %}
-                            {% for primary_subject in item.primary_subjects.all %}
-                                {{ primary_subject.name }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span class="text-neutral-500">None specified</span>
-                        {% endif %}
-                    </p>
-
-                    <p class="text-base"><strong>Secondary Subjects:</strong>
-                        {% if item.secondary_subjects.all %}
-                            {% for secondary_subject in item.secondary_subjects.all %}
-                                {{ secondary_subject.name }}{% if not forloop.last %}, {% endif %}
-                            {% endfor %}
-                        {% else %}
-                            <span class="text-neutral-500">None specified</span>
-                        {% endif %}
-                    </p>
-                    {% if item.keywords.all %}
-                        <p class="text-base"><strong>Keywords:</strong> {{ item.keywords.all|join:", " }}</p>
-                    {% endif %}
-                </div>
-                <div class="mt-4 pt-4 border-t border-neutral-300 space-y-2">
-                    {% if item.get_circulation_display %}<p class="text-base"><strong>Circulation:</strong> {{ item.get_circulation_display }}</p>{% endif %}
-                    {% if item.source_type %}<p class="text-base"><strong>Source type:</strong> {{ item.source_type }}</p>{% endif %}
-                    <p class="text-base"><strong>Year:</strong> {{ item.year|default:"Not specified" }}</p>
-                    {% if item.source_reference %}<p class="text-base"><strong>Reference:</strong> {{ item.source_reference }}</p>{% endif %}
-                </div>
-            </div>
-
-            {% if item.map %}
-                <section class="mt-8">
-                    <h3 class="text-2xl font-semibold mb-3 text-secondary-700">Map</h3>
-                    <p class="mb-2">Future spot for spatial data.</p>
-                    <div id="map" class="h-96 border border-neutral-300 rounded-lg flex items-center justify-center bg-neutral-50">Map</div>
-                </section>
-            {% endif %}
+            {% if vague %}<p class="mt-2 font-serif text-sm text-sub">Located to an area only &mdash; no specific place or route is documented.</p>{% endif %}
+          {% elif not depicted and not discussed %}
+            <p class="font-serif text-sm text-sub">No place is recorded for this record.</p>
+          {% endif %}
+          {% if depicted %}<p class="mt-2 font-serif text-sm text-sub">Places depicted: {% for d in depicted %}{{ d.place.name_preferred }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+          {% if discussed %}<p class="mt-2 font-serif text-sm text-sub">Places discussed: {% for d in discussed %}{{ d.place.name_preferred }}{% if not forloop.last %}, {% endif %}{% endfor %}</p>{% endif %}
+          <p class="mt-3 font-mono text-[11.5px] text-faint">Map view arrives with the spatial explorer.</p>
         </div>
+      </section>
 
-        <!-- Right Column -->
-        <div class="prose max-w-none">
-            <h2 class="text-2xl font-semibold mb-3 text-secondary-700">Images</h2>
-            {% if item.images.all %}
-                <div class="grid grid-cols-1 gap-6 mb-8">
-                    {% for image in item.images.all %}
-                        <figure class="border border-neutral-200 rounded-lg overflow-hidden shadow-sm">
-                            <img src="{{ image.image.url }}" alt="{{ image.alt_text|default:image.caption }}" class="w-full h-auto">
-                            {% if image.caption %}
-                                <figcaption class="text-center text-sm px-4 py-2 bg-neutral-50 text-neutral-700">{{ image.caption }}</figcaption>
-                            {% endif %}
-                        </figure>
-                    {% endfor %}
-                </div>
-            {% else %}
-                <p class="text-neutral-500 mb-8">No images are available for this item.</p>
-            {% endif %}
+      <section>
+        <h2 class="lbl mb-3">This record in time</h2>
+        {% include "database/_swimlane.html" with timeline=timeline highlight_label=timeline_label %}
+        <p class="mt-3 font-display text-[14px] text-sub">
+          {% if date_certainty == "exact year" %}Fixed to <strong class="text-ink">{{ item.date_display }}</strong>.{% elif date_certainty == "approximate" %}Dated approximately: <strong class="text-ink">{{ item.date_display }}</strong>.{% else %}This record has no date.{% endif %}
+          {% if item.date_note %}<span class="mt-1 block font-serif text-[13px] text-faint">{{ item.date_note }}</span>{% endif %}
+        </p>
+      </section>
 
-            <h2 class="text-2xl font-semibold mb-3 text-secondary-700">Linked Items</h2>
-            {% if item.crosslinks.all %}
-                <div class="bg-accent-50 rounded-lg p-4 border border-neutral-200">
-                    <ul class="space-y-2 list-none pl-0">
-                        {% for crosslink in item.crosslinks.all %}
-                            <li class="pl-0"><a href="/database/{{ crosslink.id }}/" class="text-secondary-700 hover:text-secondary-800 hover:underline">→ Record {{ crosslink.id_manual|default:crosslink.id }} ({{ crosslink.year }})</a></li>
-                        {% endfor %}
-                    </ul>
+      <section>
+        <h2 class="lbl mb-3">Images</h2>
+        {% public_images item as images %}
+        {% with images=images %}
+          {% if images %}
+            <div class="space-y-4">
+              {% for image in images %}
+                <figure class="overflow-hidden rounded-lg border border-rule bg-white">
+                  <img src="{{ image.url }}" alt="" class="w-full" loading="lazy">
+                  <figcaption class="px-3 py-2 font-mono text-[11.5px] text-sub">
+                    {{ item.rights_statement }}
+                    {% if image.external_url and item.source_url %}<a href="{{ item.source_url }}" class="mt-1 block text-madras-red hover:underline" rel="noopener">View at original location{% if item.holding_institution %} ({{ item.holding_institution }}){% endif %} &rarr;</a>{% endif %}
+                  </figcaption>
+                </figure>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="rounded-lg border border-dashed border-rule bg-white p-6 text-center font-mono text-[12px] text-faint">No images are available for this record.</div>
+          {% endif %}
+        {% endwith %}
+      </section>
+
+      <section>
+        <h2 class="lbl mb-3">Linked items{% if linked_reason %} &middot; {{ linked_reason }}{% endif %}</h2>
+        {% if linked %}
+          <div class="space-y-3">
+            {% for r in linked %}
+              {% places r "origin" as r_origins %}{% terms r "textile_type" as r_cloths %}
+              <a href="{% url 'textile_single' item_id=r.pk %}" class="flex items-start justify-between gap-3 rounded-lg border border-rule bg-white p-4 no-underline hover:shadow-sm">
+                <div>
+                  <div class="font-display text-[15px] font-semibold text-ink">{{ r.title|default:r.pk }}</div>
+                  <div class="mt-1 font-mono text-[12px] text-sub">{% with o=r_origins|first %}{% if o %}{% precision_dot o r %}{{ o.place.name_preferred }}{% else %}&mdash;{% endif %}{% endwith %} &middot; {{ r|date_display }}{% with c=r_cloths|first %}{% if c %} &middot; {{ c.label }}{% endif %}{% endwith %}</div>
                 </div>
-            {% else %}
-                <p class="text-neutral-500">No linked items are available for this record.</p>
-            {% endif %}
-        </div>
-    </div>
+                {% circulation_tag r %}
+              </a>
+            {% endfor %}
+          </div>
+        {% else %}
+          <p class="font-serif text-sm text-faint">No linked items.</p>
+        {% endif %}
+      </section>
+    </aside>
+  </div>
 {% endblock content %}

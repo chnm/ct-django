@@ -1,0 +1,8 @@
+{% load database_tags %}{% public_images record as images %}
+{% with img=images|first %}
+{% if img %}
+  <a href="{% url 'textile_single' item_id=record.pk %}"><img src="{{ img.url }}" alt="" class="h-[30px] w-[42px] rounded object-cover"></a>
+{% else %}
+  <span class="block h-[30px] w-[42px] rounded border border-dashed border-rule bg-paper-2" aria-hidden="true"></span>
+{% endif %}
+{% endwith %}

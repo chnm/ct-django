@@ -86,6 +86,7 @@ INSTALLED_APPS = [
     # local apps
     "theme",
     "material",
+    "catalog",
     "exhibits",
     "crawler",
 ]
@@ -172,6 +173,26 @@ UNFOLD = {
                 ],
             },
             {
+                "title": _("Catalog"),
+                "items": [
+                    {
+                        "title": _(title),
+                        "icon": icon,
+                        "link": reverse_lazy(f"admin:catalog_{model}_changelist"),
+                    }
+                    for title, icon, model in [
+                        ("Records", "inventory_2", "item"),
+                        ("Places", "location_on", "place"),
+                        ("People and organisations", "people_alt", "agent"),
+                        ("Terms", "category", "term"),
+                        ("Sources", "menu_book", "source"),
+                        ("Collections", "collections", "collection"),
+                        ("Review queue", "rule", "dataissue"),
+                        ("Normalization log", "history", "normalizationlog"),
+                    ]
+                ],
+            },
+            {
                 "title": _("Collection Data"),
                 "items": [
                     {
@@ -218,19 +239,6 @@ UNFOLD = {
                         "title": _("Named Actors"),
                         "icon": "people_alt",
                         "link": reverse_lazy("admin:material_namedactor_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": _("Web Crawler"),
-                "collapsible": True,
-                "items": [
-                    {
-                        "title": _("Staged Museum Items"),
-                        "icon": "sync",
-                        "link": reverse_lazy(
-                            "admin:crawler_stagedmuseumitem_changelist"
-                        ),
                     },
                 ],
             },

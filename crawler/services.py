@@ -1,15 +1,127 @@
-# crawler/services.py
+"""Fetch museum objects tagged for Connecting Threads and stage them in the catalog."""
+
 import logging
+from datetime import UTC, datetime
 
 import backoff
 import requests
 from django.conf import settings
 from django.core.files.base import ContentFile
+from django.core.files.storage import default_storage
 from ratelimit import limits, sleep_and_retry
 
-from .models import StagedMuseumItem
+from .staging import Fetched, stage
 
 logger = logging.getLogger(__name__)
+
+VAM_SEARCH = "https://api.vam.ac.uk/v2/objects/search"
+VAM_OBJECT = "https://api.vam.ac.uk/v2/object/{}"
+VAM_TAG = "THES381162"  # Connecting Threads project tag
+VAM_IMAGE_SIZE = "full/!1000,1000/0/default.jpg"  # IIIF: fit within 1000px
+
+
+def _year(iso):
+    return int(iso[:4]) if iso and iso[:4].isdigit() else None
+
+
+def _texts(entries, key="text"):
+    return ", ".join(e[key] for e in entries if e.get(key))
+
+
+def vam_fetched(hit, full):
+    """Build a Fetched from a V&A search hit and its full object record."""
+    number = hit["systemNumber"]
+    images = hit.get("_images") or {}
+    production = (full.get("productionDates") or [{}])[0].get("date") or {}
+    date_text = production.get("text") or hit.get("_primaryDate", "")
+    place = hit.get("_primaryPlace") or (
+        (full.get("placesOfOrigin") or [{}])[0].get("place", {}).get("text", "")
+    )
+    object_type = full.get("objectType") or hit.get("objectType", "")
+    titles = [t["title"] for t in full.get("titles", []) if t.get("title")]
+    title = (
+        titles[0]
+        if titles
+        else ", ".join(p for p in [object_type, place, date_text] if p)
+    )
+    dimensions = "; ".join(
+        f"{d['dimension']} {d['value']} {d['unit']}".strip()
+        for d in full.get("dimensions", [])
+        if d.get("value")
+    )
+    modified = full.get("recordModificationDate")
+    return Fetched(
+        source="vam",
+        identifier=number,
+        payload=full or hit,
+        title=f"{title} (V&A {number})",
+        summary=(
+            full.get("briefDescription") or full.get("summaryDescription") or ""
+        ).strip(),
+        source_url=f"https://collections.vam.ac.uk/item/{number}/",
+        date_text=date_text,
+        date_start=_year(production.get("earliest")),
+        date_end=_year(production.get("latest")),
+        place=place,
+        maker=(hit.get("_primaryMaker") or {}).get("name", ""),
+        image_url=(
+            (images["_iiif_image_base_url"] + VAM_IMAGE_SIZE)
+            if images.get("_iiif_image_base_url")
+            else images.get("_primary_thumbnail", "")
+        ),
+        thumbnail_url=images.get("_primary_thumbnail", ""),
+        manifest_url=images.get("_iiif_presentation_url", ""),
+        source_updated=(
+            datetime.fromisoformat(modified).replace(tzinfo=UTC) if modified else None
+        ),
+        detail={
+            "object_type": object_type,
+            "materials_techniques": full.get("materialsAndTechniques")
+            or "; ".join(x for x in [_texts(full.get("materials", [])),
+                                     _texts(full.get("techniques", []))] if x),  # fmt: skip
+            "physical_description": full.get("physicalDescription", ""),
+            "dimensions_text": dimensions,
+            "accession_number": full.get("accessionNumber")
+            or hit.get("accessionNumber", ""),
+            "credit_line": full.get("creditLine", ""),
+            "marks_inscriptions": "; ".join(
+                m["content"]
+                for m in full.get("marksAndInscriptions", [])
+                if m.get("content")
+            ),
+            "object_history": full.get("objectHistory", ""),
+        },
+    )
+
+
+def cooper_hewitt_fetched(obj):
+    images = obj.get("images") or [{}]
+    first = images[0]
+
+    def url(*sizes):
+        return next((first[s]["url"] for s in sizes if s in first), "")
+
+    return Fetched(
+        source="cooper_hewitt",
+        identifier=str(obj["id"]),
+        payload=obj,
+        title=f"{obj.get('title') or obj.get('type', '')} (Cooper Hewitt {obj['id']})",
+        summary=(
+            obj.get("description")
+            or obj.get("gallery_text")
+            or obj.get("label_text")
+            or ""
+        ).strip(),
+        source_url=obj.get("url", ""),
+        date_text=obj.get("date", ""),
+        place=obj.get("woe:country_name", ""),
+        image_url=url("b", "z", "n"),
+        thumbnail_url=url("sq", "z"),
+        detail={
+            "object_type": obj.get("type", ""),
+            "materials_techniques": obj.get("medium", ""),
+        },
+    )
 
 
 class MuseumAPIClient:
@@ -17,7 +129,7 @@ class MuseumAPIClient:
         self.session = requests.Session()
         self.session.headers.update(
             {
-                "User-Agent": "threadbare/0.1",
+                "User-Agent": "connecting-threads-crawler/1.0",
                 "Accept": "application/json",
             }
         )
@@ -25,329 +137,70 @@ class MuseumAPIClient:
     @sleep_and_retry
     @limits(calls=100, period=60)
     @backoff.on_exception(
-        backoff.expo, (requests.exceptions.RequestException), max_tries=10
+        backoff.expo, requests.exceptions.RequestException, max_tries=5
     )
-    def fetch_cooper_hewitt(self):
-        logger.info("Starting Cooper-Hewitt fetch process...")
+    def _get(self, url, **params):
+        response = self.session.get(url, params=params or None, timeout=30)
+        response.raise_for_status()
+        return response
 
-        # Log the URL construction
-        url = (
-            "https://api.collection.cooperhewitt.org/rest/"
-            "?method=cooperhewitt.exhibitions.getObjects"
-            f"&access_token={settings.COOPER_HEWITT_API_KEY}"
-            "&query=Connecting%20Threads"
-        )
+    def download_image(self, url, name):
+        """Save an image to media storage; returns the storage key, or None on failure."""
+        try:
+            return default_storage.save(name, ContentFile(self._get(url).content))
+        except requests.exceptions.RequestException as e:
+            logger.error("Failed to download image %s: %s", url, e)
+            return None
+
+    def _stage_all(self, fetched_items):
+        created = updated = errored = 0
+        for fetched in fetched_items:
+            try:
+                _, new = stage(fetched, download=self.download_image)
+                created += new
+                updated += not new
+            except Exception:
+                errored += 1
+                logger.exception(
+                    "Could not stage %s %s", fetched.source, fetched.identifier
+                )
         logger.info(
-            f"Making request to Cooper-Hewitt API at: {url.replace(settings.COOPER_HEWITT_API_KEY, '[REDACTED]')}"
+            "Staged: %s created, %s updated, %s errors", created, updated, errored
         )
+        return created, updated
 
-        try:
-            # Log the request start
-            logger.info("Sending request to Cooper-Hewitt API...")
-            response = self.session.get(url)
-            logger.info(f"Received response with status code: {response.status_code}")
-
-            # Check response status
-            response.raise_for_status()
-
-            # Parse JSON response
-            logger.info("Parsing JSON response...")
-            data = response.json()
-            total_items = len(data.get("objects", []))
-            logger.info(f"Found {total_items} items in response")
-
-            items_created = 0
-            items_updated = 0
-            items_errored = 0
-
-            # Process each item
-            logger.info("Beginning to process items...")
-            for index, item in enumerate(data.get("objects", []), 1):
+    def _vam_records(self):
+        page = 1
+        while True:
+            data = self._get(VAM_SEARCH, id_category=VAM_TAG, order_sort="asc",
+                             page=page, page_size=100).json()  # fmt: skip
+            for hit in data.get("records", []):
                 try:
-                    logger.debug(
-                        f"Processing item {index}/{total_items} (ID: {item.get('id')})"
+                    full = (
+                        self._get(VAM_OBJECT.format(hit["systemNumber"]))
+                        .json()
+                        .get("record", {})
                     )
+                except requests.exceptions.RequestException as e:
+                    logger.warning("No full record for %s: %s", hit["systemNumber"], e)
+                    full = {}
+                yield vam_fetched(hit, full)
+            if page >= data.get("info", {}).get("pages", 1):
+                return
+            page += 1
 
-                    # Get image URLs
-                    images = item.get("images", [])
-                    thumbnail_url = ""
-                    if images:
-                        # Get the first image's thumbnail (size 'sq' is usually thumbnail)
-                        first_image = images[0]
-                        if "sq" in first_image:
-                            thumbnail_url = first_image["sq"]["url"]
-                        elif "z" in first_image:
-                            thumbnail_url = first_image["z"]["url"]
-
-                    # Prepare image download
-                    image_file = None
-                    if thumbnail_url:
-                        filename = f"{item.get('id', 'unknown')}.jpg"
-                        image_file = self.download_image(thumbnail_url, filename)
-
-                    # Prepare the default values
-                    defaults = {
-                        "title": item.get("title", ""),
-                        "date": item.get("date", ""),
-                        "description": item.get("description")
-                        or item.get("gallery_text")
-                        or item.get("label_text", ""),
-                        "item_type": item.get("type", ""),
-                        "medium": item.get("medium", ""),
-                        "url": item.get("url", ""),
-                        "country": item.get("woe:country_name", ""),
-                        "archive": "Cooper-Hewitt, Smithsonian Design Museum",
-                        "manifest": "",  # Cooper-Hewitt doesn't seem to have IIIF manifests
-                        "thumbnail": thumbnail_url,
-                        "api_response": item,
-                        "is_reviewed": False,
-                        "published": False,
-                    }
-
-                    # Use update_or_create to either update existing or create new
-                    staged_item, created = StagedMuseumItem.objects.update_or_create(
-                        id=item.get("id"), defaults=defaults
-                    )
-
-                    # Save the image if we have one
-                    if image_file:
-                        try:
-                            staged_item.image.save(
-                                image_file.name, image_file, save=False
-                            )
-                            logger.info(
-                                f"Successfully saved image for {item.get('id')}"
-                            )
-                        except Exception as e:
-                            logger.error(
-                                f"Failed to save image for {item.get('id')}: {e!s}"
-                            )
-
-                    # Update review notes after we know if it was created or updated
-                    staged_item.review_notes = (
-                        "Initial fetch from API" if created else "Data updated from API"
-                    )
-                    staged_item.save()
-
-                    if created:
-                        items_created += 1
-                        logger.info(
-                            f"Created new item: {item.get('id')} - {item.get('title', 'No title')}"
-                        )
-                    else:
-                        items_updated += 1
-                        logger.info(
-                            f"Updated existing item: {item.get('id')} - {item.get('title', 'No title')}"
-                        )
-
-                except Exception as e:
-                    items_errored += 1
-                    logger.error(
-                        f"Error processing item {item.get('id', 'unknown ID')}: {e!s}"
-                    )
-                    continue
-
-            # Log final summary
-            logger.info("Cooper-Hewitt fetch complete:")
-            logger.info(f"- Items created: {items_created}")
-            logger.info(f"- Items updated: {items_updated}")
-            logger.info(f"- Items errored: {items_errored}")
-            logger.info(f"- Total processed: {items_created + items_updated}")
-
-            return items_created, items_updated
-
-        except requests.exceptions.RequestException as e:
-            logger.error(f"HTTP Request failed: {e!s}")
-            raise
-        except ValueError as e:
-            logger.error(f"JSON parsing failed: {e!s}")
-            raise
-        except Exception as e:
-            logger.error(f"Unexpected error during fetch: {e!s}")
-            raise
-
-    def download_image(self, image_url, filename):
-        """
-        Download an image from a URL and return a Django ContentFile
-        """
-        try:
-            logger.info(f"Downloading image from: {image_url}")
-            response = self.session.get(image_url, timeout=30)
-            response.raise_for_status()
-
-            # Create a ContentFile from the image data
-            return ContentFile(response.content, name=filename)
-
-        except requests.exceptions.RequestException as e:
-            logger.error(f"Failed to download image {image_url}: {e!s}")
-            return None
-        except Exception as e:
-            logger.error(f"Unexpected error downloading image {image_url}: {e!s}")
-            return None
-
-    @sleep_and_retry
-    @limits(calls=100, period=60)
-    @backoff.on_exception(
-        backoff.expo, (requests.exceptions.RequestException), max_tries=10
-    )
     def fetch_vam(self):
-        logger.info("Starting V&A Museum fetch process...")
+        logger.info("Fetching V&A objects tagged %s", VAM_TAG)
+        return self._stage_all(self._vam_records())
 
-        # Construct the URL with parameters
-        base_url = "https://api.vam.ac.uk/v2/objects/search"
-        params = {
-            "id_category": "THES381162",  # ConnThreads project tag
-            "order_sort": "asc",
-            "page": 1,
-            "page_size": 100,
-        }
-        logger.info(f"Making request to V&A API at: {base_url} with params: {params}")
-
-        try:
-            # Log the request start
-            logger.info("Sending request to V&A API...")
-            response = self.session.get(base_url, params=params)
-            logger.info(f"Received response with status code: {response.status_code}")
-
-            # Check response status
-            response.raise_for_status()
-
-            # Parse JSON response
-            logger.info("Parsing JSON response...")
-            data = response.json()
-            total_items = len(data.get("records", []))
-            logger.info(f"Found {total_items} items in response")
-
-            items_created = 0
-            items_updated = 0
-            items_errored = 0
-
-            # Process each item
-            logger.info("Beginning to process items...")
-            for index, record in enumerate(data.get("records", []), 1):
-                try:
-                    logger.debug(
-                        f"Processing item {index}/{total_items} (ID: {record.get('systemNumber')})"
-                    )
-
-                    # Search hits carry no clusters/description; pull the full
-                    # object record for physicalDescription and materials.
-                    try:
-                        full = (
-                            self.session.get(
-                                f"https://api.vam.ac.uk/v2/object/{record['systemNumber']}"
-                            )
-                            .json()
-                            .get("record", {})
-                        )
-                    except Exception as e:
-                        logger.warning(
-                            f"Could not fetch full record for {record.get('systemNumber')}: {e!s}"
-                        )
-                        full = {}
-
-                    object_type = record.get("objectType", "")
-                    material = ", ".join(
-                        m["text"] for m in full.get("materials", []) if m.get("text")
-                    )
-                    place = record.get("_primaryPlace", "")
-
-                    # Construct V&A collections item page URL
-                    url = (
-                        f"https://collections.vam.ac.uk/item/{record['systemNumber']}/"
-                    )
-
-                    # Get manifest and thumbnail URLs
-                    manifest_url = record.get("_images", {}).get(
-                        "_iiif_presentation_url", ""
-                    )
-                    thumbnail_url = record.get("_images", {}).get(
-                        "_primary_thumbnail", ""
-                    )
-
-                    # Prepare image download
-                    image_file = None
-                    if thumbnail_url:
-                        # Use the thumbnail URL directly as it's more reliable
-                        filename = f"{record['systemNumber']}.jpg"
-                        image_file = self.download_image(thumbnail_url, filename)
-
-                    # Prepare the default values
-                    defaults = {
-                        "title": record.get("_primaryTitle") or object_type,
-                        "date": record.get("_primaryDate", ""),
-                        "description": full.get("physicalDescription")
-                        or full.get("briefDescription", ""),
-                        "item_type": object_type,
-                        "medium": material,
-                        "url": url,
-                        "country": place,
-                        "archive": "Victoria and Albert Museum",
-                        "manifest": manifest_url,
-                        "thumbnail": thumbnail_url,
-                        "api_response": record,
-                        "is_reviewed": False,
-                        "published": False,
-                    }
-
-                    # Use update_or_create to either update existing or create new
-                    staged_item, created = StagedMuseumItem.objects.update_or_create(
-                        id=record["systemNumber"], defaults=defaults
-                    )
-
-                    # Save the image if we have one
-                    if image_file:
-                        try:
-                            staged_item.image.save(
-                                image_file.name, image_file, save=False
-                            )
-                            logger.info(
-                                f"Successfully saved image for {record['systemNumber']}"
-                            )
-                        except Exception as e:
-                            logger.error(
-                                f"Failed to save image for {record['systemNumber']}: {e!s}"
-                            )
-
-                    # Update review notes after we know if it was created or updated
-                    staged_item.review_notes = (
-                        "Initial fetch from API" if created else "Data updated from API"
-                    )
-                    staged_item.save()
-
-                    if created:
-                        items_created += 1
-                        logger.info(
-                            f"Created new item: {record['systemNumber']} - {defaults['title']}"
-                        )
-                    else:
-                        items_updated += 1
-                        logger.info(
-                            f"Updated existing item: {record['systemNumber']} - {defaults['title']}"
-                        )
-
-                except Exception as e:
-                    items_errored += 1
-                    logger.error(
-                        f"Error processing item {record.get('systemNumber', 'unknown ID')}: {e!s}"
-                    )
-                    continue
-
-            # Log final summary
-            logger.info("V&A fetch complete:")
-            logger.info(f"- Items created: {items_created}")
-            logger.info(f"- Items updated: {items_updated}")
-            logger.info(f"- Items errored: {items_errored}")
-            logger.info(f"- Total processed: {items_created + items_updated}")
-
-            return items_created, items_updated
-
-        except requests.exceptions.RequestException as e:
-            logger.error(f"HTTP Request failed: {e!s}")
-            raise
-        except ValueError as e:
-            logger.error(f"JSON parsing failed: {e!s}")
-            raise
-        except Exception as e:
-            logger.error(f"Unexpected error during fetch: {e!s}")
-            raise
+    def fetch_cooper_hewitt(self):
+        logger.info("Fetching Cooper Hewitt objects")
+        data = self._get(
+            "https://api.collection.cooperhewitt.org/rest/",
+            method="cooperhewitt.exhibitions.getObjects",
+            access_token=settings.COOPER_HEWITT_API_KEY,
+            query="Connecting Threads",
+        ).json()
+        return self._stage_all(
+            cooper_hewitt_fetched(o) for o in data.get("objects", [])
+        )

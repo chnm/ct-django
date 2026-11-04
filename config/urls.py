@@ -6,17 +6,10 @@ from wagtail import urls as wagtail_urls
 from wagtail.admin import urls as wagtailadmin_urls
 from wagtail.documents import urls as wagtaildocs_urls
 
+from catalog.admin_dashboard import get_admin_stats
+from catalog.views import DatabaseView, quick_view, record
 from exhibits.views import about, events
-from material.admin_dashboard import get_admin_stats
-from material.views import (
-    TextileTableView,
-    about_crawler,
-    get_secondary_textile_types,
-    index,
-    keyword_search,
-    record_details,
-    textile_records_single,
-)
+from material.views import about_crawler, index, keyword_search
 
 from .views import health
 
@@ -49,20 +42,12 @@ urlpatterns = [
     path("prose/", include("prose.urls")),
     path("accounts/", include("allauth.urls")),
     # Site pages
-    path("database/", TextileTableView.as_view(), name="database"),
-    path(
-        "database/<int:item_id>/", textile_records_single, name="textile_single"
-    ),  # modal view
+    path("database/", DatabaseView.as_view(), name="database"),
+    # <str:> also takes old numeric TextileRecord ids, which redirect
+    path("database/<str:item_id>/", record, name="textile_single"),
+    path("database/<str:item_id>/quick-view/", quick_view, name="textile_quick_view"),
     path("about/crawler/", about_crawler, name="about_crawler"),
     path("api/keywords/", keyword_search, name="keyword_search"),
-    path(
-        "record-details/<int:record_id>/", record_details, name="record_details"
-    ),  # page
-    path(
-        "get-secondary-textile-types/<int:primary_id>/",
-        get_secondary_textile_types,
-        name="get_secondary_textile_types",
-    ),
     # Log in / log out controls
     path("logout/", index, name="logout"),
     # Wagtail URLs
