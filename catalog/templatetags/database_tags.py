@@ -27,6 +27,14 @@ def places(item, *roles):
     return sorted(links, key=lambda link: link.sequence)
 
 
+@register.simple_tag
+def public_images(item):
+    """Images the public pages may show: only on records with a rights statement."""
+    if not (item.rights_statement or "").strip():
+        return []
+    return [m for m in item.media_set.all() if m.media_type == "image" and m.url]
+
+
 @register.filter
 def source_type(item):
     """Readable evidence level ('Primary source'); empty when unspecified."""

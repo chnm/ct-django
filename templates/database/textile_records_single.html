@@ -94,15 +94,19 @@
 
       <section>
         <h2 class="lbl mb-3">Images</h2>
-        {% with images=item.media_set.all %}
+        {% public_images item as images %}
+        {% with images=images %}
           {% if images %}
             <div class="space-y-4">
-              {% for image in images %}{% if image.url %}
+              {% for image in images %}
                 <figure class="overflow-hidden rounded-lg border border-rule bg-white">
-                  <img src="{{ image.url }}" alt="" class="w-full">
-                  {% if item.rights_statement %}<figcaption class="px-3 py-2 font-mono text-[11.5px] text-sub">{{ item.rights_statement }}</figcaption>{% endif %}
+                  <img src="{{ image.url }}" alt="" class="w-full" loading="lazy">
+                  <figcaption class="px-3 py-2 font-mono text-[11.5px] text-sub">
+                    {{ item.rights_statement }}
+                    {% if image.external_url and item.source_url %}<a href="{{ item.source_url }}" class="mt-1 block text-madras-red hover:underline" rel="noopener">View at original location{% if item.holding_institution %} ({{ item.holding_institution }}){% endif %} &rarr;</a>{% endif %}
+                  </figcaption>
                 </figure>
-              {% endif %}{% endfor %}
+              {% endfor %}
             </div>
           {% else %}
             <div class="rounded-lg border border-dashed border-rule bg-white p-6 text-center font-mono text-[12px] text-faint">No images are available for this record.</div>

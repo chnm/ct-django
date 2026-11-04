@@ -213,6 +213,7 @@ class RecordPageTest(TestCase):
 
     def test_content_warning_and_image(self):
         self.item.content_warning = "Describes enslaved people."
+        self.item.rights_statement = "Public domain."
         self.item.save()
         Media.objects.create(item=self.item, media_type="image", is_primary=True,
                              storage_key="images/x.jpg")  # fmt: skip

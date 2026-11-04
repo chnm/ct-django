@@ -535,6 +535,7 @@ class Item(NextId, models.Model):
             ("manual_entry", "manual_entry"),
             ("crawler_vam_api", "crawler_vam_api"),
             ("crawler_cooper_hewitt_api", "crawler_cooper_hewitt_api"),
+            ("linked_record", "linked_record"),
         ],
         help_text="How the record got here.",
     )
