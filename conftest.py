@@ -17,3 +17,9 @@ def plain_static_storage(settings):
 @pytest.fixture(autouse=True)
 def tmp_media_root(settings, tmp_path):
     settings.MEDIA_ROOT = str(tmp_path / "media")
+
+
+@pytest.fixture(autouse=True)
+def no_ssl_redirect(settings):
+    """SECURE_SSL_REDIRECT defaults on when DEBUG is off, which turns every test request into a 301."""
+    settings.SECURE_SSL_REDIRECT = False
