@@ -8,7 +8,7 @@ from wagtail.models import Orderable, Page
 from wagtail.search import index
 from wagtail.snippets.models import register_snippet
 
-from material.models import TextileRecord
+from catalog.timeline import PHASES
 
 
 class GeneralPage(Page):
@@ -181,7 +181,7 @@ class ExhibitPage(Page):
     phase = models.CharField(
         max_length=2,
         blank=True,
-        choices=TextileRecord.CIRCULATION_CHOICES,
+        choices=[(code, p.label) for code, p in PHASES.items()],
         help_text="Tints this section's eyebrow: Production, Trade & Distribution, or Consumption.",
     )
     display_title = models.BooleanField(
@@ -247,8 +247,9 @@ class ExhibitPage(Page):
     )
     body = RichTextField(blank=True)
     related_records = ParentalManyToManyField(
-        "material.TextileRecord",
+        "catalog.Item",
         blank=True,
+        limit_choices_to={"record_status": "published", "is_public": True},
         related_name="exhibit_sections",
         help_text="Database records to list under this section.",
     )

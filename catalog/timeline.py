@@ -2,12 +2,14 @@
 
 Pure Python: turns records into lane/bar geometry for the SVG partial in
 templates/database/_swimlane.html so the template holds no arithmetic.
+
+A row is one record in one circulation phase: anything with id, start, end
+(integer years or None), approximate, date_display and circulation (a phase
+code or None). A record with two phases is two rows; counts are per record.
 """
 
 from dataclasses import dataclass, field
 from math import ceil, floor
-
-from material.filters import extract_year_range
 
 
 @dataclass(frozen=True)
@@ -37,19 +39,22 @@ PHASES: dict[str, Phase] = {
     ),
 }
 UNASSIGNED = Phase(None, "Unassigned", "—", "#9a978c", "text-sub", "bg-paper-2")
+# circulation_stage term labels in the catalog -> phase codes
+PHASE_BY_LABEL = {p.label: code for code, p in PHASES.items()}
 
 
 def phase_for(code):
     return PHASES.get(code, UNASSIGNED)
 
 
-def is_exact_year(year):
-    return bool(year) and year.strip().isdigit() and len(year.strip()) == 4
+def is_approximate(item):
+    """Anything but a stated single year: circa, ranges, decades, centuries, inferred dates."""
+    return item.date_precision != "year" or item.date_certainty == "inferred"
 
 
 @dataclass
 class Bar:
-    record_id: int
+    record_id: str
     year_text: str
     start: int
     end: int
@@ -128,7 +133,9 @@ def _tick_step(lo, hi):
 def _ticks(lo, hi, x):
     step = _tick_step(lo, hi)
     first = ceil(lo / step) * step
-    values = [lo] + [v for v in range(first, hi + 1, step) if lo < v < hi] + [hi]
+    # Skip inner ticks within half a step of either end so their labels don't collide.
+    inner = [v for v in range(first, hi + 1, step) if lo + step / 2 <= v <= hi - step / 2]
+    values = [lo] + inner + [hi]
     return [Tick(x(v), str(v)) for v in values]
 
 
@@ -140,17 +147,16 @@ def build_timeline(records, highlight_id=None, compact=False):
         else (WIDTH, GUTTER, RIGHT_PAD)
     )
     parsed = []  # (record, start, end)
-    undated = unassigned = 0
+    all_ids, undated, unassigned = set(), set(), set()
     for r in records:
+        all_ids.add(r.id)
         if r.circulation not in PHASES:
-            unassigned += 1
+            unassigned.add(r.id)
             continue
-        start, end = extract_year_range(r.year)
-        if start is None:
-            undated += 1
+        if r.start is None:
+            undated.add(r.id)
             continue
-        parsed.append((r, start, end))
-    total = len(parsed) + undated + unassigned
+        parsed.append((r, r.start, r.end if r.end is not None else r.start))
 
     lo, hi = _domain([(s, e) for _, s, e in parsed])
     plot_w = width - gutter - right_pad
@@ -177,10 +183,10 @@ def build_timeline(records, highlight_id=None, compact=False):
             highlighted = highlight_id is not None and r.id == highlight_id
             bar = Bar(
                 record_id=r.id,
-                year_text=r.year or "",
+                year_text=r.date_display or "",
                 start=s,
                 end=e,
-                approximate=not is_exact_year(r.year),
+                approximate=r.approximate,
                 x1=x(s),
                 x2=x(e),
                 xn=x(s),
@@ -203,10 +209,10 @@ def build_timeline(records, highlight_id=None, compact=False):
         height=axis_y + AXIS_H,
         gutter=gutter,
         axis_y=axis_y,
-        placed=len(parsed),
-        total=total,
-        undated=undated,
-        unassigned=unassigned,
+        placed=len({r.id for r, _, _ in parsed}),
+        total=len(all_ids),
+        undated=len(undated),
+        unassigned=len(unassigned - {r.id for r, _, _ in parsed}),
         band=band,
         band_width=band_width,
     )

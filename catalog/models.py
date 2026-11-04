@@ -2,6 +2,7 @@
 CT_restructured_database_revised.xlsx (revision 2026-11-03). This file is now the master; edit it directly.
 """
 
+from django.core.files.storage import default_storage
 from django.db import models
 
 ID_HELP = " Leave blank on a new row to get the next free ID."
@@ -395,8 +396,15 @@ class Source(NextId, models.Model):
         return str(self.pk)
 
 
+class ItemQuerySet(models.QuerySet):
+    def public(self):
+        """What the public site may show: published and public (merged records are never published)."""
+        return self.filter(record_status="published", is_public=True)
+
+
 class Item(NextId, models.Model):
     ID_PREFIX, ID_WIDTH = "CT-", 5
+    objects = ItemQuerySet.as_manager()
 
     item_id = models.TextField(
         primary_key=True,
@@ -797,6 +805,15 @@ class Media(models.Model):
 
     class Meta:
         db_table = "media"
+
+    @property
+    def url(self):
+        if self.external_url:
+            return self.external_url
+        if not self.storage_key:
+            return None
+        # storage_key is "<bucket>/<object key>" (path-style); the storage backend adds the bucket itself.
+        return default_storage.url(self.storage_key.split("/", 1)[-1])
 
     def __str__(self):
         return str(self.pk)

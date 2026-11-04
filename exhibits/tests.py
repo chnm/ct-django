@@ -3,8 +3,8 @@ from wagtail.images.models import Image
 from wagtail.images.tests.utils import get_test_image_file
 from wagtail.models import Page
 
+from catalog.testing import make_item
 from exhibits.models import ExhibitHome, ExhibitPage
-from material.models import TextileRecord
 
 
 def make_chapter(title, order, sections=()):
@@ -24,7 +24,7 @@ def make_chapter(title, order, sections=()):
 class ExhibitPageFieldsTest(TestCase):
     def test_phase_and_related_records_fields(self):
         home, (page,) = make_chapter("Chapter A", 1, ["One"])
-        record = TextileRecord.objects.create(year="1750", is_public=True)
+        record = make_item(date_start=1750)
         page.phase = "pr"
         page.related_records.add(record)
         page.save()
@@ -74,7 +74,7 @@ class SectionPageTest(TestCase):
     def setUp(self):
         self.home, self.pages = make_chapter("Chapter A", 1, ["One", "Two", "Three"])
         self.home2, self.pages2 = make_chapter("Chapter B", 2, ["Only"])
-        self.record = TextileRecord.objects.create(year="1750", is_public=True, summary_of_record="A weaver's account.")
+        self.record = make_item(date_start=1750, summary="A weaver's account.")
 
     def render(self, page):
         response = self.client.get(page.url)
@@ -102,8 +102,8 @@ class SectionPageTest(TestCase):
         self.assertIn('class="lbl mb-4 text-madras-green"', html)
         self.assertIn("Section 01 &middot; Production", html)
         self.assertIn("Related database records", html)
-        self.assertIn(f"Entry no. {self.record.id}", html)
-        self.assertIn(f"/database/{self.record.id}/", html)
+        self.assertIn(f"Record {self.record.pk}", html)
+        self.assertIn(f"/database/{self.record.pk}/", html)
         self.assertIn("A weaver", html)
 
     def test_display_title_and_skip_link(self):
@@ -124,8 +124,8 @@ class SectionPageTest(TestCase):
         self.assertIn("All chapters &rarr;", html)
 
     def test_layouts_render_images_and_captions(self):
-        from wagtail.images.tests.utils import get_test_image_file
         from wagtail.images.models import Image
+        from wagtail.images.tests.utils import get_test_image_file
 
         img = Image.objects.create(title="Plate", file=get_test_image_file())
         page = self.pages[0]
@@ -148,8 +148,9 @@ class SectionPageTest(TestCase):
         self.assertIn("Full image", html)
 
     def test_comparison_slider(self):
-        from wagtail.images.tests.utils import get_test_image_file
         from wagtail.images.models import Image
+        from wagtail.images.tests.utils import get_test_image_file
+
         from exhibits.models import ImageComparison
 
         img = Image.objects.create(title="Plate", file=get_test_image_file())

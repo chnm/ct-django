@@ -144,28 +144,21 @@
                 </div>
               </div>
 
-              <input type="hidden" name="year_range" x-bind:value="`${minVal}-${maxVal}`">
+              {# Only sent once narrowed, so the default range does not drop undated records #}
+              <input type="hidden" x-bind:name="(minVal > min || maxVal < max) ? 'year_range' : ''" x-bind:value="`${minVal}-${maxVal}`">
             </div>
           </div>
 
-          <div>
-            <label class="lbl mb-2 block" for="{{ filter.form.primary_textile_types.id_for_label }}">Primary textile type</label>
-            <select id="{{ filter.form.primary_textile_types.id_for_label }}" name="{{ filter.form.primary_textile_types.html_name }}" data-primary-id class="fn-select">
-              {% for value, name in filter.form.primary_textile_types.field.choices %}
-                <option value="{{ value }}" {% if value|stringformat:"s" == filter.form.primary_textile_types.value|stringformat:"s" %}selected{% endif %}>{% if value == "" %}All types{% else %}{{ name }}{% endif %}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div>
-            <label class="lbl mb-2 block" for="{{ filter.form.secondary_textile_types.id_for_label }}">Secondary textile type</label>
-            <select id="{{ filter.form.secondary_textile_types.id_for_label }}" name="{{ filter.form.secondary_textile_types.html_name }}" data-secondary-id class="fn-select" {% if not filter.form.primary_textile_types.value %}disabled{% endif %}>
-              <option value="">Select secondary textile type</option>
-              {% for value, name in filter.form.secondary_textile_types.field.choices %}
-                {% if value != "" %}<option value="{{ value }}" {% if value|stringformat:"s" == filter.form.secondary_textile_types.value|stringformat:"s" %}selected{% endif %}>{{ name }}</option>{% endif %}
-              {% endfor %}
-            </select>
-          </div>
+          {% for field, any_label in textile_selects %}
+            <div>
+              <label class="lbl mb-2 block" for="{{ field.id_for_label }}">{{ field.label }}</label>
+              <select id="{{ field.id_for_label }}" name="{{ field.html_name }}" class="fn-select">
+                {% for value, name in field.field.choices %}
+                  <option value="{{ value }}" {% if value|stringformat:"s" == field.value|stringformat:"s" %}selected{% endif %}>{% if value == "" %}{{ any_label }}{% else %}{{ name }}{% endif %}</option>
+                {% endfor %}
+              </select>
+            </div>
+          {% endfor %}
 
           <fieldset>
             <legend class="lbl mb-2">Circulation</legend>
@@ -179,30 +172,22 @@
             </div>
           </fieldset>
 
-          <div>
-            <label class="lbl mb-2 block" for="{{ filter.form.from_area.id_for_label }}">From area</label>
-            <select id="{{ filter.form.from_area.id_for_label }}" name="{{ filter.form.from_area.html_name }}" class="fn-select">
-              {% for value, name in filter.form.from_area.field.choices %}
-                <option value="{{ value }}" {% if value|stringformat:"s" == filter.form.from_area.value|stringformat:"s" %}selected{% endif %}>{% if value == "" %}Any origin{% else %}{{ name }}{% endif %}</option>
-              {% endfor %}
-            </select>
-          </div>
-
-          <div>
-            <label class="lbl mb-2 block" for="{{ filter.form.to_area.id_for_label }}">To area</label>
-            <select id="{{ filter.form.to_area.id_for_label }}" name="{{ filter.form.to_area.html_name }}" class="fn-select">
-              {% for value, name in filter.form.to_area.field.choices %}
-                <option value="{{ value }}" {% if value|stringformat:"s" == filter.form.to_area.value|stringformat:"s" %}selected{% endif %}>{% if value == "" %}Any destination{% else %}{{ name }}{% endif %}</option>
-              {% endfor %}
-            </select>
-          </div>
+          {% for name, label, any_label, current in region_selects %}
+            <div>
+              <label class="lbl mb-2 block" for="id_{{ name }}">{{ label }}</label>
+              <select id="id_{{ name }}" name="{{ name }}" class="fn-select">
+                <option value="">{{ any_label }}</option>
+                {% for region in regions %}<option value="{{ region }}" {% if region == current %}selected{% endif %}>{{ region }}</option>{% endfor %}
+              </select>
+            </div>
+          {% endfor %}
 
           <div>
             <label class="lbl mb-2 block" for="id_source_type">Source type</label>
             <select name="source_type" id="id_source_type" class="fn-select">
-              <option value="">Primary &amp; secondary</option>
-              {% for source_type in source_types %}
-                <option value="{{ source_type }}" {% if source_type == request.GET.source_type %}selected{% endif %}>{{ source_type }}</option>
+              <option value="">All sources</option>
+              {% for value, label in source_types %}
+                <option value="{{ value }}" {% if value == request.GET.source_type %}selected{% endif %}>{{ label|capfirst }}</option>
               {% endfor %}
             </select>
           </div>

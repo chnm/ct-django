@@ -1,13 +1,13 @@
 <div class="flex items-center justify-end gap-1">
   <button type="button"
-          hx-get="{% url 'textile_quick_view' item_id=record.id %}"
+          hx-get="{% url 'textile_quick_view' item_id=record.pk %}"
           hx-target="closest tr"
           hx-swap="afterend"
           class="rounded p-1 text-faint hover:text-navy"
-          aria-label="Quick view record {{ record.id }}">
+          aria-label="Quick view record {{ record.pk }}">
     <svg class="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><circle cx="8" cy="8" r="6"/><circle cx="8" cy="8" r="2" fill="currentColor"/></svg>
   </button>
-  <a href="{% url 'textile_single' item_id=record.id %}" class="rounded p-1 text-faint hover:text-navy" aria-label="Open record {{ record.id }}">
+  <a href="{% url 'textile_single' item_id=record.pk %}" class="rounded p-1 text-faint hover:text-navy" aria-label="Open record {{ record.pk }}">
     <svg class="h-4 w-4" viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path d="M4 12L12 4M6 4h6v6"/></svg>
   </a>
 </div>

@@ -1,7 +1,7 @@
 {# tailwind: bg-madras-green bg-madras-gold bg-madras-red bg-sub border-madras-green border-madras-gold border-madras-red border-sub #}
-{% load database_tags %}
+{% load database_tags %}{% places record "origin" as origins %}{% places record "destination" as destinations %}
 <span class="whitespace-nowrap">
-  {% if record.from_place or record.from_area %}{% precision_dot record "from" %}{% firstof record.from_place.city record.from_area.name %}{% else %}<span class="text-faint">&mdash;</span>{% endif %}
+  {% with o=origins|first %}{% if o %}{% precision_dot o record %}{{ o.place.name_preferred }}{% if origins|length > 1 %} <span class="text-faint">+{{ origins|length|add:-1 }}</span>{% endif %}{% else %}<span class="text-faint">&mdash;</span>{% endif %}{% endwith %}
   <span class="mx-1 text-faint">&rarr;</span>
-  {% if record.to_place or record.to_area %}{% precision_dot record "to" %}{% firstof record.to_place.city record.to_area.name %}{% else %}<span class="text-faint">&mdash;</span>{% endif %}
+  {% with d=destinations|first %}{% if d %}{% precision_dot d record %}{{ d.place.name_preferred }}{% if destinations|length > 1 %} <span class="text-faint">+{{ destinations|length|add:-1 }}</span>{% endif %}{% else %}<span class="text-faint">&mdash;</span>{% endif %}{% endwith %}
 </span>

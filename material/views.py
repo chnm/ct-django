@@ -1,16 +1,11 @@
 import logging
 
 from django.http import JsonResponse
-from django.shortcuts import get_object_or_404, render
-from django_filters.views import FilterView
-from django_tables2 import SingleTableMixin
+from django.shortcuts import render
 from taggit.models import Tag
 
+from catalog.models import Item
 from exhibits.models import ExhibitHome, HomeAboutSnippet
-from material.filters import TextileFilter, extract_year_range
-from material.models import PrimaryTextileType, SecondaryTextileType, TextileRecord
-from material.tables import TextileTable
-from material.timeline import PHASES, build_timeline, is_exact_year
 
 logger = logging.getLogger(__name__)
 
@@ -49,7 +44,7 @@ def index(request):
         {
             "exhibits": exhibits,
             "about_snippet": about_snippet,
-            "record_count": TextileRecord.objects.filter(is_public=True).count(),
+            "record_count": Item.objects.public().count(),
         },
     )
 
@@ -64,167 +59,6 @@ def keyword_search(request):
     return JsonResponse(results, safe=False)
 
 
-def quick_view(request, item_id):
-    item = get_object_or_404(TextileRecord, pk=item_id, is_public=True)
-    return render(request, "database/_quick_view.html", {"item": item})
-
-
-def get_secondary_textile_types(request, primary_id):
-    if not primary_id:
-        # Return an empty set if no primary textile type is selected
-        return JsonResponse([], safe=False)
-
-    try:
-        primary_textile_type = PrimaryTextileType.objects.get(id=primary_id)
-        # Fetch TextileRecord instances that have the selected PrimaryTextileType
-        textile_records = TextileRecord.objects.filter(
-            primary_textile_types=primary_textile_type
-        )
-        # Extract the related SecondaryTextileType instances
-        secondary_types = (
-            SecondaryTextileType.objects.filter(textile_records__in=textile_records)
-            .distinct()
-            .values("id", "name")
-        )
-        data = [{"value": st["id"], "name": st["name"]} for st in secondary_types]
-        return JsonResponse(data, safe=False)
-    except PrimaryTextileType.DoesNotExist:
-        return JsonResponse({"error": "PrimaryTextileType not found"}, status=404)
-
-
-def textile_records_single(request, item_id):
-    item = get_object_or_404(TextileRecord, pk=item_id, is_public=True)
-    public = TextileRecord.objects.filter(is_public=True)
-
-    linked = list(item.crosslinks.filter(is_public=True).order_by("id")[:4])
-    linked_reason = "crosslinked" if linked else ""
-    keyword = item.keywords.first()
-    if keyword and len(linked) < 4:
-        extra = (
-            public.filter(keywords__name=keyword.name)
-            .exclude(id=item.id)
-            .exclude(id__in=[r.id for r in linked])
-            .order_by("id")
-            .distinct()[: 4 - len(linked)]
-        )
-        extra = list(extra)
-        if extra and not linked:
-            linked_reason = f"shares keyword “{keyword.name}”"
-        linked += extra
-
-    start, _ = extract_year_range(item.year)
-    if start is None:
-        date_certainty = "undated"
-    elif is_exact_year(item.year):
-        date_certainty = "exact year"
-    else:
-        date_certainty = "approximate"
-
-    placeable = item.circulation in PHASES and start is not None
-    public_rows = public.values_list("id", "year", "circulation", named=True)
-
-    return render(
-        request,
-        "database/textile_records_single.html",
-        {
-            "item": item,
-            "timeline": build_timeline(
-                public_rows,
-                highlight_id=item.id if placeable else None,
-                compact=True,
-            ),
-            "timeline_label": (
-                "This record highlighted"
-                if placeable
-                else "This record is not placed on the timeline"
-            ),
-            "linked": linked,
-            "linked_reason": linked_reason,
-            "date_certainty": date_certainty,
-        },
-    )
-
-
 def about_crawler(request):
     """Static page explaining how the web crawler works"""
     return render(request, "about_crawler.html")
-
-
-class TextileTableView(SingleTableMixin, FilterView):
-    paginate_by = 25
-    table_class = TextileTable
-    filterset_class = TextileFilter
-    # Only show public records that are properly reviewed
-    queryset = (
-        TextileRecord.objects.filter(is_public=True)
-        .select_related("from_place", "from_area", "to_place", "to_area")
-        .prefetch_related("primary_textile_types", "secondary_textile_types", "images")
-    )
-
-    def get_template_names(self):
-        if self.request.htmx:
-            return ["database/single_table.html"]
-        return ["database/textiles.html"]
-
-    def get_queryset(self):
-        queryset = super().get_queryset()
-        selected_keyword = self.request.GET.get("keyword")
-        if selected_keyword:
-            queryset = queryset.filter(keywords__name=selected_keyword)
-        return queryset
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        # Use only public records for filter options
-        textile_records = TextileRecord.objects.filter(is_public=True)
-
-        years = (
-            textile_records.values_list("year", flat=True).distinct().order_by("year")
-        )
-
-        # Find earliest and latest years for the year range slider
-        from material.filters import extract_year_range
-
-        min_year = 1500  # Default minimum year
-        max_year = 2000  # Default maximum year
-
-        # Find actual min/max years from the data
-        for year_str in years:
-            if year_str:
-                start_year, end_year = extract_year_range(year_str)
-                if start_year and start_year < min_year:
-                    min_year = start_year
-                if end_year and end_year > max_year:
-                    max_year = end_year
-
-        # Round to nearest century boundaries for cleaner UI
-        min_year = (min_year // 100) * 100
-        max_year = ((max_year // 100) + 1) * 100
-        source_types = (
-            textile_records.values_list("source_type", flat=True)
-            .exclude(source_type__isnull=True)
-            .distinct()
-            .order_by("source_type")
-        )
-        circulation_choices = TextileRecord.CIRCULATION_CHOICES
-        circulation_types = [(abbr, full) for abbr, full in circulation_choices]
-
-        # Get current year range values from request, if any
-        current_year_range = self.request.GET.get(
-            "year_range", f"{min_year}-{max_year}"
-        )
-        try:
-            current_min, current_max = map(int, current_year_range.split("-"))
-        except (ValueError, AttributeError):
-            current_min, current_max = min_year, max_year
-
-        context["source_types"] = source_types
-        context["circulation_types"] = circulation_types
-        context["min_year"] = min_year
-        context["max_year"] = max_year
-        context["current_min_year"] = current_min
-        context["current_max_year"] = current_max
-        context["timeline"] = build_timeline(
-            self.object_list.values_list("id", "year", "circulation", named=True)
-        )
-        return context

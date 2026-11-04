@@ -76,15 +76,15 @@
         <h1 class="mb-5 font-display {% if has_gallery %}text-[30px]{% else %}text-[40px]{% endif %} font-semibold leading-[1.05] tracking-[-0.02em] text-navy">{{ page.title }}</h1>
       {% endif %}
       <div class="reader-body">{{ page.body|richtext }}</div>
-      {% with related=page.related_records.all %}
+      {% with related=page.related_records.public %}
         {% if related %}
           <section class="mt-8 border-t border-rule pt-6">
             <h3 class="lbl mb-3 text-madras-gold">Related database records</h3>
             <div class="space-y-3">
               {% for rec in related %}
-                <a href="{% url 'textile_single' item_id=rec.id %}" class="block rounded-lg border border-rule bg-white p-4 no-underline hover:shadow-sm">
-                  <div class="lbl mb-1">Entry no. {{ rec.id }}</div>
-                  <div class="font-serif text-[16px] text-navy">{{ rec.summary_of_record|default:"Database record"|truncatechars:120 }}</div>
+                <a href="{% url 'textile_single' item_id=rec.pk %}" class="block rounded-lg border border-rule bg-white p-4 no-underline hover:shadow-sm">
+                  <div class="lbl mb-1">Record {{ rec.pk }}</div>
+                  <div class="font-serif text-[16px] text-navy">{{ rec.title|default:rec.summary|default:"Database record"|truncatechars:120 }}</div>
                 </a>
               {% endfor %}
             </div>

@@ -34,47 +34,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   }
-
-  // Textile type dropdowns
-  const primarySelect = document.querySelector("[data-primary-id]");
-  const secondarySelect = document.querySelector("[data-secondary-id]");
-
-  if (primarySelect && secondarySelect) {
-    primarySelect.addEventListener("change", function () {
-      const primaryValue = primarySelect.value;
-
-      if (primaryValue) {
-        fetch(`/get-secondary-textile-types/${primaryValue}/`)
-          .then((response) => response.json())
-          .then((data) => {
-            // Clear existing options
-            secondarySelect.innerHTML =
-              '<option value="">Select secondary textile type</option>';
-
-            // Populate new options
-            data.forEach((item) => {
-              const option = document.createElement("option");
-              option.value = item.value;
-              option.textContent = item.name;
-              secondarySelect.appendChild(option);
-            });
-
-            // Enable the secondary select
-            secondarySelect.disabled = false;
-          })
-          .catch((error) => {
-            console.error("Error fetching secondary textile types:", error);
-          });
-      } else {
-        // Disable the secondary select if no primary type is selected
-        secondarySelect.innerHTML =
-          '<option value="">Select secondary textile type</option>';
-        secondarySelect.disabled = true;
-      }
-    });
-  } else {
-    console.error("Primary or secondary select element not found");
-  }
 });
 
 function resetForm() {
