@@ -59,8 +59,8 @@ class ProductionStaticFilesTests(SimpleTestCase):
         self.assertEqual(content, b"body { color: black; }")
 
 
-class AsgiThreadStackTests(SimpleTestCase):
+class WsgiThreadStackTests(SimpleTestCase):
     def test_worker_threads_get_a_glibc_sized_stack(self):
-        import config.asgi  # noqa: F401
+        import config.wsgi  # noqa: F401
 
         self.assertGreaterEqual(threading.stack_size(), 8 * 1024 * 1024)

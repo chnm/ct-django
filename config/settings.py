@@ -43,7 +43,6 @@ SECURE_HSTS_SECONDS = env.int(
 # Application definition
 
 INSTALLED_APPS = [
-    "daphne",
     "unfold",
     "unfold.contrib.filters",
     "unfold.contrib.forms",
@@ -137,7 +136,10 @@ if DEBUG_TOOLBAR:
 DEBUG_TOOLBAR_CONFIG = {
     "DISABLE_PANELS": [
         "debug_toolbar.panels.redirects.RedirectsPanel",
-        "debug_toolbar.panels.templates.TemplatesPanel",
+        # The toolbar's default. cProfile allows one active profiler per
+        # process, so threaded runserver requests collide; toggle it on in
+        # the toolbar for a single request instead.
+        "debug_toolbar.panels.profiling.ProfilingPanel",
     ],
     "SHOW_TEMPLATE_CONTEXT": True,
 }
@@ -285,7 +287,6 @@ ACCOUNT_LOGOUT_REDIRECT_URL = "/"
 LOGIN_REDIRECT_URL = "/"
 
 WSGI_APPLICATION = "config.wsgi.application"
-ASGI_APPLICATION = "config.asgi.application"
 
 
 # Database
@@ -299,6 +300,8 @@ DATABASES = {
         "NAME": env("DB_NAME", default="connectingthreads"),
         "USER": env("DB_USER", default="connectingthreads"),
         "PASSWORD": env("DB_PASS", default="password"),
+        # Safe because Gunicorn's threads are long-lived: at most
+        # workers x threads connections per pod (Dockerfile CMD).
         "CONN_MAX_AGE": 60,
         "CONN_HEALTH_CHECKS": True,
     }
