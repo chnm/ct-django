@@ -1,16 +1,21 @@
 import json
 from pathlib import Path
-from unittest.mock import patch
 
 import pytest
 from django.contrib.auth import get_user_model
 from django.urls import reverse
 
 from catalog.models import DataIssue, Item, Place, PlaceAlias
+from crawler.models import CrawlSource
 from crawler.services import cooper_hewitt_fetched, vam_fetched
 from crawler.staging import parse_date, stage
 
 VAM = json.loads((Path(__file__).parent / "test_data" / "vam_O495310.json").read_text())
+# Unsaved sources: staging only reads their settings.
+VAM_SOURCE = CrawlSource(name="V&A API", kind="vam", holding_institution="Victoria and Albert Museum",
+                         short_name="V&A", rights_statement="Image © V&A.")  # fmt: skip
+CH_SOURCE = CrawlSource(name="Cooper Hewitt API", kind="cooper_hewitt", short_name="Cooper Hewitt",
+                        holding_institution="Cooper Hewitt, Smithsonian Design Museum")  # fmt: skip
 
 
 @pytest.mark.parametrize(
@@ -36,7 +41,7 @@ def test_parse_date_prefers_api_years():
 
 
 def test_vam_fields_from_a_real_record():
-    f = vam_fetched(VAM["hit"], VAM["full"])
+    f = vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE)
     assert f.identifier == "O495310"
     assert f.title == "Brush Pot, China, 18th century (V&A O495310)"
     assert f.summary.startswith("Brush Pot, porcelain")
@@ -52,16 +57,22 @@ def test_vam_fields_from_a_real_record():
     assert f.source_updated.year == 2025
 
 
-def test_cooper_hewitt_fields():
+def test_cooper_hewitt_graphql_fields():
     f = cooper_hewitt_fetched({
-        "id": 18734, "title": "Handkerchief", "date": "ca. 1850", "type": "Textile",
-        "medium": "Cotton", "url": "https://collection.cooperhewitt.org/objects/18734/",
-        "woe:country_name": "India", "description": "Checked cotton.",
-        "images": [{"sq": {"url": "https://img/sq.jpg"}, "b": {"url": "https://img/b.jpg"}}],
-    })  # fmt: skip
+        "id": "object-18734", "collectionsOnlineId": "18734",
+        "summary": {"title": "Handkerchief"}, "date": [{"value": "ca. 1850"}],
+        "medium": [{"value": "Cotton"}], "description": [{"value": "Checked cotton."}],
+        "classification": [{"summary": {"title": "Textile"}}],
+        "geography": {"country": {"value": "India"}},
+        "identifier": [{"type": "accession number", "value": "1938-88-1"}],
+        "multimedia": [{"large": {"url": "https://img/b.jpg"}, "preview": {"url": "https://img/sq.jpg"}}],
+    }, CH_SOURCE)  # fmt: skip
     assert (f.identifier, f.title) == ("18734", "Handkerchief (Cooper Hewitt 18734)")
+    assert (f.date_text, f.place, f.summary) == ("ca. 1850", "India", "Checked cotton.")
+    assert f.source_url == "https://www.si.edu/object/chndm_1938-88-1"
     assert (f.image_url, f.thumbnail_url) == ("https://img/b.jpg", "https://img/sq.jpg")
-    assert f.detail == {"object_type": "Textile", "materials_techniques": "Cotton"}
+    assert f.detail == {"object_type": "Textile", "materials_techniques": "Cotton",
+                        "accession_number": "1938-88-1"}  # fmt: skip
 
 
 @pytest.fixture
@@ -84,7 +95,9 @@ def downloads():
 
 def test_stage_creates_a_staged_object(china):
     download, calls = downloads()
-    item, created = stage(vam_fetched(VAM["hit"], VAM["full"]), download=download)
+    item, created = stage(
+        vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE), download=download
+    )
     assert created
     assert (item.item_type, item.record_status, item.is_public) == (
         "object",
@@ -113,8 +126,10 @@ def test_stage_creates_a_staged_object(china):
 
 def test_restage_updates_in_place_without_duplicates(china):
     download, calls = downloads()
-    stage(vam_fetched(VAM["hit"], VAM["full"]), download=download)
-    item, created = stage(vam_fetched(VAM["hit"], VAM["full"]), download=download)
+    stage(vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE), download=download)
+    item, created = stage(
+        vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE), download=download
+    )
     assert not created
     assert Item.objects.count() == 1
     assert item.sourcepayload_set.count() == 1  # unchanged payload is not stored twice
@@ -124,12 +139,12 @@ def test_restage_updates_in_place_without_duplicates(china):
 
 
 def test_restage_never_overwrites_a_reviewed_record(china):
-    item, _ = stage(vam_fetched(VAM["hit"], VAM["full"]))
+    item, _ = stage(vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE))
     Item.objects.filter(pk=item.pk).update(title="Curated title", summary=None,
                                            review_status="reviewed")  # fmt: skip
     item.objectdetail.credit_line = "Edited credit"
     item.objectdetail.save()
-    item, _ = stage(vam_fetched(VAM["hit"], VAM["full"]))
+    item, _ = stage(vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE))
     item.refresh_from_db()
     assert item.title == "Curated title"
     assert item.summary.startswith("Brush Pot")  # empty field filled
@@ -141,7 +156,7 @@ def test_staging_matches_items_loaded_from_the_old_crawler(china):
                               is_context_record=False, legacy_system="StagedMuseumItem",
                               legacy_id="O495310", holding_institution="Victoria and Albert Museum",
                               source_identifier="O495310", title="Textile, China")  # fmt: skip
-    item, created = stage(vam_fetched(VAM["hit"], VAM["full"]))
+    item, created = stage(vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE))
     assert (item.pk, created) == (old.pk, False)
     assert (item.record_status, item.is_public, item.title) == (
         "published",
@@ -151,7 +166,7 @@ def test_staging_matches_items_loaded_from_the_old_crawler(china):
 
 
 def test_unmatched_place_and_maker_go_to_the_review_queue(db):
-    f = vam_fetched(VAM["hit"], VAM["full"])
+    f = vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE)
     f.maker = "Unknown Workshop"
     item, _ = stage(f)
     stage(f)  # not raised twice
@@ -160,7 +175,7 @@ def test_unmatched_place_and_maker_go_to_the_review_queue(db):
 
 
 def test_placeholder_maker_is_not_queued(db):
-    f = vam_fetched(VAM["hit"], VAM["full"])
+    f = vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE)
     f.maker = "Unknown"
     item, _ = stage(f)
     assert not DataIssue.objects.filter(item=item, issue_type="agent_review").exists()
@@ -176,29 +191,20 @@ def admin_client(client, db, settings):
     return client
 
 
-def test_admin_fetch_button_runs_the_crawler(admin_client):
-    with patch(
-        "crawler.services.MuseumAPIClient.fetch_vam", return_value=(2, 3)
-    ) as fetch:
-        response = admin_client.get(
-            reverse("admin:catalog_crawleditem_fetch_vam"), follow=True
-        )
-    fetch.assert_called_once()
-    assert "V&amp;A: 2 new items, 3 refreshed." in response.content.decode()
+def test_queue_offers_a_run_button_per_enabled_source(admin_client):
     queue = admin_client.get(
         reverse("admin:catalog_crawleditem_changelist")
     ).content.decode()
-    assert "Fetch V&A" in queue
-    assert (
-        "Fetch V&A"
-        not in admin_client.get(
-            reverse("admin:catalog_item_changelist")
-        ).content.decode()
-    )
+    assert "Run V&amp;A API" in queue  # seeded and enabled
+    assert "Run Cooper Hewitt API" not in queue  # seeded but switched off
+    records = admin_client.get(
+        reverse("admin:catalog_item_changelist")
+    ).content.decode()
+    assert "Run V&amp;A API" not in records
 
 
 def test_crawled_items_queue_and_promotion(admin_client, china):
-    crawled, _ = stage(vam_fetched(VAM["hit"], VAM["full"]))
+    crawled, _ = stage(vam_fetched(VAM["hit"], VAM["full"], VAM_SOURCE))
     manual = Item.objects.create(item_type="document", record_status="internal", is_public=False,
                                  is_context_record=False, legacy_system="test", legacy_id="1")  # fmt: skip
     queue = admin_client.get(reverse("admin:catalog_crawleditem_changelist"))

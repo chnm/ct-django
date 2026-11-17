@@ -27,25 +27,6 @@ from catalog.models import (
     SourcePayload,
 )
 
-SOURCES = {
-    "vam": {
-        "institution": "Victoria and Albert Museum",
-        "system": "V&A API",
-        "ingest": "crawler_vam_api",
-        "short": "V&A",
-        "rights": "Image © Victoria and Albert Museum, London. V&A terms allow "
-        "non-commercial use; check before publishing.",
-    },
-    "cooper_hewitt": {
-        "institution": "Cooper Hewitt, Smithsonian Design Museum",
-        "system": "Cooper Hewitt API",
-        "ingest": "crawler_cooper_hewitt_api",
-        "short": "Cooper Hewitt",
-        "rights": "Image courtesy of Cooper Hewitt, Smithsonian Design Museum; "
-        "check rights before publishing.",
-    },
-}
-
 ITEM_FIELDS = ["title", "summary", "source_url", "date_start", "date_end",
                "date_precision", "date_as_recorded"]  # fmt: skip
 DETAIL_FIELDS = ["object_type", "materials_techniques", "physical_description",
@@ -55,7 +36,7 @@ DETAIL_FIELDS = ["object_type", "materials_techniques", "physical_description",
 
 @dataclass
 class Fetched:
-    source: str  # key of SOURCES
+    source: object  # the crawler.models.CrawlSource the record came from
     identifier: str  # the museum's own number (V&A system number)
     payload: dict  # raw API record, stored verbatim
     title: str = ""
@@ -71,6 +52,10 @@ class Fetched:
     manifest_url: str = ""
     source_updated: datetime | None = None
     detail: dict = field(default_factory=dict)  # DETAIL_FIELDS
+    rights: str = ""  # the holder's own statement, when the API gives one
+    store_image: bool = (
+        True  # False: link to the image where it lives instead of copying it
+    )
 
 
 # Museum placeholders for "no maker recorded"; not worth a review issue.
@@ -143,9 +128,10 @@ def stage(fetched, download=None):
 
     download(url, name) -> storage key, used for the image the first time only.
     """
-    src = SOURCES[fetched.source]
+    src = fetched.source
     item = Item.objects.filter(
-        holding_institution=src["institution"], source_identifier=fetched.identifier
+        holding_institution=src.holding_institution,
+        source_identifier=fetched.identifier,
     ).first()
     created = item is None
     if created:
@@ -153,10 +139,10 @@ def stage(fetched, download=None):
             item_type="object", record_status="staged", is_public=False,
             is_context_record=False, title_status="draft", evidence_level="primary",
             date_basis="object_date", date_certainty="stated",
-            holding_institution=src["institution"], source_identifier=fetched.identifier,
-            rights_statement=src["rights"], ingest_method=src["ingest"], created_by="crawler",
+            holding_institution=src.holding_institution, source_identifier=fetched.identifier,
+            rights_statement=fetched.rights or src.rights_statement or None, ingest_method=src.ingest_method, created_by="crawler",
             review_status="unreviewed", review_notes="Initial fetch from API",
-            legacy_system=src["system"], legacy_id=fetched.identifier, ingested_at=timezone.now(),
+            legacy_system=src.name, legacy_id=fetched.identifier, ingested_at=timezone.now(),
         )  # fmt: skip
     editable = created or (
         item.record_status == "staged" and item.review_status == "unreviewed"
@@ -194,13 +180,13 @@ def stage(fetched, download=None):
                 media_type=media_type,
                 defaults={"external_url": url, "is_primary": False},
             )
-    if (
-        fetched.image_url
-        and download
-        and not item.media_set.filter(media_type="image").exists()
-    ):
-        key = download(fetched.image_url, f"staged_items/{fetched.identifier}.jpg")
-        if key:
+    if fetched.image_url and not item.media_set.filter(media_type="image").exists():
+        if not fetched.store_image:
+            Media.objects.create(item=item, media_type="image",
+                                 external_url=fetched.image_url, is_primary=True)  # fmt: skip
+        elif download and (
+            key := download(fetched.image_url, f"staged_items/{fetched.identifier}.jpg")
+        ):
             Media.objects.create(
                 item=item, media_type="image", storage_key=key, is_primary=True
             )
@@ -210,7 +196,7 @@ def stage(fetched, download=None):
     if latest is None or latest.payload_text != text:
         SourcePayload.objects.create(
             item=item,
-            source_system=src["system"],
+            source_system=src.name,
             payload_text=text,
             fetched_at=timezone.now(),
         )
@@ -225,7 +211,7 @@ def stage(fetched, download=None):
             )  # fmt: skip
         else:
             _issue(item, "place_unresolved", "item_place",
-                   f"{src['short']} place {fetched.place!r} matches no place or alias.",
+                   f"{src.short_name} place {fetched.place!r} matches no place or alias.",
                    "Link the record to a place, or add the spelling as a place alias.")  # fmt: skip
 
     maker_known = fetched.maker and fetched.maker.strip().lower() not in NO_MAKER
@@ -238,7 +224,7 @@ def stage(fetched, download=None):
                                      verbatim=fetched.maker)  # fmt: skip
         else:
             _issue(item, "agent_review", "item_agent",
-                   f"{src['short']} maker {fetched.maker!r} matches no person or organisation.",
+                   f"{src.short_name} maker {fetched.maker!r} matches no person or organisation.",
                    "Link the record to an agent, or add one.")  # fmt: skip
 
     return item, created
