@@ -323,40 +323,14 @@ class CrawledItemAdmin(RecordAdmin):
             else admin_thumbnail_placeholder()
         )
 
-    def get_urls(self):
-        fetch = [
-            path(f"fetch/{name}/", self.admin_site.admin_view(view),
-                 name=f"catalog_crawleditem_fetch_{name}")
-            for name, view in [("all", self.fetch_all), ("vam", self.fetch_vam),
-                               ("cooper_hewitt", self.fetch_cooper_hewitt)]
-        ]  # fmt: skip
-        return fetch + super().get_urls()
+    def changelist_view(self, request, extra_context=None):
+        from crawler.admin import status_badge
+        from crawler.models import CrawlSource
 
-    def _fetch(self, request, *sources):
-        from crawler.services import MuseumAPIClient
-
-        if not self.has_add_permission(request):
-            return redirect("admin:catalog_crawleditem_changelist")
-        client = MuseumAPIClient()
-        for label, method in sources:
-            try:
-                created, updated = getattr(client, method)()
-                messages.success(
-                    request, f"{label}: {created} new items, {updated} refreshed."
-                )
-            except Exception as e:
-                messages.error(request, f"{label}: fetch failed ({e}).")
-        return redirect("admin:catalog_crawleditem_changelist")
-
-    def fetch_vam(self, request):
-        return self._fetch(request, ("V&A", "fetch_vam"))
-
-    def fetch_cooper_hewitt(self, request):
-        return self._fetch(request, ("Cooper Hewitt", "fetch_cooper_hewitt"))
-
-    def fetch_all(self, request):
-        return self._fetch(
-            request, ("Cooper Hewitt", "fetch_cooper_hewitt"), ("V&A", "fetch_vam")
+        sources = [(source, status_badge(source.runs.first()))
+                   for source in CrawlSource.objects.filter(enabled=True)]  # fmt: skip
+        return super().changelist_view(
+            request, {**(extra_context or {}), "crawl_sources": sources}
         )
 
 
@@ -377,7 +351,13 @@ class PlaceAdmin(Admin):
     # The columns the PI uses for mapping; macro_region stays a filter only.
     list_display = ["place_id", "name_preferred", "country_modern", "latitude", "longitude",
                     "coord_status", "place_type"]  # fmt: skip
-    list_filter = ["place_type", "coord_status", "map_level", "country_modern", "macro_region"]
+    list_filter = [
+        "place_type",
+        "coord_status",
+        "map_level",
+        "country_modern",
+        "macro_region",
+    ]
     search_fields = ["place_id", "name_preferred", "name_modern", "placealias__alias"]
     autocomplete_fields = ["broader_place"]
     inlines = [PlaceGeometryInline, PlaceAliasInline]

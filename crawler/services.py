@@ -1,7 +1,10 @@
-"""Fetch museum objects tagged for Connecting Threads and stage them in the catalog."""
+"""HTTP access for crawls, and the V&A and Cooper Hewitt record builders."""
 
+import json
 import logging
+import os
 from datetime import UTC, datetime
+from urllib.parse import urlencode
 
 import backoff
 import requests
@@ -10,14 +13,83 @@ from django.core.files.base import ContentFile
 from django.core.files.storage import default_storage
 from ratelimit import limits, sleep_and_retry
 
-from .staging import Fetched, stage
+from catalog.linking import LinkError, _check_public, fetch
+
+from .staging import Fetched
 
 logger = logging.getLogger(__name__)
 
-VAM_SEARCH = "https://api.vam.ac.uk/v2/objects/search"
-VAM_OBJECT = "https://api.vam.ac.uk/v2/object/{}"
-VAM_TAG = "THES381162"  # Connecting Threads project tag
 VAM_IMAGE_SIZE = "full/!1000,1000/0/default.jpg"  # IIIF: fit within 1000px
+MAX_JSON_BYTES = 20 * 1024 * 1024  # long IIIF manifests run to megabytes
+
+
+def api_key(source):
+    """The source's API key from server settings or the environment; never stored in the database."""
+    if not source.api_key_setting:
+        return None
+    key = getattr(settings, source.api_key_setting, None) or os.environ.get(
+        source.api_key_setting
+    )
+    if not key:
+        raise LinkError(
+            f"The server setting {source.api_key_setting} is empty; ask the sysadmin to set it."
+        )
+    return key
+
+
+def query(source, **extra):
+    """The source's query settings plus its API key and any per-request values."""
+    params = {**(source.params or {}), **extra}
+    if source.api_key_param and (key := api_key(source)):
+        params[source.api_key_param] = key
+    return params
+
+
+class MuseumAPIClient:
+    def __init__(self):
+        self.session = requests.Session()
+
+    @sleep_and_retry
+    @limits(calls=100, period=60)
+    @backoff.on_exception(backoff.expo, LinkError, max_tries=3)
+    def get_json(self, url, params=None):
+        """GET JSON from an admin-configured URL, with the same guards as "Add from link"."""
+        if params:
+            url = f"{url}{'&' if '?' in url else '?'}{urlencode(params, doseq=True)}"
+        _, _, body = fetch(url, self.session, max_bytes=MAX_JSON_BYTES)
+        if body is None:
+            raise LinkError("That address returned an image, not data.")
+        try:
+            return json.loads(body)
+        except ValueError:
+            raise LinkError("That address did not return JSON.") from None
+
+    @sleep_and_retry
+    @limits(calls=1, period=2)  # Cooper Hewitt's unkeyed limit is 1/s and 30/min
+    @backoff.on_exception(
+        backoff.expo, requests.exceptions.RequestException, max_tries=5
+    )
+    def graphql(self, url, query_text):
+        _check_public(url)
+        response = self.session.post(url, json={"query": query_text}, timeout=60)
+        response.raise_for_status()
+        data = response.json()
+        if data.get("errors"):
+            raise LinkError(f"The API answered: {data['errors'][0].get('message')}")
+        return data
+
+    def download_image(self, url, name):
+        """Save an image to media storage; returns the storage key, or None on failure."""
+        try:
+            # shortcut: the URL comes from the museum's own API answer, not the admin, so
+            # only its first hop is checked; route through linking.fetch if that changes.
+            _check_public(url)
+            response = self.session.get(url, timeout=30)
+            response.raise_for_status()
+            return default_storage.save(name, ContentFile(response.content))
+        except (requests.exceptions.RequestException, LinkError) as e:
+            logger.error("Failed to download image %s: %s", url, e)
+            return None
 
 
 def _year(iso):
@@ -28,7 +100,7 @@ def _texts(entries, key="text"):
     return ", ".join(e[key] for e in entries if e.get(key))
 
 
-def vam_fetched(hit, full):
+def vam_fetched(hit, full, source):
     """Build a Fetched from a V&A search hit and its full object record."""
     number = hit["systemNumber"]
     images = hit.get("_images") or {}
@@ -51,10 +123,10 @@ def vam_fetched(hit, full):
     )
     modified = full.get("recordModificationDate")
     return Fetched(
-        source="vam",
+        source=source,
         identifier=number,
         payload=full or hit,
-        title=f"{title} (V&A {number})",
+        title=f"{title} ({source.short_name} {number})",
         summary=(
             full.get("briefDescription") or full.get("summaryDescription") or ""
         ).strip(),
@@ -94,113 +166,48 @@ def vam_fetched(hit, full):
     )
 
 
-def cooper_hewitt_fetched(obj):
-    images = obj.get("images") or [{}]
-    first = images[0]
+def _values(items):
+    """Cooper Hewitt GraphQL fields are lists of {value: ...} or plain strings."""
+    out = []
+    for x in items or []:
+        v = x.get("value") if isinstance(x, dict) else x
+        if v:
+            out.append(str(v))
+    return out
 
-    def url(*sizes):
-        return next((first[s]["url"] for s in sizes if s in first), "")
 
+def cooper_hewitt_fetched(record, source):
+    """Map a Cooper Hewitt GraphQL object record (api.cooperhewitt.org, see #62)."""
+
+    def first(items):
+        return next(iter(_values(items)), "")
+
+    summary = record.get("summary") or {}
+    geo = record.get("geography") if isinstance(record.get("geography"), dict) else {}
+    media = (record.get("multimedia") or [{}])[0] or {}
+    classification = (record.get("classification") or [{}])[0] or {}
+    accession = next((i["value"] for i in record.get("identifier") or []
+                      if i.get("type") == "accession number"), "")  # fmt: skip
+    thumbnail = (media.get("preview") or {}).get("url", "")
+    identifier = record.get("collectionsOnlineId") or record.get("id")
+    title = (
+        summary.get("title") or first(record.get("title")) or first(record.get("name"))
+    )
     return Fetched(
-        source="cooper_hewitt",
-        identifier=str(obj["id"]),
-        payload=obj,
-        title=f"{obj.get('title') or obj.get('type', '')} (Cooper Hewitt {obj['id']})",
-        summary=(
-            obj.get("description")
-            or obj.get("gallery_text")
-            or obj.get("label_text")
-            or ""
-        ).strip(),
-        source_url=obj.get("url", ""),
-        date_text=obj.get("date", ""),
-        place=obj.get("woe:country_name", ""),
-        image_url=url("b", "z", "n"),
-        thumbnail_url=url("sq", "z"),
+        source=source,
+        identifier=str(identifier),
+        payload=record,
+        title=f"{title or identifier} ({source.short_name} {identifier})",
+        summary="\n\n".join(_values(record.get("description"))),
+        source_url=f"https://www.si.edu/object/chndm_{accession}" if accession else "",
+        date_text=first(record.get("date")),
+        place=(geo.get("country") or {}).get("value") or geo.get("name") or "",
+        image_url=(media.get("large") or {}).get("url") or thumbnail,
+        thumbnail_url=thumbnail,
         detail={
-            "object_type": obj.get("type", ""),
-            "materials_techniques": obj.get("medium", ""),
+            "object_type": (classification.get("summary") or {}).get("title")
+            or first(record.get("name")),
+            "materials_techniques": ", ".join(_values(record.get("medium"))),
+            "accession_number": accession,
         },
     )
-
-
-class MuseumAPIClient:
-    def __init__(self):
-        self.session = requests.Session()
-        self.session.headers.update(
-            {
-                "User-Agent": "connecting-threads-crawler/1.0",
-                "Accept": "application/json",
-            }
-        )
-
-    @sleep_and_retry
-    @limits(calls=100, period=60)
-    @backoff.on_exception(
-        backoff.expo, requests.exceptions.RequestException, max_tries=5
-    )
-    def _get(self, url, **params):
-        response = self.session.get(url, params=params or None, timeout=30)
-        response.raise_for_status()
-        return response
-
-    def download_image(self, url, name):
-        """Save an image to media storage; returns the storage key, or None on failure."""
-        try:
-            return default_storage.save(name, ContentFile(self._get(url).content))
-        except requests.exceptions.RequestException as e:
-            logger.error("Failed to download image %s: %s", url, e)
-            return None
-
-    def _stage_all(self, fetched_items):
-        created = updated = errored = 0
-        for fetched in fetched_items:
-            try:
-                _, new = stage(fetched, download=self.download_image)
-                created += new
-                updated += not new
-            except Exception:
-                errored += 1
-                logger.exception(
-                    "Could not stage %s %s", fetched.source, fetched.identifier
-                )
-        logger.info(
-            "Staged: %s created, %s updated, %s errors", created, updated, errored
-        )
-        return created, updated
-
-    def _vam_records(self):
-        page = 1
-        while True:
-            data = self._get(VAM_SEARCH, id_category=VAM_TAG, order_sort="asc",
-                             page=page, page_size=100).json()  # fmt: skip
-            for hit in data.get("records", []):
-                try:
-                    full = (
-                        self._get(VAM_OBJECT.format(hit["systemNumber"]))
-                        .json()
-                        .get("record", {})
-                    )
-                except requests.exceptions.RequestException as e:
-                    logger.warning("No full record for %s: %s", hit["systemNumber"], e)
-                    full = {}
-                yield vam_fetched(hit, full)
-            if page >= data.get("info", {}).get("pages", 1):
-                return
-            page += 1
-
-    def fetch_vam(self):
-        logger.info("Fetching V&A objects tagged %s", VAM_TAG)
-        return self._stage_all(self._vam_records())
-
-    def fetch_cooper_hewitt(self):
-        logger.info("Fetching Cooper Hewitt objects")
-        data = self._get(
-            "https://api.collection.cooperhewitt.org/rest/",
-            method="cooperhewitt.exhibitions.getObjects",
-            access_token=settings.COOPER_HEWITT_API_KEY,
-            query="Connecting Threads",
-        ).json()
-        return self._stage_all(
-            cooper_hewitt_fetched(o) for o in data.get("objects", [])
-        )

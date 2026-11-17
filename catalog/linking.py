@@ -73,7 +73,7 @@ def _check_public(url):
             raise LinkError("That address points to a private or local network.")
 
 
-def fetch(url, session=None):
+def fetch(url, session=None, max_bytes=MAX_BYTES):
     """GET a public URL; returns (final_url, content_type, body bytes or None for images)."""
     session = session or requests.Session()
     for _ in range(5):
@@ -101,7 +101,7 @@ def fetch(url, session=None):
         body = b""
         for chunk in response.iter_content(64 * 1024):
             body += chunk
-            if len(body) > MAX_BYTES:
+            if len(body) > max_bytes:
                 response.close()
                 raise LinkError("That page is too large to read.")
         return url, content_type, body

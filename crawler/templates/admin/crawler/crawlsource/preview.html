@@ -1,0 +1,48 @@
+{% extends "admin/base_site.html" %}
+{% load i18n %}
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="max-w-5xl">
+  <h1 class="mb-2 text-xl font-semibold text-font-important-light dark:text-font-important-dark">Preview: {{ source }}</h1>
+  <p class="mb-6 text-sm">The first records this source would bring in, as the crawler reads them. Nothing has been saved.
+    Check the fields look right before running the crawl; for an "Other JSON API" source, fix the field mapping and preview again.</p>
+
+  {% if error %}
+    <div class="mb-6 rounded-md border border-red-300 bg-red-50 p-4 text-sm text-red-800">
+      <strong>The preview failed.</strong> {{ error }}
+    </div>
+  {% elif not records %}
+    <div class="mb-6 rounded-md border border-base-200 p-4 text-sm">The API answered, but no records came back. Check the query settings{% if source.kind == "json_api" %} and the "records" path in the field mapping{% endif %}.</div>
+  {% endif %}
+
+  {% for r in records %}
+    {% if r.reason %}
+    <div class="mb-4 rounded-md border border-amber-300 bg-amber-50 p-4 text-sm text-amber-900">Skipped a record: {{ r.reason }}</div>
+    {% else %}
+    <div class="mb-4 flex gap-4 rounded-md border border-base-200 p-4 dark:border-base-800">
+      {% if r.thumbnail_url or r.image_url %}<img src="{% firstof r.thumbnail_url r.image_url %}" alt="" style="width:96px;height:96px;object-fit:cover;border-radius:4px">{% endif %}
+      <dl class="grid flex-1 grid-cols-[10rem_1fr] gap-x-4 gap-y-1 text-sm">
+        <dt class="font-semibold">ID</dt><dd>{{ r.identifier }}</dd>
+        <dt class="font-semibold">Title</dt><dd>{{ r.title }}</dd>
+        <dt class="font-semibold">Date</dt><dd>{{ r.date_text|default:"—" }}</dd>
+        <dt class="font-semibold">Place</dt><dd>{{ r.place|default:"—" }}</dd>
+        <dt class="font-semibold">Maker</dt><dd>{{ r.maker|default:"—" }}</dd>
+        <dt class="font-semibold">Object type</dt><dd>{{ r.detail.object_type|default:"—" }}</dd>
+        <dt class="font-semibold">Materials</dt><dd>{{ r.detail.materials_techniques|default:"—" }}</dd>
+        <dt class="font-semibold">Summary</dt><dd>{{ r.summary|default:"—"|truncatechars:300 }}</dd>
+        <dt class="font-semibold">Original page</dt><dd>{% if r.source_url %}<a href="{{ r.source_url }}" rel="noopener" class="underline">{{ r.source_url }}</a>{% else %}—{% endif %}</dd>
+        <dt class="font-semibold">Image</dt><dd class="break-all">{{ r.image_url|default:"—" }}{% if r.image_url %} ({% if r.store_image %}copied to our storage{% else %}linked where it lives{% endif %}){% endif %}</dd>
+        {% if r.rights %}<dt class="font-semibold">Rights</dt><dd>{{ r.rights }}</dd>{% endif %}
+      </dl>
+    </div>
+    {% endif %}
+  {% endfor %}
+
+  <div class="flex gap-3">
+    {% if source.enabled and not error %}<a href="{% url 'admin:crawler_crawlsource_run_crawl' source.pk %}" class="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">Run crawl</a>{% endif %}
+    <a href="{% url 'admin:crawler_crawlsource_change' source.pk %}" class="rounded-md border border-base-200 px-4 py-2 text-sm">Edit source</a>
+  </div>
+  {% if running %}<p class="mt-4 text-sm">A crawl of this source is running now (started {{ running.started_at|date:"H:i" }}).</p>{% endif %}
+</div>
+{% endblock %}

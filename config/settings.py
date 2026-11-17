@@ -259,6 +259,16 @@ UNFOLD = {
                         "link": reverse_lazy("admin:catalog_crawleditem_changelist"),
                     },
                     {
+                        "title": _("Crawl sources"),
+                        "icon": "api",
+                        "link": reverse_lazy("admin:crawler_crawlsource_changelist"),
+                    },
+                    {
+                        "title": _("Crawl runs"),
+                        "icon": "history",
+                        "link": reverse_lazy("admin:crawler_crawlrun_changelist"),
+                    },
+                    {
                         "title": _("How the crawler works"),
                         "icon": "help",
                         "link": reverse_lazy("about_crawler"),
