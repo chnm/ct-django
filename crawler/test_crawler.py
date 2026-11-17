@@ -166,19 +166,57 @@ def test_placeholder_maker_is_not_queued(db):
     assert not DataIssue.objects.filter(item=item, issue_type="agent_review").exists()
 
 
-def test_admin_fetch_button_runs_the_crawler(client, db, settings):
+@pytest.fixture
+def admin_client(client, db, settings):
     settings.STORAGES = {**settings.STORAGES, "staticfiles": {
         "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage"}}  # fmt: skip
     client.force_login(
         get_user_model().objects.create_superuser("a", "a@example.invalid", "x")
     )
+    return client
+
+
+def test_admin_fetch_button_runs_the_crawler(admin_client):
     with patch(
         "crawler.services.MuseumAPIClient.fetch_vam", return_value=(2, 3)
     ) as fetch:
-        response = client.get(reverse("admin:catalog_item_fetch_vam"), follow=True)
+        response = admin_client.get(
+            reverse("admin:catalog_crawleditem_fetch_vam"), follow=True
+        )
     fetch.assert_called_once()
-    assert "V&amp;A: 2 new staged records, 3 refreshed." in response.content.decode()
+    assert "V&amp;A: 2 new items, 3 refreshed." in response.content.decode()
+    queue = admin_client.get(
+        reverse("admin:catalog_crawleditem_changelist")
+    ).content.decode()
+    assert "Fetch V&A" in queue
     assert (
         "Fetch V&A"
-        in client.get(reverse("admin:catalog_item_changelist")).content.decode()
+        not in admin_client.get(
+            reverse("admin:catalog_item_changelist")
+        ).content.decode()
     )
+
+
+def test_crawled_items_queue_and_promotion(admin_client, china):
+    crawled, _ = stage(vam_fetched(VAM["hit"], VAM["full"]))
+    manual = Item.objects.create(item_type="document", record_status="internal", is_public=False,
+                                 is_context_record=False, legacy_system="test", legacy_id="1")  # fmt: skip
+    queue = admin_client.get(reverse("admin:catalog_crawleditem_changelist"))
+    assert [i.pk for i in queue.context["cl"].result_list] == [crawled.pk]
+    records = admin_client.get(reverse("admin:catalog_item_changelist"))
+    assert [i.pk for i in records.context["cl"].result_list] == [
+        manual.pk
+    ]  # staged kept out
+
+    def promote():
+        admin_client.post(reverse("admin:catalog_crawleditem_changelist"),
+                          {"action": "promote_to_records", "_selected_action": [crawled.pk]})  # fmt: skip
+        crawled.refresh_from_db()
+
+    promote()
+    assert crawled.record_status == "staged"  # not reviewed yet
+    Item.objects.filter(pk=crawled.pk).update(review_status="reviewed")
+    promote()
+    assert (crawled.record_status, crawled.is_public) == ("internal", False)
+    records = admin_client.get(reverse("admin:catalog_item_changelist"))
+    assert crawled.pk in [i.pk for i in records.context["cl"].result_list]

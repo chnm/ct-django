@@ -104,5 +104,8 @@ class ItemFilter(django_filters.FilterSet):
             | Q(date_display__icontains=value)
             | Q(pk__in=_items(ItemText, text_body__icontains=value))
             | Q(pk__in=_items(ItemTerm, term__label__icontains=value))
+            | Q(
+                pk__in=_items(ItemTerm, term__termalias__alias__icontains=value)
+            )  # any spelling
             | Q(pk__in=_items(ItemPlace, place__name_preferred__icontains=value))
         )

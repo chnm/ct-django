@@ -93,14 +93,32 @@ class CatalogAdminTests(TestCase):
 
     def test_pages_render(self):
         for model in ["item", "place", "agent", "term", "source", "collection", "dataissue",
-                      "normalizationlog"]:  # fmt: skip
+                      "normalizationlog", "relationship", "tradeobservation", "movement",
+                      "media"]:  # fmt: skip
             self.assertEqual(self.get(f"{model}_changelist").status_code, 200, model)
         self.assertEqual(self.get("item_add").status_code, 200)
         self.assertEqual(self.get("item_change", self.item.pk).status_code, 200)
 
+    def test_confirm_links_action(self):
+        from catalog.models import Relationship
+
+        other = Item.objects.create(
+            item_id="CT-00009", item_type="document", record_status="published",
+            is_public=True, is_context_record=False, legacy_system="TextileRecord", legacy_id="9",
+        )  # fmt: skip
+        link = Relationship.objects.create(from_item=self.item, to_item=other, rel_type="see_also",
+                                           status="proposed", confidence="possible")  # fmt: skip
+        self.client.post(
+            reverse("admin:catalog_relationship_changelist"),
+            {"action": "confirm_links", "_selected_action": [link.pk]},
+            secure=True,
+        )
+        link.refresh_from_db()
+        self.assertEqual(link.status, "confirmed")
+
     def test_publish_action_skips_merged_records(self):
         Item.objects.filter(pk="CT-00001").update(
-            record_status="staged", is_public=False
+            record_status="internal", is_public=False
         )
         Item.objects.create(
             item_id="CT-00002", item_type="document", record_status="merged", is_public=False,

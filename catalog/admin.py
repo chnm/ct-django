@@ -6,9 +6,12 @@ from django.urls import path
 from django.utils import timezone
 from reversion.admin import VersionAdmin
 from unfold.admin import ModelAdmin, StackedInline, TabularInline
+from unfold.decorators import display
+from unfold.widgets import UnfoldAdminTextareaWidget, UnfoldAdminTextInputWidget
 
 from catalog import models as m
 from catalog.linking import DEFAULT_RIGHTS, LinkError, inspect_link
+from config.admin_utils import admin_thumbnail, admin_thumbnail_placeholder
 
 LINKED_SYSTEM = "Linked record"
 
@@ -43,10 +46,11 @@ LONG_TEXT = {
 class TextWidgets:
     def formfield_for_dbfield(self, db_field, request, **kwargs):
         if isinstance(db_field, models.TextField) and not db_field.choices:
+            # Unfold's widgets, not Django's plain ones, or the fields lose their styling.
             kwargs["widget"] = (
-                forms.Textarea(attrs={"rows": 3})
+                UnfoldAdminTextareaWidget(attrs={"rows": 3})
                 if db_field.name in LONG_TEXT
-                else forms.TextInput
+                else UnfoldAdminTextInputWidget
             )
         return super().formfield_for_dbfield(db_field, request, **kwargs)
 
@@ -163,8 +167,9 @@ def make_private(modeladmin, request, queryset):
     queryset.update(is_public=False)
 
 
-@admin.register(m.Item)
-class ItemAdmin(Admin):
+class RecordAdmin(Admin):
+    """The record form shared by Records and the crawler queue."""
+
     ordering = ["item_id"]
     list_display = ["item_id", "title", "item_type", "record_status", "is_public",
                     "date_display", "review_status"]  # fmt: skip
@@ -173,8 +178,6 @@ class ItemAdmin(Admin):
     search_fields = ["item_id", "title", "summary", "legacy_id", "source_identifier"]
     autocomplete_fields = ["merged_into", "source"]
     readonly_fields = ["date_display"]
-    change_list_template = "admin/catalog/item/change_list.html"  # museum fetch buttons
-    actions = [publish, mark_reviewed, make_private]
     fieldsets = [
         (None, {"fields": ["item_id", "item_type", "record_status", "is_public", "title",
                            "title_status", "summary", "content_warning", "is_context_record"]}),
@@ -194,6 +197,21 @@ class ItemAdmin(Admin):
         MediaInline, RelationshipInline, TradeObservationInline, CollectionItemInline,
         DataIssueInline, SourcePayloadInline,
     ]  # fmt: skip
+
+
+@admin.register(m.Item)
+class ItemAdmin(RecordAdmin):
+    change_list_template = "admin/catalog/item/change_list.html"  # Add from link button
+    actions = [publish, mark_reviewed, make_private]
+
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        # Staged crawler items live in the Web Crawler queue until promoted. Only the list
+        # leaves them out: autocomplete and links still reach them (e.g. proposed links).
+        match = request.resolver_match
+        if match and match.url_name == "catalog_item_changelist":
+            qs = qs.exclude(record_status="staged")
+        return qs
 
     def add_from_link(self, request):
         """Create a private draft record for an object held elsewhere, from a pasted link."""
@@ -259,31 +277,76 @@ class ItemAdmin(Admin):
         return item
 
     def get_urls(self):
+        link = [path("add-from-link/", self.admin_site.admin_view(self.add_from_link),
+                     name="catalog_item_add_from_link")]  # fmt: skip
+        return link + super().get_urls()
+
+
+@admin.action(description="Promote selected reviewed items to Records (private)")
+def promote_to_records(modeladmin, request, queryset):
+    staged = queryset.filter(record_status="staged")
+    unreviewed = staged.exclude(review_status="reviewed").count()
+    n = staged.filter(review_status="reviewed").update(record_status="internal")
+    if n:
+        messages.success(
+            request, f"{n} items promoted to Records. Publish them from Records."
+        )
+    if unreviewed:
+        messages.warning(
+            request, f"{unreviewed} items skipped: mark them reviewed first."
+        )
+
+
+@admin.register(m.CrawledItem)
+class CrawledItemAdmin(RecordAdmin):
+    """Web crawler queue: fetch, review, then promote into Records."""
+
+    change_list_template = "admin/catalog/crawleditem/change_list.html"  # fetch buttons
+    list_display = ["thumbnail", "item_id", "title", "holding_institution", "source_identifier",
+                    "record_status", "review_status", "ingested_at"]  # fmt: skip
+    list_filter = ["record_status", "review_status", "holding_institution"]
+    actions = [mark_reviewed, promote_to_records]
+
+    def get_queryset(self, request):
+        return (
+            super().get_queryset(request).filter(ingest_method__startswith="crawler_")
+        )
+
+    @display(description="Image")
+    def thumbnail(self, obj):
+        media = next(
+            (x for x in obj.media_set.all() if x.media_type == "thumbnail"), None
+        )
+        return (
+            admin_thumbnail(media.url)
+            if media and media.url
+            else admin_thumbnail_placeholder()
+        )
+
+    def get_urls(self):
         fetch = [
-            path(f"fetch/{name}/", self.admin_site.admin_view(view), name=f"catalog_item_fetch_{name}")
+            path(f"fetch/{name}/", self.admin_site.admin_view(view),
+                 name=f"catalog_crawleditem_fetch_{name}")
             for name, view in [("all", self.fetch_all), ("vam", self.fetch_vam),
                                ("cooper_hewitt", self.fetch_cooper_hewitt)]
         ]  # fmt: skip
-        link = [path("add-from-link/", self.admin_site.admin_view(self.add_from_link),
-                     name="catalog_item_add_from_link")]  # fmt: skip
-        return link + fetch + super().get_urls()
+        return fetch + super().get_urls()
 
     def _fetch(self, request, *sources):
         from crawler.services import MuseumAPIClient
 
         if not self.has_add_permission(request):
-            return redirect("admin:catalog_item_changelist")
+            return redirect("admin:catalog_crawleditem_changelist")
         client = MuseumAPIClient()
         for label, method in sources:
             try:
                 created, updated = getattr(client, method)()
                 messages.success(
-                    request,
-                    f"{label}: {created} new staged records, {updated} refreshed.",
+                    request, f"{label}: {created} new items, {updated} refreshed."
                 )
             except Exception as e:
                 messages.error(request, f"{label}: fetch failed ({e}).")
-        return redirect("admin:catalog_item_changelist")
+        return redirect("admin:catalog_crawleditem_changelist")
 
     def fetch_vam(self, request):
         return self._fetch(request, ("V&A", "fetch_vam"))
@@ -311,9 +374,10 @@ class PlaceAliasInline(Tabular):
 @admin.register(m.Place)
 class PlaceAdmin(Admin):
     ordering = ["name_preferred"]
-    list_display = ["place_id", "name_preferred", "name_modern", "place_type", "macro_region",
-                    "map_level", "coord_status"]  # fmt: skip
-    list_filter = ["place_type", "map_level", "coord_status", "macro_region"]
+    # The columns the PI uses for mapping; macro_region stays a filter only.
+    list_display = ["place_id", "name_preferred", "country_modern", "latitude", "longitude",
+                    "coord_status", "place_type"]  # fmt: skip
+    list_filter = ["place_type", "coord_status", "map_level", "country_modern", "macro_region"]
     search_fields = ["place_id", "name_preferred", "name_modern", "placealias__alias"]
     autocomplete_fields = ["broader_place"]
     inlines = [PlaceGeometryInline, PlaceAliasInline]
@@ -334,8 +398,9 @@ class TermAliasInline(Tabular):
 @admin.register(m.Term)
 class TermAdmin(Admin):
     ordering = ["vocabulary", "label"]
-    list_display = ["term_id", "label", "vocabulary", "status", "term_group"]
-    list_filter = ["vocabulary", "status"]
+    list_display = ["term_id", "label", "vocabulary", "term_group", "default_form",
+                    "madras_family", "status"]  # fmt: skip
+    list_filter = ["vocabulary", "status", "term_group", "madras_family"]
     search_fields = ["term_id", "label", "variant_labels", "termalias__alias"]
     inlines = [TermAliasInline]
 
@@ -359,6 +424,84 @@ class CollectionAdmin(Admin):
     list_display = ["collection_id", "name", "marker_place"]
     autocomplete_fields = ["marker_place"]
     inlines = [CollectionItemByCollectionInline]
+
+
+# --- Evidence across records ---------------------------------------------
+
+
+@admin.action(description="Confirm selected links (shown on the public site)")
+def confirm_links(modeladmin, request, queryset):
+    n = queryset.update(status="confirmed")
+    messages.success(request, f"{n} links confirmed.")
+
+
+@admin.register(m.Relationship)
+class RelationshipAdmin(Admin):
+    ordering = ["relationship_id"]
+    list_display = [
+        "relationship_id",
+        "from_item",
+        "rel_type",
+        "to_item",
+        "status",
+        "confidence",
+    ]
+    list_filter = ["status", "rel_type", "confidence"]
+    search_fields = [
+        "from_item__item_id",
+        "from_item__title",
+        "to_item__item_id",
+        "to_item__title",
+    ]
+    autocomplete_fields = ["from_item", "to_item"]
+    actions = [confirm_links]
+
+
+@admin.register(m.TradeObservation)
+class TradeObservationAdmin(Admin):
+    ordering = ["observation_id"]
+    list_display = ["observation_id", "item", "observation_type", "textile_description",
+                    "quantity", "quantity_unit", "amount_value", "currency_std", "needs_review"]  # fmt: skip
+    list_filter = ["observation_type", "needs_review", "currency_std"]
+    search_fields = ["item__item_id", "textile_description", "price_text_original"]
+    autocomplete_fields = ["item"]
+
+
+@admin.register(m.Movement)
+class MovementAdmin(Admin):
+    ordering = ["item", "leg", "movement_id"]
+    list_display = [
+        "movement_id",
+        "item",
+        "leg",
+        "from_place",
+        "to_place",
+        "order_status",
+        "certainty",
+    ]
+    list_filter = ["order_status", "certainty"]
+    search_fields = [
+        "item__item_id",
+        "from_place__name_preferred",
+        "to_place__name_preferred",
+    ]
+    autocomplete_fields = ["item", "from_place", "to_place"]
+
+
+@admin.register(m.Media)
+class MediaAdmin(Admin):
+    ordering = ["item", "media_id"]
+    list_display = [
+        "media_id",
+        "item",
+        "media_type",
+        "is_primary",
+        "storage_key",
+        "external_url",
+    ]
+    list_filter = ["media_type", "is_primary"]
+    search_fields = ["item__item_id", "storage_key", "external_url"]
+    autocomplete_fields = ["item"]
 
 
 # --- Review queue and logs ----------------------------------------------

@@ -4,6 +4,7 @@ import csv
 from pathlib import Path
 
 from django.apps import apps
+from django.core.management import call_command
 from django.core.management.base import BaseCommand, CommandError
 from django.core.management.color import no_style
 from django.db import connection, models, transaction
@@ -55,6 +56,9 @@ class Command(BaseCommand):
                     no_style(), list(by_table.values())
                 ):
                     cur.execute(sql)
+            call_command(
+                "load_glossary", stdout=self.stdout
+            )  # not in the CSV build package
         self.stdout.write(self.style.SUCCESS("Catalog loaded."))
 
     def load(self, model, path):

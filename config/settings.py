@@ -2,7 +2,8 @@ import importlib.util
 from pathlib import Path
 
 import environ
-from django.urls import reverse_lazy
+from django.urls import reverse, reverse_lazy
+from django.utils.text import format_lazy
 from django.utils.translation import gettext_lazy as _
 
 # Build paths inside the project like this: BASE_DIR / "subdir".
@@ -153,6 +154,17 @@ X_FRAME_OPTIONS = "SAMEORIGIN"
 # HSTS subdomain and preload scope belong to the parent domain owner.
 SILENCED_SYSTEM_CHECKS = ["security.W005", "security.W019", "security.W021"]
 
+
+def _on_terms(request):
+    return request.path.startswith(reverse("admin:catalog_term_changelist"))
+
+
+def _on_glossary(request):
+    # Unfold matches sidebar links by path alone, so the filtered glossary link and
+    # "Terms" would both light up; decide by the vocabulary filter instead.
+    return _on_terms(request) and request.GET.get("vocabulary__exact") == "textile_type"
+
+
 # Unfold customization options
 UNFOLD = {
     "SITE_TITLE": "Connecting Threads Admin",
@@ -182,64 +194,94 @@ UNFOLD = {
                     }
                     for title, icon, model in [
                         ("Records", "inventory_2", "item"),
+                        ("Review queue", "rule", "dataissue"),
+                        ("Relationships", "link", "relationship"),
+                    ]
+                ],
+            },
+            {
+                "title": _("Authorities"),
+                "items": [
+                    {
+                        "title": _(title),
+                        "icon": icon,
+                        "link": reverse_lazy(f"admin:catalog_{model}_changelist"),
+                        **(
+                            {"active": lambda r: _on_terms(r) and not _on_glossary(r)}
+                            if model == "term"
+                            else {}
+                        ),
+                    }
+                    for title, icon, model in [
                         ("Places", "location_on", "place"),
-                        ("People and organisations", "people_alt", "agent"),
+                        ("Agents (people and organisations)", "people_alt", "agent"),
                         ("Terms", "category", "term"),
                         ("Sources", "menu_book", "source"),
                         ("Collections", "collections", "collection"),
-                        ("Review queue", "rule", "dataissue"),
+                    ]
+                ]
+                + [
+                    {
+                        "title": _("Textile terms (glossary)"),
+                        "icon": "texture",
+                        "active": _on_glossary,
+                        "link": format_lazy(
+                            "{}?vocabulary__exact=textile_type&status__exact=active",
+                            reverse_lazy("admin:catalog_term_changelist"),
+                        ),
+                    }
+                ],
+            },
+            {
+                "title": _("Evidence"),
+                "items": [
+                    {
+                        "title": _(title),
+                        "icon": icon,
+                        "link": reverse_lazy(f"admin:catalog_{model}_changelist"),
+                    }
+                    for title, icon, model in [
+                        ("Prices and quantities", "payments", "tradeobservation"),
+                        ("Routes", "route", "movement"),
+                        ("Images and media", "image", "media"),
                         ("Normalization log", "history", "normalizationlog"),
                     ]
                 ],
             },
             {
-                "title": _("Collection Data"),
+                "title": _("Web Crawler"),
                 "items": [
                     {
-                        "title": _("Textile Records"),
-                        "icon": "inventory_2",
-                        "link": reverse_lazy("admin:material_textilerecord_changelist"),
+                        "title": _("Crawled items"),
+                        "icon": "sync",
+                        "link": reverse_lazy("admin:catalog_crawleditem_changelist"),
                     },
                     {
-                        "title": _("Textile Types"),
-                        "icon": "category",
-                        "link": reverse_lazy("admin:material_textiletype_changelist"),
-                    },
-                    {
-                        "title": _("Images"),
-                        "icon": "image",
-                        "link": reverse_lazy("admin:material_image_changelist"),
+                        "title": _("How the crawler works"),
+                        "icon": "help",
+                        "link": reverse_lazy("about_crawler"),
                     },
                 ],
             },
             {
-                "title": _("Geographic Data"),
+                "title": _("Old database (retiring, #71)"),
+                "collapsible": True,
+                "collapsed": True,
                 "items": [
                     {
-                        "title": _("Areas"),
-                        "icon": "public",
-                        "link": reverse_lazy("admin:material_area_changelist"),
-                    },
-                    {
-                        "title": _("Places"),
-                        "icon": "location_on",
-                        "link": reverse_lazy("admin:material_place_changelist"),
-                    },
-                ],
-            },
-            {
-                "title": _("Metadata"),
-                "items": [
-                    {
-                        "title": _("Subjects"),
-                        "icon": "bookmarks",
-                        "link": reverse_lazy("admin:material_subject_changelist"),
-                    },
-                    {
-                        "title": _("Named Actors"),
-                        "icon": "people_alt",
-                        "link": reverse_lazy("admin:material_namedactor_changelist"),
-                    },
+                        "title": _(title),
+                        "icon": icon,
+                        "link": reverse_lazy(f"admin:material_{model}_changelist"),
+                    }
+                    for title, icon, model in [
+                        ("Textile Records", "inventory_2", "textilerecord"),
+                        ("Textile Types", "category", "textiletype"),
+                        ("Images", "image", "image"),
+                        ("Areas", "public", "area"),
+                        ("Places", "location_on", "place"),
+                        ("Subjects", "bookmarks", "subject"),
+                        ("Named Actors", "people_alt", "namedactor"),
+                    ]
                 ],
             },
             {

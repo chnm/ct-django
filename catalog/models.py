@@ -188,6 +188,7 @@ class PlaceGeometry(models.Model):
 
     class Meta:
         db_table = "place_geometry"
+        verbose_name_plural = "place geometries"
 
     def __str__(self):
         return str(self.pk)
@@ -219,6 +220,7 @@ class PlaceAlias(models.Model):
 
     class Meta:
         db_table = "place_alias"
+        verbose_name_plural = "place aliases"
         constraints = [
             models.UniqueConstraint(
                 fields=["alias", "place"], name="place_alias_alias_place_id_uniq"
@@ -321,6 +323,16 @@ class Term(NextId, models.Model):
     scope_note_source = models.TextField(
         null=True, blank=True, help_text="Where the scope note comes from."
     )
+    default_form = models.ForeignKey(
+        "self",
+        models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="usual_for",
+        limit_choices_to={"vocabulary": "textile_form"},
+        help_text="For textile_type: the form this cloth usually takes (Handkerchief, Garment...). "
+        "From the Textile_Terms glossary.",
+    )
 
     class Meta:
         db_table = "term"
@@ -352,6 +364,7 @@ class TermAlias(models.Model):
 
     class Meta:
         db_table = "term_alias"
+        verbose_name_plural = "term aliases"
         constraints = [
             models.UniqueConstraint(
                 fields=["alias", "term"], name="term_alias_alias_term_id_uniq"
@@ -637,6 +650,14 @@ class Item(NextId, models.Model):
         super().save(*args, **kwargs)
 
 
+class CrawledItem(Item):
+    """Items a museum crawler fetched, shown in their own admin queue until promoted."""
+
+    class Meta:
+        proxy = True
+        verbose_name = "crawled item"
+
+
 class DocumentDetail(models.Model):
     item = models.OneToOneField(
         "Item",
@@ -807,6 +828,7 @@ class Media(models.Model):
 
     class Meta:
         db_table = "media"
+        verbose_name_plural = "media"
 
     @property
     def url(self):
