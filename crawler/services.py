@@ -22,149 +22,147 @@ class MuseumAPIClient:
             }
         )
 
-    @sleep_and_retry
-    @limits(calls=100, period=60)
-    @backoff.on_exception(
-        backoff.expo, (requests.exceptions.RequestException), max_tries=10
+    CH_API = "https://api.cooperhewitt.org/"
+    CH_FIELDS = (
+        "id collectionsOnlineId summary title name date medium description "
+        "classification geography multimedia identifier"
     )
+
+    @sleep_and_retry
+    @limits(
+        calls=1, period=2
+    )  # ponytail: unkeyed limit is 1/s and 30/min; relax once we hold an access key
+    @backoff.on_exception(
+        backoff.expo, (requests.exceptions.RequestException), max_tries=5
+    )
+    def _ch_query(self, query):
+        response = self.session.post(self.CH_API, json={"query": query}, timeout=60)
+        response.raise_for_status()
+        data = response.json()
+        if data.get("errors"):
+            raise ValueError(f"Cooper Hewitt API: {data['errors'][0].get('message')}")
+        return data
+
+    def _ch_records(self):
+        """Yield object records: every match of COOPER_HEWITT_QUERY, or, when
+        that is unset, a refresh of the Cooper Hewitt items already staged."""
+        if settings.COOPER_HEWITT_QUERY:
+            page = 0
+            while True:
+                data = self._ch_query(
+                    f"{{ object({settings.COOPER_HEWITT_QUERY}, size:100, page:{page}) "
+                    f"{{ {self.CH_FIELDS} }} }}"
+                )
+                yield from data["data"]["object"]
+                page += 1
+                if page >= data["extensions"]["pagination"]["number_of_pages"]:
+                    return
+        ids = list(
+            StagedMuseumItem.objects.filter(archive__startswith="Cooper").values_list(
+                "id", flat=True
+            )
+        )
+        for start in range(0, len(ids), 50):
+            aliases = " ".join(
+                f'o{n}: object({"id" if pk.startswith("object-") else "collectionsOnlineId"}:"{pk}") '
+                f"{{ {self.CH_FIELDS} }}"
+                for n, pk in enumerate(ids[start : start + 50])
+            )
+            for hits in self._ch_query(f"{{ {aliases} }}")["data"].values():
+                yield from hits
+
+    @staticmethod
+    def _ch_defaults(record):
+        """Map a GraphQL object record onto StagedMuseumItem fields."""
+
+        def values(items):
+            out = []
+            for x in items or []:
+                v = x.get("value") if isinstance(x, dict) else x
+                if v:
+                    out.append(str(v))
+            return out
+
+        def first(items):
+            return next(iter(values(items)), "")
+
+        summary = record.get("summary") or {}
+        geo = record.get("geography")
+        geo = geo if isinstance(geo, dict) else {}
+        media = (record.get("multimedia") or [{}])[0] or {}
+        classification = (record.get("classification") or [{}])[0] or {}
+        accession = next(
+            (
+                i["value"]
+                for i in record.get("identifier") or []
+                if i.get("type") == "accession number"
+            ),
+            "",
+        )
+        thumbnail = (media.get("preview") or {}).get("url", "")
+        return {
+            "title": summary.get("title")
+            or first(record.get("title"))
+            or first(record.get("name")),
+            "date": first(record.get("date")),
+            "description": "\n\n".join(values(record.get("description"))),
+            "item_type": (
+                (classification.get("summary") or {}).get("title")
+                or first(record.get("name"))
+            )[:100],
+            "medium": ", ".join(values(record.get("medium")))[:100],
+            "url": f"https://www.si.edu/object/chndm_{accession}" if accession else "",
+            "country": (
+                (geo.get("country") or {}).get("value") or geo.get("name") or ""
+            )[:100],
+            "archive": "Cooper-Hewitt, Smithsonian Design Museum",
+            "manifest": "",
+            "thumbnail": thumbnail,
+            "image_url": (media.get("large") or {}).get("url") or thumbnail,
+            "api_response": record,
+            "is_reviewed": False,
+            "published": False,
+        }
+
     def fetch_cooper_hewitt(self):
         logger.info("Starting Cooper-Hewitt fetch process...")
+        items_created = items_updated = items_errored = 0
 
-        # Log the URL construction
-        url = (
-            "https://api.collection.cooperhewitt.org/rest/"
-            "?method=cooperhewitt.exhibitions.getObjects"
-            f"&access_token={settings.COOPER_HEWITT_API_KEY}"
-            "&query=Connecting%20Threads"
-        )
+        for record in self._ch_records():
+            pk = record.get("collectionsOnlineId") or record.get("id")
+            try:
+                defaults = self._ch_defaults(record)
+                image_url = defaults.pop("image_url")
+                image_file = (
+                    self.download_image(image_url, f"{pk}.jpg") if image_url else None
+                )
+
+                staged_item, created = StagedMuseumItem.objects.update_or_create(
+                    id=pk, defaults=defaults
+                )
+                if image_file:
+                    staged_item.image.save(image_file.name, image_file, save=False)
+                staged_item.review_notes = (
+                    "Initial fetch from API" if created else "Data updated from API"
+                )
+                staged_item.save()
+
+                if created:
+                    items_created += 1
+                else:
+                    items_updated += 1
+                logger.info(
+                    f"{'Created' if created else 'Updated'} {pk} - {defaults['title']}"
+                )
+            except Exception as e:
+                items_errored += 1
+                logger.error(f"Error processing Cooper-Hewitt item {pk}: {e!s}")
+
         logger.info(
-            f"Making request to Cooper-Hewitt API at: {url.replace(settings.COOPER_HEWITT_API_KEY, '[REDACTED]')}"
+            f"Cooper-Hewitt fetch complete. Created: {items_created}, "
+            f"Updated: {items_updated}, Errors: {items_errored}"
         )
-
-        try:
-            # Log the request start
-            logger.info("Sending request to Cooper-Hewitt API...")
-            response = self.session.get(url)
-            logger.info(f"Received response with status code: {response.status_code}")
-
-            # Check response status
-            response.raise_for_status()
-
-            # Parse JSON response
-            logger.info("Parsing JSON response...")
-            data = response.json()
-            total_items = len(data.get("objects", []))
-            logger.info(f"Found {total_items} items in response")
-
-            items_created = 0
-            items_updated = 0
-            items_errored = 0
-
-            # Process each item
-            logger.info("Beginning to process items...")
-            for index, item in enumerate(data.get("objects", []), 1):
-                try:
-                    logger.debug(
-                        f"Processing item {index}/{total_items} (ID: {item.get('id')})"
-                    )
-
-                    # Get image URLs
-                    images = item.get("images", [])
-                    thumbnail_url = ""
-                    if images:
-                        # Get the first image's thumbnail (size 'sq' is usually thumbnail)
-                        first_image = images[0]
-                        if "sq" in first_image:
-                            thumbnail_url = first_image["sq"]["url"]
-                        elif "z" in first_image:
-                            thumbnail_url = first_image["z"]["url"]
-
-                    # Prepare image download
-                    image_file = None
-                    if thumbnail_url:
-                        filename = f"{item.get('id', 'unknown')}.jpg"
-                        image_file = self.download_image(thumbnail_url, filename)
-
-                    # Prepare the default values
-                    defaults = {
-                        "title": item.get("title", ""),
-                        "date": item.get("date", ""),
-                        "description": item.get("description")
-                        or item.get("gallery_text")
-                        or item.get("label_text", ""),
-                        "item_type": item.get("type", ""),
-                        "medium": item.get("medium", ""),
-                        "url": item.get("url", ""),
-                        "country": item.get("woe:country_name", ""),
-                        "archive": "Cooper-Hewitt, Smithsonian Design Museum",
-                        "manifest": "",  # Cooper-Hewitt doesn't seem to have IIIF manifests
-                        "thumbnail": thumbnail_url,
-                        "api_response": item,
-                        "is_reviewed": False,
-                        "published": False,
-                    }
-
-                    # Use update_or_create to either update existing or create new
-                    staged_item, created = StagedMuseumItem.objects.update_or_create(
-                        id=item.get("id"), defaults=defaults
-                    )
-
-                    # Save the image if we have one
-                    if image_file:
-                        try:
-                            staged_item.image.save(
-                                image_file.name, image_file, save=False
-                            )
-                            logger.info(
-                                f"Successfully saved image for {item.get('id')}"
-                            )
-                        except Exception as e:
-                            logger.error(
-                                f"Failed to save image for {item.get('id')}: {e!s}"
-                            )
-
-                    # Update review notes after we know if it was created or updated
-                    staged_item.review_notes = (
-                        "Initial fetch from API" if created else "Data updated from API"
-                    )
-                    staged_item.save()
-
-                    if created:
-                        items_created += 1
-                        logger.info(
-                            f"Created new item: {item.get('id')} - {item.get('title', 'No title')}"
-                        )
-                    else:
-                        items_updated += 1
-                        logger.info(
-                            f"Updated existing item: {item.get('id')} - {item.get('title', 'No title')}"
-                        )
-
-                except Exception as e:
-                    items_errored += 1
-                    logger.error(
-                        f"Error processing item {item.get('id', 'unknown ID')}: {e!s}"
-                    )
-                    continue
-
-            # Log final summary
-            logger.info("Cooper-Hewitt fetch complete:")
-            logger.info(f"- Items created: {items_created}")
-            logger.info(f"- Items updated: {items_updated}")
-            logger.info(f"- Items errored: {items_errored}")
-            logger.info(f"- Total processed: {items_created + items_updated}")
-
-            return items_created, items_updated
-
-        except requests.exceptions.RequestException as e:
-            logger.error(f"HTTP Request failed: {e!s}")
-            raise
-        except ValueError as e:
-            logger.error(f"JSON parsing failed: {e!s}")
-            raise
-        except Exception as e:
-            logger.error(f"Unexpected error during fetch: {e!s}")
-            raise
+        return items_created, items_updated
 
     def download_image(self, image_url, filename):
         """
