@@ -1,0 +1,27 @@
+{% load wagtailimages_tags %}
+{# Params: image, caption, fit ("cover"|"contain"), comparison (ImageComparison or None), figure_number (int or None) #}
+<figure class="relative h-full min-h-[320px] overflow-hidden bg-[#2b2620]" x-data="{ cap: false }">
+  {% if comparison %}
+    {% image comparison.first_image original as a %}{% image comparison.second_image original as b %}
+    <img-comparison-slider class="h-full w-full">
+      <img slot="first" src="{{ a.url }}" alt="{{ comparison.first_image.title }}" class="h-full w-full object-contain" loading="lazy">
+      <img slot="second" src="{{ b.url }}" alt="{{ comparison.second_image.title }}" class="h-full w-full object-contain" loading="lazy">
+    </img-comparison-slider>
+    {% image comparison.first_image original as full %}
+  {% elif image %}
+    {% image image width-1600 as r %}{% image image original as full %}
+    <img src="{{ r.url }}" alt="{{ image.title }}" class="h-full w-full {% if fit == "cover" %}object-cover{% else %}object-contain{% endif %}">
+  {% endif %}
+  {% if image or comparison %}
+    {% firstof image.pk comparison.pk as cap_id %}
+    <div class="absolute right-4 top-4 flex gap-2">
+      {% if caption %}<button type="button" class="imgctl" @click="cap = !cap" :aria-pressed="cap" aria-pressed="false" aria-controls="cap-{{ cap_id }}">Caption</button>{% endif %}
+      <button type="button" class="imgctl" @click="$dispatch('lightbox', { src: '{{ full.url|escapejs }}', caption: '{{ caption|default:''|escapejs }}' })">Full image &nearr;</button>
+    </div>
+    {% if caption %}
+      <figcaption id="cap-{{ cap_id }}" x-show="cap" x-cloak class="absolute bottom-4 left-4 max-w-[70%] rounded bg-[rgba(15,12,8,.74)] px-3 py-2 font-mono text-[11.5px] text-[#f2ede0] backdrop-blur">
+        {% if figure_number %}FIG. {{ figure_number }} &mdash; {% endif %}{{ caption }}
+      </figcaption>
+    {% endif %}
+  {% endif %}
+</figure>

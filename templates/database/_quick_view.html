@@ -1,0 +1,21 @@
+{% load database_tags %}{% terms item "keyword" as keywords %}{% terms item "subject" as subject_terms %}
+<tr class="quick-view">
+  <td colspan="7" class="border-l-[3px] border-madras-gold bg-paper-2 px-8 py-6">
+    <div class="lbl mb-3 text-madras-gold">Quick view &middot; Record {{ item.pk }}{% if item.date_display %} &middot; {{ item.date_display }}{% endif %}</div>
+    {% if item.title %}<p class="mb-2 font-display text-[16px] font-semibold text-ink">{{ item.title }}</p>{% endif %}
+    <p class="mb-4 max-w-[880px] font-serif text-[17px] leading-[1.55] text-ink">
+      {% if item.summary %}{{ item.summary }}{% else %}<span class="text-faint">No summary is available for this record.</span>{% endif %}
+    </p>
+    <div class="mb-5 flex flex-wrap gap-2 font-mono text-[12px]">
+      <span class="rounded border border-rule bg-white px-2 py-1">Circulation: {% phase item as p %}{{ p.label }}</span>
+      {% if item|source_type %}<span class="rounded border border-rule bg-white px-2 py-1">Source: {{ item|source_type }}</span>{% endif %}
+      {% with s=subject_terms|first %}{% if s %}<span class="rounded border border-rule bg-white px-2 py-1">Subject: {{ s.label }}</span>{% endif %}{% endwith %}
+      {% with k=keywords|first %}{% if k %}<span class="rounded border border-rule bg-white px-2 py-1">Keyword: {{ k.label }}</span>{% endif %}{% endwith %}
+      {% area_only item as vague %}{% if vague %}<span class="rounded bg-tag-red px-2 py-1 text-madras-red">Place: area only</span>{% endif %}
+    </div>
+    <div class="flex flex-wrap gap-2">
+      <a href="{% url 'textile_single' item_id=item.pk %}" class="btn-solid">Open full record &rarr;</a>
+      <button type="button" class="btn-ghost" onclick="this.closest('tr').remove()">Collapse</button>
+    </div>
+  </td>
+</tr>

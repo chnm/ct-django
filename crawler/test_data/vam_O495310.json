@@ -1,0 +1,272 @@
+{
+ "hit": {
+  "systemNumber": "O495310",
+  "accessionNumber": "CIRC.350-1931",
+  "objectType": "Brush Pot",
+  "availableToBook": true,
+  "_currentLocation": {
+   "id": "THES363204",
+   "displayName": "In Store",
+   "type": "storage",
+   "site": "ES",
+   "onDisplay": false,
+   "detail": {
+    "free": "",
+    "case": "",
+    "shelf": "",
+    "box": ""
+   }
+  },
+  "_primaryTitle": "",
+  "_primaryMaker": {},
+  "_primaryImageId": "2019MK8908",
+  "_primaryDate": "18th century",
+  "_primaryPlace": "China",
+  "_warningTypes": [],
+  "_images": {
+   "_primary_thumbnail": "https://framemark.vam.ac.uk/collections/2019MK8908/full/!100,100/0/default.jpg",
+   "_iiif_image_base_url": "https://framemark.vam.ac.uk/collections/2019MK8908/",
+   "_iiif_presentation_url": "https://iiif.vam.ac.uk/collections/O495310/manifest.json",
+   "imageResolution": "high"
+  }
+ },
+ "full": {
+  "systemNumber": "O495310",
+  "accessionNumber": "CIRC.350-1931",
+  "objectType": "Brush Pot",
+  "titles": [],
+  "summaryDescription": "",
+  "physicalDescription": "Brush pot of porcelain, square, painted in the colours of the famille verte and gilt. Sqaure ground-plan with four scrolled feeet at the corners. Each side has a rectanglar panel surrounded by a border of flowers and leaves on a black dotted ground or a ground of black roe diaper. Two of the four panels contain lake-scenes with figures. The other two contain a bird on a branch. Round the top, a border of key-pattern in black and green. ",
+  "artistMakerPerson": [],
+  "artistMakerOrganisations": [],
+  "artistMakerPeople": [],
+  "materials": [
+   {
+    "text": "porcelain",
+    "id": "AAT10662"
+   },
+   {
+    "text": "enamel (paint)",
+    "id": "AAT147678"
+   }
+  ],
+  "techniques": [
+   {
+    "text": "painted",
+    "id": "x30138"
+   }
+  ],
+  "materialsAndTechniques": "Porcelain painted with coloured enamels ",
+  "categories": [
+   {
+    "text": "Porcelain",
+    "id": "THES48907"
+   },
+   {
+    "text": "Ceramics",
+    "id": "THES48982"
+   },
+   {
+    "text": "Connecting Threads Project",
+    "id": "THES381162"
+   },
+   {
+    "text": "Functional items",
+    "id": "THES393161"
+   }
+  ],
+  "styles": [],
+  "collectionCode": {
+   "text": "EAS",
+   "id": "THES48596"
+  },
+  "images": [
+   "2019MK8908",
+   "2019MK8910"
+  ],
+  "imageResolution": "high",
+  "galleryLocations": [
+   {
+    "current": {
+     "text": "009",
+     "id": "THES363204"
+    },
+    "free": "",
+    "case": "",
+    "shelf": "",
+    "box": ""
+   }
+  ],
+  "partTypes": [
+   [
+    {
+     "text": "Vase",
+     "id": ""
+    }
+   ]
+  ],
+  "contentWarnings": [
+   {
+    "apprise": "",
+    "note": ""
+   }
+  ],
+  "placesOfOrigin": [
+   {
+    "place": {
+     "text": "China",
+     "id": "x29398"
+    },
+    "association": {
+     "text": "made",
+     "id": "x28654"
+    },
+    "note": ""
+   }
+  ],
+  "productionDates": [
+   {
+    "date": {
+     "text": "18th century",
+     "earliest": "1700-01-01",
+     "latest": "1799-12-31"
+    },
+    "association": {
+     "text": "made",
+     "id": "x28654"
+    },
+    "note": ""
+   }
+  ],
+  "associatedObjects": [],
+  "creditLine": "Bequeathed by Mr Gulland",
+  "dimensions": [
+   {
+    "dimension": "Height",
+    "value": "15.2",
+    "unit": "cm",
+    "qualifier": "",
+    "date": {
+     "text": "",
+     "earliest": null,
+     "latest": null
+    },
+    "part": "",
+    "note": ""
+   },
+   {
+    "dimension": "Diameter",
+    "value": "8.1",
+    "unit": "cm",
+    "qualifier": "",
+    "date": {
+     "text": "",
+     "earliest": null,
+     "latest": null
+    },
+    "part": "",
+    "note": ""
+   }
+  ],
+  "dimensionsNote": "Taken from register. ",
+  "marksAndInscriptions": [
+   {
+    "content": "",
+    "inscriber": {
+     "name": {
+      "text": "",
+      "id": ""
+     },
+     "association": {
+      "text": "",
+      "id": ""
+     }
+    },
+    "date": {
+     "text": "",
+     "earliest": null,
+     "latest": null
+    },
+    "description": "",
+    "interpretation": "",
+    "language": "",
+    "medium": "",
+    "method": "",
+    "position": "",
+    "script": "",
+    "translation": "",
+    "transliteration": " ",
+    "type": "",
+    "note": ""
+   },
+   {
+    "content": "",
+    "inscriber": {
+     "name": {
+      "text": "",
+      "id": ""
+     },
+     "association": {
+      "text": "",
+      "id": ""
+     }
+    },
+    "date": {
+     "text": "",
+     "earliest": null,
+     "latest": null
+    },
+    "description": "",
+    "interpretation": "",
+    "language": "",
+    "medium": "",
+    "method": "",
+    "position": "",
+    "script": "",
+    "translation": "",
+    "transliteration": "  ",
+    "type": "",
+    "note": ""
+   }
+  ],
+  "objectHistory": "",
+  "historicalContext": "",
+  "briefDescription": "Brush Pot, porcelain, painted with coloured enamels, China, Qing dynasty (1644-1911), 18th Century ",
+  "bibliographicReferences": [],
+  "production": "",
+  "productionType": {
+   "text": "",
+   "id": ""
+  },
+  "contentDescription": "",
+  "contentPlaces": [],
+  "associatedPlaces": [],
+  "contentPerson": [],
+  "associatedPerson": [],
+  "contentOrganisations": [],
+  "associatedOrganisations": [],
+  "contentPeople": [],
+  "associatedPeople": [],
+  "contentEvents": [],
+  "associatedEvents": [],
+  "contentOthers": [],
+  "contentConcepts": [],
+  "contentLiteraryRefs": [],
+  "galleryLabels": [],
+  "partNumbers": [
+   "CIRC.350-1931"
+  ],
+  "accessionNumberNum": "350",
+  "accessionNumberPrefix": "CIRC",
+  "accessionYear": 1931,
+  "otherNumbers": [],
+  "copyNumber": "",
+  "aspects": [
+   "WHOLE"
+  ],
+  "assets": [],
+  "recordModificationDate": "2025-04-23",
+  "recordCreationDate": "2009-06-25",
+  "availableToBook": true
+ }
+}

@@ -1,0 +1,9 @@
+{# Usage: {% include "partials/nav_link.html" with href="/database/" label="Database" %} #}
+{# Pass mobile=True for the stacked mobile menu. Active when the path equals href, or starts with it for non-root links. #}
+{% with n=href|length %}
+{% if href == "/" %}{% if request.path == "/" %}{% firstof "on" as on %}{% endif %}{% elif request.path|slice:n == href %}{% firstof "on" as on %}{% endif %}
+<a href="{{ href }}"
+   {% if href|slice:":4" == "http" %}target="_blank" rel="noopener"{% endif %}
+   class="{% if mobile %}block px-3 py-2 text-base{% else %}pb-1 border-b-2 text-sm{% endif %} font-display {% if on %}font-semibold text-navy {% if not mobile %}border-madras-red{% endif %}{% else %}font-medium text-[#3a3a34] border-transparent hover:text-navy{% endif %}"
+   {% if on %}aria-current="page"{% endif %}>{{ label }}</a>
+{% endwith %}

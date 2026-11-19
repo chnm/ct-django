@@ -1,0 +1,66 @@
+{% extends "admin/base_site.html" %}
+{% load i18n admin_urls %}
+
+{% block breadcrumbs %}{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl">
+  <h1 class="mb-2 text-xl font-semibold text-font-important-light dark:text-font-important-dark">Add a record from a link</h1>
+  <p class="mb-6 text-sm">
+    Use this for an object held in another collection when you want our own record for it but
+    only need one or two images, so a crawler isn't worth it. We don't copy the image: the record
+    shows it from the holder's site and links back to the original.
+  </p>
+
+  <form method="post" class="mb-8 rounded-md border border-base-200 p-6 dark:border-base-800">
+    {% csrf_token %}
+    {% for field in form %}
+      <div class="mb-5">
+        <label for="{{ field.id_for_label }}" class="mb-2 block text-sm font-semibold">{{ field.label }}</label>
+        {{ field }}
+        {% for error in field.errors %}<p class="mt-2 text-sm text-red-600">{{ error }}</p>{% endfor %}
+        <p class="mt-2 text-xs text-base-500">{{ field.help_text }}</p>
+      </div>
+    {% endfor %}
+    <button type="submit" class="rounded-md bg-primary-600 px-4 py-2 text-sm font-medium text-white hover:bg-primary-700">Read the link and create a draft record</button>
+    <a href="{% url 'admin:catalog_item_changelist' %}" class="ml-3 text-sm">Cancel</a>
+  </form>
+
+  <h2 class="mb-3 text-base font-semibold">Which link to paste</h2>
+  <dl class="mb-6 space-y-3 text-sm">
+    <div>
+      <dt class="font-semibold">IIIF manifest (best)</dt>
+      <dd>Many museums and libraries offer one, often behind a IIIF logo or a "manifest" link on the
+        object page; the address usually ends in <code>manifest.json</code> or <code>/manifest</code>.
+        It gives the image at any size, the title, a link to the object page and the holder's own
+        rights statement.</dd>
+    </div>
+    <div>
+      <dt class="font-semibold">IIIF image service</dt>
+      <dd>An address ending in <code>info.json</code>. Gives the image only.</dd>
+    </div>
+    <div>
+      <dt class="font-semibold">The object's web page</dt>
+      <dd>If the page links to a IIIF manifest we use that; otherwise we use the page's preview
+        image and title. Check it picked the right picture.</dd>
+    </div>
+    <div>
+      <dt class="font-semibold">A direct image link</dt>
+      <dd>An address that opens just the picture (often ending <code>.jpg</code>). It carries no
+        title or rights, so add the object's page as the record's source link afterwards.</dd>
+    </div>
+  </dl>
+
+  <h2 class="mb-3 text-base font-semibold">What happens next</h2>
+  <ul class="mb-6 list-disc space-y-2 pl-5 text-sm">
+    <li>A private draft record opens for you to finish: title, summary, dates, places, people and
+      terms, as for any record.</li>
+    <li>The image, thumbnail and manifest are stored as links, not copies. If the holder moves or
+      removes the image, it will stop showing; the IIIF links are the most stable.</li>
+    <li>The record's rights statement is taken from the source when it states one. Otherwise it
+      starts as: <em>{{ default_rights }}</em> Review it before publishing: records only show
+      images publicly when they have a rights statement.</li>
+    <li>The public record page shows a "View at original location" link next to the image.</li>
+  </ul>
+</div>
+{% endblock %}

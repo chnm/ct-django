@@ -1,0 +1,14 @@
+{% extends "admin/change_list.html" %}
+{% load i18n %}
+
+{% block content %}
+    {% if has_add_permission %}
+        <div class="mb-4 flex gap-2">
+            <a href="{% url 'admin:catalog_item_add_from_link' %}"
+               class="inline-flex items-center px-4 py-2 bg-primary-600 hover:bg-primary-700 text-white text-sm font-medium rounded-md shadow-sm">
+                {% trans "Add from link" %}
+            </a>
+        </div>
+    {% endif %}
+    {{ block.super }}
+{% endblock %}

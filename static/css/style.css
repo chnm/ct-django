@@ -1,15 +1,9 @@
-/* Global typography */
-body {
-  font-family: "Optima", "Candara", "Noto Sans", "source-sans-pro", sans-serif;
-}
-
 h1,
 h2,
 h3,
 h4,
 h5,
 h6 {
-  font-family: "Optima", "Candara", "Noto Sans", "source-sans-pro", sans-serif;
   font-weight: 500; /* Medium weight for headings */
 }
 

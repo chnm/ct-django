@@ -1,3 +1,68 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+@layer base {
+  body {
+    @apply bg-paper text-ink font-display antialiased;
+  }
+  [x-cloak] { display: none !important; }
+}
+
+@layer components {
+  .stripe {
+    height: 4px;
+    background: linear-gradient(90deg, #9c3a2e 0 22%, #9a7328 22% 46%, #3a6b52 46% 68%, #20303f 68% 100%);
+  }
+  .stripe-footer {
+    height: 4px;
+    background: linear-gradient(90deg, #9c3a2e 0 22%, #9a7328 22% 46%, #3a6b52 46% 68%, #c9c2b4 68% 100%);
+  }
+  .lbl {
+    @apply font-mono text-[10.5px] font-semibold uppercase tracking-[.14em] text-label;
+  }
+  .btn-solid {
+    @apply inline-block rounded-md bg-navy px-[22px] py-[13px] font-display text-sm font-semibold text-paper no-underline hover:bg-[#2b3f52];
+  }
+  .btn-ghost {
+    @apply inline-block rounded-md border border-ghost-border bg-transparent px-[22px] py-[13px] font-display text-sm font-semibold text-navy no-underline hover:bg-paper-2;
+  }
+  .fn-select {
+    @apply block w-full rounded-[5px] border border-[#d8d3c6] bg-white px-3 py-2 font-display text-[13.5px] text-ink disabled:cursor-not-allowed disabled:opacity-50;
+  }
+
+  /* CSS madras plaid tiles — fallbacks for region cards without an image. */
+  .plaid-1 {
+    background-color: #8a2f2c;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.28) 0 6px, transparent 6px 26px, rgba(212,160,60,.85) 26px 30px, transparent 30px 40px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.28) 0 6px, transparent 6px 26px, rgba(240,232,214,.7) 26px 30px, transparent 30px 40px);
+  }
+  .plaid-2 {
+    background-color: #2f5a4a;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.25) 0 5px, transparent 5px 22px, rgba(158,51,39,.7) 22px 27px, transparent 27px 36px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.25) 0 5px, transparent 5px 22px, rgba(240,232,214,.6) 22px 27px, transparent 27px 36px);
+  }
+  .plaid-3 {
+    background-color: #26324a;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.3) 0 7px, transparent 7px 30px, rgba(240,232,214,.55) 30px 34px, transparent 34px 46px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.3) 0 7px, transparent 7px 30px, rgba(240,232,214,.55) 30px 34px, transparent 34px 46px);
+  }
+  .plaid-4 {
+    background-color: #b06a1e;
+    background-image:
+      repeating-linear-gradient(90deg, rgba(0,0,0,.22) 0 5px, transparent 5px 18px, rgba(58,107,82,.7) 18px 23px, transparent 23px 34px),
+      repeating-linear-gradient(0deg, rgba(0,0,0,.22) 0 5px, transparent 5px 18px, rgba(158,51,39,.7) 18px 23px, transparent 23px 34px);
+  }
+  .imgctl {
+    @apply rounded px-2.5 py-1.5 font-mono text-[11px] text-[#f2ede0] bg-[rgba(22,30,40,.6)] backdrop-blur hover:bg-[rgba(22,30,40,.85)];
+  }
+  .iconbtn {
+    @apply inline-flex h-9 w-9 items-center justify-center rounded-md border border-rule bg-white text-ink hover:bg-paper-2;
+  }
+  .reader-body {
+    @apply prose max-w-none font-serif text-[17px] leading-[1.62] text-ink prose-p:my-4 prose-a:underline prose-a:decoration-[#c7c0b0] prose-a:underline-offset-[3px] prose-a:text-ink hover:prose-a:text-madras-red [&>*:first-child]:mt-0;
+  }
+}

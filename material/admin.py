@@ -103,48 +103,6 @@ def make_private(modeladmin, request, queryset):
     queryset.update(is_public=False)
 
 
-@admin.action(description="Unpublish selected records from crawler")
-def unpublish_from_crawler(modeladmin, request, queryset):
-    """
-    Unpublish records that came from the crawler
-    Finds the associated StagedMuseumItem and marks it as unpublished
-    """
-    from django.contrib import messages
-
-    from crawler.models import StagedMuseumItem
-
-    unpublished_count = 0
-    not_from_crawler = 0
-
-    for record in queryset:
-        # Find related staged items
-        staged_items = StagedMuseumItem.objects.filter(published_to=record)
-
-        if staged_items.exists():
-            # This record came from the crawler
-            for item in staged_items:
-                item.unpublish()
-                unpublished_count += 1
-
-            # Delete the TextileRecord
-            record.delete()
-        else:
-            # This record didn't come from the crawler
-            not_from_crawler += 1
-
-    if unpublished_count > 0:
-        messages.success(
-            request,
-            f"Successfully unpublished {unpublished_count} records from crawler",
-        )
-
-    if not_from_crawler > 0:
-        messages.warning(
-            request,
-            f"{not_from_crawler} records were not from the crawler and were not affected",
-        )
-
-
 @admin.register(TextileType)
 class TextileTypeAdmin(VersionAdmin, ModelAdmin):
     list_display = [
@@ -190,7 +148,7 @@ class TextileRecordAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
     ]
     inlines = [NamedActorsInline, ImagesInline, ArchivalRecordInline]
     ordering = ["year"]
-    actions = [make_public, make_private, unpublish_from_crawler]  # Add the new action
+    actions = [make_public, make_private]
     formfield_overrides = {
         db_models.TextField: {"widget": RichTextEditor},
     }
@@ -206,15 +164,6 @@ class TextileRecordAdmin(VersionAdmin, ModelAdmin, ImportExportModelAdmin):
         if first_image and first_image.image:
             return admin_thumbnail(first_image.image.url)
         else:
-            # Check if this record came from the crawler (has staged_source)
-            staged_sources = obj.staged_source.all()
-            if staged_sources.exists():
-                staged_item = staged_sources.first()
-                if staged_item.image:
-                    return admin_thumbnail(staged_item.image.url)
-                elif staged_item.thumbnail:
-                    return admin_thumbnail(staged_item.thumbnail)
-
             return admin_thumbnail_placeholder()
 
 
